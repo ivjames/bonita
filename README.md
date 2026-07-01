@@ -73,5 +73,7 @@ misuses ~40 H5s (16 of them empty) for body text.
 
 ```
 tools/          audit crawler (crawl + axe-core), test fixtures, README
-audit/reports/  generated audit output, one subdirectory per model run (fable/)
+audit/reports/  committed runs, one subdir per model:
+                  fable/ live-site audit + Lighthouse (2026-07-01)
+                  opus/  fixture self-test sample (not the live site)
 ```

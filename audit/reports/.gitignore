@@ -2,6 +2,10 @@
 *
 !.gitkeep
 !.gitignore
-# Exception: the opus/ subdir holds a committed sample run (see opus/README.md).
+# Exceptions: committed runs live in one subdir per model.
+# opus/  — fixture self-test sample (see opus/README.md)
+# fable/ — live-site audit of 2026-07-01 + Lighthouse reports
 !opus/
 !opus/**
+!fable/
+!fable/**
