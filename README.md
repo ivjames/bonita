@@ -51,7 +51,7 @@ generates a content/asset inventory and an axe-core WCAG 2.1 A/AA scan. See
 handshake; `audit.mjs` works around it automatically).
 
 **The live audit ran 2026-07-01** — reports are in
-[`audit/reports/`](audit/reports/): 5 pages, 18 images (12 with
+[`audit/reports/fable/`](audit/reports/fable/): 5 pages, 18 images (12 with
 missing/auto-generated alt text), 26 axe violation instances across 4 rules.
 Highlights beyond the alt-text problem: the Rentals inquiry form has 5 of 6
 controls unlabeled, all 3 PDF links sitewide have no accessible name, About and
@@ -61,8 +61,8 @@ misuses ~40 H5s (16 of them empty) for body text.
 ## Migration TODO
 
 - [ ] Get Wix admin access (via Kyle Brown / BUSD)
-- [x] Full content + asset audit before leaving Wix — see `audit/reports/inventory.md`
-- [x] Accessibility audit (axe-core) — see `audit/reports/a11y.md`; Lighthouse/pa11y still TODO
+- [x] Full content + asset audit before leaving Wix — see `audit/reports/fable/inventory.md`
+- [x] Accessibility audit (axe-core) — see `audit/reports/fable/a11y.md`; Lighthouse/pa11y still TODO
 - [ ] Choose the stack for the self-hosted DO droplet
 - [ ] Calendar solution to replace the Wix bookings widget
 - [ ] Ludus ticketing integration approach
@@ -73,5 +73,5 @@ misuses ~40 H5s (16 of them empty) for body text.
 
 ```
 tools/          audit crawler (crawl + axe-core), test fixtures, README
-audit/reports/  generated audit output (empty until the audit runs)
+audit/reports/  generated audit output, one subdirectory per model run (fable/)
 ```

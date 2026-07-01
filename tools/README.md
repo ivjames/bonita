@@ -26,6 +26,8 @@ node audit.mjs https://www.bonitacenterforthearts.com --max 40
 
 Reports are written to `../audit/reports/`:
 `summary.md`, `inventory.md` / `inventory.json`, `a11y.md` / `a11y.json`.
+In this repo committed reports live in a subdirectory per model run
+(e.g. `--out ../audit/reports/fable`).
 
 ### Flags
 
