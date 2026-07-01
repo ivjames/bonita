@@ -38,14 +38,22 @@ Reports are written to `../audit/reports/`:
 
 ## Network note (Claude Code on the web)
 
-This environment's egress policy currently **denies all outbound HTTPS** (the
-proxy returns `403 to CONNECT` for every external host, `example.com` included),
-so the audit cannot fetch the live site from here. Two ways to run it:
+The environment's network policy must allow outbound web access (see
+https://code.claude.com/docs/en/claude-code-on-the-web#network-access); with the
+default Trusted policy every CONNECT gets a 403 and nothing loads.
 
-- Recreate the web environment with a network policy that allows outbound web,
-  then run the command above. See
-  https://code.claude.com/docs/en/claude-code-on-the-web
-- Or run it locally / on the DO droplet — the script is self-contained.
+Even with web access allowed, the egress proxy inspects tunneled TLS
+ClientHellos and **closes any handshake advertising Encrypted ClientHello** —
+which Chromium sends by default (GREASE ECH) — so every page fails with
+`net::ERR_CONNECTION_CLOSED` while `curl` works fine. `audit.mjs` handles this
+automatically when `HTTPS_PROXY` is set: it writes the
+`EncryptedClientHelloEnabled: false` enterprise policy to
+`/etc/chromium/policies/managed/` and launches the full Chromium build at
+`/opt/pw-browsers/chromium` (Playwright's default headless shell doesn't read
+enterprise policies, and `--disable-features=EncryptedClientHello` does not
+remove the GREASE ECH extension).
+
+The script is self-contained, so it can also run locally or on the DO droplet.
 
 ## Test harness
 
