@@ -1,0 +1,10 @@
+{
+  "name": "bca-audit-tools",
+  "private": true,
+  "type": "module",
+  "description": "Live-site audit tooling for BCA website migration (crawler + axe-core a11y)",
+  "dependencies": {
+    "axe-core": "^4.12.1",
+    "playwright": "^1.56.1"
+  }
+}

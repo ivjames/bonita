@@ -1,0 +1,2 @@
+Generated audit reports land here when tools/audit.mjs runs against a reachable site.
+Empty until the audit is run from an environment with outbound web access.
