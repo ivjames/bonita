@@ -1,0 +1,731 @@
+{
+  "base": "http://127.0.0.1:8199/",
+  "generatedPages": 3,
+  "remainingInQueue": 0,
+  "pages": [
+    {
+      "url": "http://127.0.0.1:8199/",
+      "status": 200,
+      "title": "Fixture Home",
+      "lang": "en",
+      "metaDescription": "Test home page",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Welcome"
+        },
+        {
+          "level": 3,
+          "text": "Jumped a level"
+        }
+      ],
+      "images": [
+        {
+          "src": "http://127.0.0.1:8199/photos/DSC_0421.jpg",
+          "alt": "DSC_0421.jpg",
+          "hasAltAttr": true,
+          "role": null,
+          "w": null,
+          "h": null
+        },
+        {
+          "src": "http://127.0.0.1:8199/photos/hero.jpg",
+          "alt": "Students performing on the mainstage",
+          "hasAltAttr": true,
+          "role": null,
+          "w": null,
+          "h": null
+        },
+        {
+          "src": "http://127.0.0.1:8199/logo.png",
+          "alt": null,
+          "hasAltAttr": false,
+          "role": null,
+          "w": null,
+          "h": null
+        },
+        {
+          "src": "http://127.0.0.1:8199/spacer.gif",
+          "alt": "",
+          "hasAltAttr": true,
+          "role": null,
+          "w": null,
+          "h": null
+        },
+        {
+          "src": "http://127.0.0.1:8199/seat-thumb.png",
+          "alt": "seat-thumb.png",
+          "hasAltAttr": true,
+          "role": null,
+          "w": null,
+          "h": null
+        }
+      ],
+      "links": [
+        {
+          "href": "http://127.0.0.1:8199/about.html",
+          "text": "About",
+          "ariaLabel": null
+        },
+        {
+          "href": "http://127.0.0.1:8199/seating.pdf",
+          "text": "",
+          "ariaLabel": null
+        },
+        {
+          "href": "https://bonitacenterforthearts.ludus.com/",
+          "text": "Buy tickets",
+          "ariaLabel": null
+        }
+      ],
+      "iframes": [
+        {
+          "src": "https://player.vimeo.com/video/12345",
+          "title": null
+        }
+      ],
+      "forms": [
+        {
+          "action": "http://127.0.0.1:8199/lostfound",
+          "controls": [
+            {
+              "tag": "input",
+              "type": "text",
+              "name": null,
+              "id": "name",
+              "labelled": true
+            },
+            {
+              "tag": "input",
+              "type": "email",
+              "name": null,
+              "id": null,
+              "labelled": false
+            }
+          ]
+        }
+      ],
+      "violations": [
+        {
+          "id": "frame-title",
+          "impact": "serious",
+          "help": "Frames must have an accessible name",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/frame-title?application=axeAPI",
+          "tags": [
+            "cat.text-alternatives",
+            "wcag2a",
+            "wcag412",
+            "section508",
+            "section508.22.i",
+            "TTv5",
+            "TT12.d",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-2.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "iframe"
+              ],
+              "html": "<iframe src=\"https://player.vimeo.com/video/12345\"></iframe>"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "heading-order",
+          "impact": "moderate",
+          "help": "Heading levels should only increase by one",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/heading-order?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "h3"
+              ],
+              "html": "<h3>Jumped a level</h3>"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "image-alt",
+          "impact": "critical",
+          "help": "Images must have alternative text",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/image-alt?application=axeAPI",
+          "tags": [
+            "cat.text-alternatives",
+            "wcag2a",
+            "wcag111",
+            "section508",
+            "section508.22.a",
+            "TTv5",
+            "TT7.a",
+            "TT7.b",
+            "EN-301-549",
+            "EN-9.1.1.1",
+            "ACT",
+            "RGAAv4",
+            "RGAA-1.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "img[src$=\"logo.png\"]"
+              ],
+              "html": "<img src=\"/logo.png\">"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "landmark-one-main",
+          "impact": "moderate",
+          "help": "Document should have one main landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/landmark-one-main?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "html"
+              ],
+              "html": "<html lang=\"en\">"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/region?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "best-practice",
+            "RGAAv4",
+            "RGAA-9.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "h1"
+              ],
+              "html": "<h1>Welcome</h1>"
+            },
+            {
+              "target": [
+                "h3"
+              ],
+              "html": "<h3>Jumped a level</h3>"
+            },
+            {
+              "target": [
+                "img[src$=\"DSC_0421.jpg\"]"
+              ],
+              "html": "<img src=\"/photos/DSC_0421.jpg\" alt=\"DSC_0421.jpg\">"
+            },
+            {
+              "target": [
+                "img[src$=\"hero.jpg\"]"
+              ],
+              "html": "<img src=\"/photos/hero.jpg\" alt=\"Students performing on the mainstage\">"
+            },
+            {
+              "target": [
+                "img[src$=\"logo.png\"]"
+              ],
+              "html": "<img src=\"/logo.png\">"
+            },
+            {
+              "target": [
+                "a[href$=\"about.html\"]"
+              ],
+              "html": "<a href=\"/about.html\">About</a>"
+            },
+            {
+              "target": [
+                "a[href$=\"seating.pdf\"]"
+              ],
+              "html": "<a href=\"/seating.pdf\"><img src=\"/seat-thumb.png\" alt=\"seat-thumb.png\"></a>"
+            },
+            {
+              "target": [
+                "a:nth-child(10)"
+              ],
+              "html": "<a href=\"https://bonitacenterforthearts.ludus.com\">Buy tickets</a>"
+            }
+          ],
+          "count": 11
+        }
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:8199/about.html",
+      "status": 200,
+      "title": "About",
+      "lang": null,
+      "metaDescription": null,
+      "headings": [
+        {
+          "level": 2,
+          "text": "About us"
+        }
+      ],
+      "images": [
+        {
+          "src": "http://127.0.0.1:8199/team.jpg",
+          "alt": null,
+          "hasAltAttr": false,
+          "role": null,
+          "w": null,
+          "h": null
+        }
+      ],
+      "links": [
+        {
+          "href": "http://127.0.0.1:8199/index.html",
+          "text": "Home",
+          "ariaLabel": null
+        }
+      ],
+      "iframes": [],
+      "forms": [],
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "p"
+              ],
+              "html": "<p style=\"color:#bbb;background:#fff\">Low contrast text sample.</p>"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "help": "<html> element must have a lang attribute",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/html-has-lang?application=axeAPI",
+          "tags": [
+            "cat.language",
+            "wcag2a",
+            "wcag311",
+            "TTv5",
+            "TT11.a",
+            "EN-301-549",
+            "EN-9.3.1.1",
+            "ACT",
+            "RGAAv4",
+            "RGAA-8.3.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "html"
+              ],
+              "html": "<html>"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "image-alt",
+          "impact": "critical",
+          "help": "Images must have alternative text",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/image-alt?application=axeAPI",
+          "tags": [
+            "cat.text-alternatives",
+            "wcag2a",
+            "wcag111",
+            "section508",
+            "section508.22.a",
+            "TTv5",
+            "TT7.a",
+            "TT7.b",
+            "EN-301-549",
+            "EN-9.1.1.1",
+            "ACT",
+            "RGAAv4",
+            "RGAA-1.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "img"
+              ],
+              "html": "<img src=\"/team.jpg\">"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "landmark-one-main",
+          "impact": "moderate",
+          "help": "Document should have one main landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/landmark-one-main?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "html"
+              ],
+              "html": "<html>"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "help": "Page should contain a level-one heading",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/page-has-heading-one?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "html"
+              ],
+              "html": "<html>"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/region?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "best-practice",
+            "RGAAv4",
+            "RGAA-9.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "h2"
+              ],
+              "html": "<h2>About us</h2>"
+            },
+            {
+              "target": [
+                "p"
+              ],
+              "html": "<p style=\"color:#bbb;background:#fff\">Low contrast text sample.</p>"
+            },
+            {
+              "target": [
+                "img"
+              ],
+              "html": "<img src=\"/team.jpg\">"
+            },
+            {
+              "target": [
+                "a"
+              ],
+              "html": "<a href=\"/index.html\">Home</a>"
+            }
+          ],
+          "count": 4
+        }
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:8199/index.html",
+      "status": 200,
+      "title": "Fixture Home",
+      "lang": "en",
+      "metaDescription": "Test home page",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Welcome"
+        },
+        {
+          "level": 3,
+          "text": "Jumped a level"
+        }
+      ],
+      "images": [
+        {
+          "src": "http://127.0.0.1:8199/photos/DSC_0421.jpg",
+          "alt": "DSC_0421.jpg",
+          "hasAltAttr": true,
+          "role": null,
+          "w": null,
+          "h": null
+        },
+        {
+          "src": "http://127.0.0.1:8199/photos/hero.jpg",
+          "alt": "Students performing on the mainstage",
+          "hasAltAttr": true,
+          "role": null,
+          "w": null,
+          "h": null
+        },
+        {
+          "src": "http://127.0.0.1:8199/logo.png",
+          "alt": null,
+          "hasAltAttr": false,
+          "role": null,
+          "w": null,
+          "h": null
+        },
+        {
+          "src": "http://127.0.0.1:8199/spacer.gif",
+          "alt": "",
+          "hasAltAttr": true,
+          "role": null,
+          "w": null,
+          "h": null
+        },
+        {
+          "src": "http://127.0.0.1:8199/seat-thumb.png",
+          "alt": "seat-thumb.png",
+          "hasAltAttr": true,
+          "role": null,
+          "w": null,
+          "h": null
+        }
+      ],
+      "links": [
+        {
+          "href": "http://127.0.0.1:8199/about.html",
+          "text": "About",
+          "ariaLabel": null
+        },
+        {
+          "href": "http://127.0.0.1:8199/seating.pdf",
+          "text": "",
+          "ariaLabel": null
+        },
+        {
+          "href": "https://bonitacenterforthearts.ludus.com/",
+          "text": "Buy tickets",
+          "ariaLabel": null
+        }
+      ],
+      "iframes": [
+        {
+          "src": "https://player.vimeo.com/video/12345",
+          "title": null
+        }
+      ],
+      "forms": [
+        {
+          "action": "http://127.0.0.1:8199/lostfound",
+          "controls": [
+            {
+              "tag": "input",
+              "type": "text",
+              "name": null,
+              "id": "name",
+              "labelled": true
+            },
+            {
+              "tag": "input",
+              "type": "email",
+              "name": null,
+              "id": null,
+              "labelled": false
+            }
+          ]
+        }
+      ],
+      "violations": [
+        {
+          "id": "frame-title",
+          "impact": "serious",
+          "help": "Frames must have an accessible name",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/frame-title?application=axeAPI",
+          "tags": [
+            "cat.text-alternatives",
+            "wcag2a",
+            "wcag412",
+            "section508",
+            "section508.22.i",
+            "TTv5",
+            "TT12.d",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-2.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "iframe"
+              ],
+              "html": "<iframe src=\"https://player.vimeo.com/video/12345\"></iframe>"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "heading-order",
+          "impact": "moderate",
+          "help": "Heading levels should only increase by one",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/heading-order?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "h3"
+              ],
+              "html": "<h3>Jumped a level</h3>"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "image-alt",
+          "impact": "critical",
+          "help": "Images must have alternative text",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/image-alt?application=axeAPI",
+          "tags": [
+            "cat.text-alternatives",
+            "wcag2a",
+            "wcag111",
+            "section508",
+            "section508.22.a",
+            "TTv5",
+            "TT7.a",
+            "TT7.b",
+            "EN-301-549",
+            "EN-9.1.1.1",
+            "ACT",
+            "RGAAv4",
+            "RGAA-1.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "img[src$=\"logo.png\"]"
+              ],
+              "html": "<img src=\"/logo.png\">"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "landmark-one-main",
+          "impact": "moderate",
+          "help": "Document should have one main landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/landmark-one-main?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "html"
+              ],
+              "html": "<html lang=\"en\">"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/region?application=axeAPI",
+          "tags": [
+            "cat.keyboard",
+            "best-practice",
+            "RGAAv4",
+            "RGAA-9.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "h1"
+              ],
+              "html": "<h1>Welcome</h1>"
+            },
+            {
+              "target": [
+                "h3"
+              ],
+              "html": "<h3>Jumped a level</h3>"
+            },
+            {
+              "target": [
+                "img[src$=\"DSC_0421.jpg\"]"
+              ],
+              "html": "<img src=\"/photos/DSC_0421.jpg\" alt=\"DSC_0421.jpg\">"
+            },
+            {
+              "target": [
+                "img[src$=\"hero.jpg\"]"
+              ],
+              "html": "<img src=\"/photos/hero.jpg\" alt=\"Students performing on the mainstage\">"
+            },
+            {
+              "target": [
+                "img[src$=\"logo.png\"]"
+              ],
+              "html": "<img src=\"/logo.png\">"
+            },
+            {
+              "target": [
+                "a[href$=\"about.html\"]"
+              ],
+              "html": "<a href=\"/about.html\">About</a>"
+            },
+            {
+              "target": [
+                "a[href$=\"seating.pdf\"]"
+              ],
+              "html": "<a href=\"/seating.pdf\"><img src=\"/seat-thumb.png\" alt=\"seat-thumb.png\"></a>"
+            },
+            {
+              "target": [
+                "a:nth-child(10)"
+              ],
+              "html": "<a href=\"https://bonitacenterforthearts.ludus.com\">Buy tickets</a>"
+            }
+          ],
+          "count": 11
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

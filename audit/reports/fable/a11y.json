@@ -1,0 +1,209 @@
+{
+  "base": "https://www.bonitacenterforthearts.com",
+  "pages": [
+    {
+      "url": "https://www.bonitacenterforthearts.com/",
+      "violations": []
+    },
+    {
+      "url": "https://www.bonitacenterforthearts.com/about",
+      "violations": [
+        {
+          "id": "frame-title",
+          "impact": "serious",
+          "help": "Frames must have an accessible name",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/frame-title?application=axeAPI",
+          "tags": [
+            "cat.text-alternatives",
+            "wcag2a",
+            "wcag412",
+            "section508",
+            "section508.22.i",
+            "TTv5",
+            "TT12.d",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-2.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".XEILsR"
+              ],
+              "html": "<iframe class=\"XEILsR\" data-src=\"\" scrolling=\"no\" src=\"https://static.parastorage.com/services/santa/1.13152.0/node_modules/@wix/santa-galleries/target/Masonry/Masonry.html?compId=comp-lkwzkko41&amp;deviceType=desktop&amp;locale=en&amp;view"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "help": "Links must have discernible text",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/link-name?application=axeAPI",
+          "tags": [
+            "cat.name-role-value",
+            "wcag2a",
+            "wcag244",
+            "wcag412",
+            "section508",
+            "section508.22.a",
+            "TTv5",
+            "TT6.a",
+            "EN-301-549",
+            "EN-9.2.4.4",
+            "EN-9.4.1.2",
+            "ACT",
+            "RGAAv4",
+            "RGAA-6.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "#i6mf2wr6 > .BprtEa[target=\"_blank\"]"
+              ],
+              "html": "<a data-testid=\"linkElement\" href=\"http://www.rachlinarchitects.com/work/project/bonita-center-for-the-arts\" target=\"_blank\" class=\"BprtEa\">"
+            }
+          ],
+          "count": 1
+        }
+      ]
+    },
+    {
+      "url": "https://www.bonitacenterforthearts.com/booking-calendar",
+      "violations": []
+    },
+    {
+      "url": "https://www.bonitacenterforthearts.com/get-involved",
+      "violations": []
+    },
+    {
+      "url": "https://www.bonitacenterforthearts.com/rentals",
+      "violations": [
+        {
+          "id": "empty-heading",
+          "impact": "minor",
+          "help": "Headings should not be empty",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/empty-heading?application=axeAPI",
+          "tags": [
+            "cat.name-role-value",
+            "best-practice"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "h5:nth-child(4)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:18px; line-height:normal;\">&nbsp;</h5>"
+            },
+            {
+              "target": [
+                "h5:nth-child(8)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:18px; line-height:normal;\">"
+            },
+            {
+              "target": [
+                "h5:nth-child(11)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:18px; line-height:normal;\">&nbsp;</h5>"
+            },
+            {
+              "target": [
+                "#comp-li25loj9 > h5:nth-child(15)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:18px; line-height:normal;\">&nbsp;</h5>"
+            },
+            {
+              "target": [
+                "#comp-li26j386 > h5:nth-child(6)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:14px; line-height:normal;\">&nbsp;</h5>"
+            },
+            {
+              "target": [
+                "#comp-li26j386 > h5:nth-child(12)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:14px; line-height:normal;\">&nbsp;</h5>"
+            },
+            {
+              "target": [
+                "#comp-li26j386 > h5:nth-child(16)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:14px; line-height:normal;\">&nbsp;</h5>"
+            },
+            {
+              "target": [
+                "h5:nth-child(58)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:14px; line-height:normal;\">&nbsp;</h5>"
+            }
+          ],
+          "count": 16
+        },
+        {
+          "id": "heading-order",
+          "impact": "moderate",
+          "help": "Heading levels should only increase by one",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/heading-order?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "#comp-li264f38 > h5"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:14px; line-height:normal;\">"
+            },
+            {
+              "target": [
+                "#comp-li25aaex > h5"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:14px; line-height:normal; text-align:center;\">"
+            },
+            {
+              "target": [
+                "#comp-li24in61 > h5"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:18px; line-height:normal;\"><span style=\"font-family:avenir-lt-w01_35-light1475496,avenir-lt-w05_35-light,sans-serif;\" class=\"wixui-rich-text__text\"><span class=\"wixGuard wixui-rich-t"
+            },
+            {
+              "target": [
+                "#comp-li25loj9 > h5:nth-child(1)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:18px; line-height:normal;\">"
+            },
+            {
+              "target": [
+                "#comp-li26j386 > h5:nth-child(1)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:14px; line-height:normal; margin-left:40px;\">"
+            },
+            {
+              "target": [
+                "#comp-li26gz5s > h5:nth-child(1)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:14px; line-height:normal;\">"
+            },
+            {
+              "target": [
+                "#comp-li26lbrj > h5"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"line-height:normal; font-size:14px;\">"
+            },
+            {
+              "target": [
+                "#comp-li26mweq > h5:nth-child(1)"
+              ],
+              "html": "<h5 class=\"font_5 wixui-rich-text__text\" style=\"font-size:14px; line-height:normal;\">"
+            }
+          ],
+          "count": 8
+        }
+      ]
+    }
+  ],
+  "errors": []
+}
