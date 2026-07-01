@@ -2,3 +2,6 @@
 *
 !.gitkeep
 !.gitignore
+# Exception: the opus/ subdir holds a committed sample run (see opus/README.md).
+!opus/
+!opus/**
