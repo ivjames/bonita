@@ -17,6 +17,7 @@
 
 import { chromium } from 'playwright';
 import axeSource from 'axe-core';
+import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -141,10 +142,34 @@ async function runAxe(page) {
   });
 }
 
+// ---- proxy accommodations ---------------------------------------------------
+// The managed env's egress proxy inspects tunneled TLS ClientHellos (SNI policy)
+// and closes any handshake that advertises Encrypted ClientHello — including the
+// GREASE ECH extension Chromium sends by default (net::ERR_CONNECTION_CLOSED on
+// every page). GREASE ECH can only be turned off via the enterprise policy
+// EncryptedClientHelloEnabled (--disable-features=EncryptedClientHello does not
+// remove the extension), and Playwright's default headless-shell build does not
+// read /etc/chromium policies — the full Chromium build does.
+const FULL_CHROMIUM = '/opt/pw-browsers/chromium';
+const ECH_POLICY = '/etc/chromium/policies/managed/disable-ech.json';
+async function ensureNoEchPolicy() {
+  try {
+    await mkdir(path.dirname(ECH_POLICY), { recursive: true });
+    await writeFile(ECH_POLICY, JSON.stringify({ EncryptedClientHelloEnabled: false }));
+    console.log(`[audit] wrote ${ECH_POLICY} (proxy rejects ECH ClientHellos)`);
+  } catch {
+    console.warn(`[audit] could not write ${ECH_POLICY} — if pages fail with ERR_CONNECTION_CLOSED, disable ECH for Chromium`);
+  }
+}
+
 // ---- crawl -----------------------------------------------------------------
 async function main() {
   await mkdir(OUT_DIR, { recursive: true });
   const launchOpts = USE_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {};
+  if (USE_PROXY) {
+    await ensureNoEchPolicy();
+    if (existsSync(FULL_CHROMIUM)) launchOpts.executablePath = FULL_CHROMIUM;
+  }
   console.log(`[audit] base=${BASE} maxPages=${MAX_PAGES} proxy=${USE_PROXY ? process.env.HTTPS_PROXY : 'off'}`);
   const browser = await chromium.launch(launchOpts);
   const context = await browser.newContext({ userAgent: 'BCA-Audit-Bot (accessibility+content inventory)' });
@@ -158,7 +183,10 @@ async function main() {
     const url = queue.shift();
     const page = await context.newPage();
     try {
-      const resp = await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+      // Wix keeps beacon/analytics connections open, so 'networkidle' may never
+      // fire on the live site — wait for 'load', then take networkidle as a bonus.
+      const resp = await page.goto(url, { waitUntil: 'load', timeout: 60000 });
+      await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
       await page.waitForTimeout(SETTLE_MS);
       const status = resp ? resp.status() : null;
       const inv = await extractInventory(page);
