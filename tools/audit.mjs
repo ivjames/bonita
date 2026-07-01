@@ -171,58 +171,72 @@ async function main() {
     if (existsSync(FULL_CHROMIUM)) launchOpts.executablePath = FULL_CHROMIUM;
   }
   console.log(`[audit] base=${BASE} maxPages=${MAX_PAGES} proxy=${USE_PROXY ? process.env.HTTPS_PROXY : 'off'}`);
-  const browser = await chromium.launch(launchOpts);
-  const context = await browser.newContext({ userAgent: 'BCA-Audit-Bot (accessibility+content inventory)' });
 
   const queue = [normalize(BASE)].filter(Boolean);
   const seen = new Set(queue);
   const pages = [];
   const errors = [];
+  let browser = null;
 
-  while (queue.length && pages.length < MAX_PAGES) {
-    const url = queue.shift();
-    const page = await context.newPage();
-    try {
-      // Wix keeps beacon/analytics connections open, so 'networkidle' may never
-      // fire on the live site — wait for 'load', then take networkidle as a bonus.
-      const resp = await page.goto(url, { waitUntil: 'load', timeout: 60000 });
-      await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-      await page.waitForTimeout(SETTLE_MS);
-      const status = resp ? resp.status() : null;
-      const inv = await extractInventory(page);
-      let violations = [];
-      try { violations = await runAxe(page); } catch (e) { errors.push({ url, phase: 'axe', error: String(e).slice(0, 200) }); }
-      pages.push({ url, status, ...inv, violations });
-      console.log(`[ok] ${status} ${url}  (imgs ${inv.images.length}, links ${inv.links.length}, violations ${violations.length})`);
+  // The crawl is wrapped so that any unexpected failure (browser launch/close,
+  // newPage, an internal Playwright error) still flushes the pages gathered so
+  // far — a mid-crawl crash should degrade to a partial report, not zero output.
+  try {
+    browser = await chromium.launch(launchOpts);
+    const context = await browser.newContext({ userAgent: 'BCA-Audit-Bot (accessibility+content inventory)' });
 
-      // Enqueue same-origin child links.
-      for (const l of inv.links) {
-        const n = normalize(l.href);
-        if (n && isHttp(n) && sameOrigin(n) && !seen.has(n) && !/\.(pdf|jpe?g|png|gif|zip|docx?|xlsx?)$/i.test(n)) {
-          seen.add(n);
-          queue.push(n);
+    while (queue.length && pages.length < MAX_PAGES) {
+      const url = queue.shift();
+      let page = null;
+      try {
+        page = await context.newPage();
+        // Wix keeps beacon/analytics connections open, so 'networkidle' may never
+        // fire on the live site — wait for 'load', then take networkidle as a bonus.
+        const resp = await page.goto(url, { waitUntil: 'load', timeout: 60000 });
+        await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+        await page.waitForTimeout(SETTLE_MS);
+        const status = resp ? resp.status() : null;
+        const inv = await extractInventory(page);
+        let violations = [];
+        try { violations = await runAxe(page); } catch (e) { errors.push({ url, phase: 'axe', error: String(e).slice(0, 200) }); }
+        pages.push({ url, status, ...inv, violations });
+        console.log(`[ok] ${status} ${url}  (imgs ${inv.images.length}, links ${inv.links.length}, violations ${violations.length})`);
+
+        // Enqueue same-origin child links.
+        for (const l of inv.links) {
+          const n = normalize(l.href);
+          if (n && isHttp(n) && sameOrigin(n) && !seen.has(n) && !/\.(pdf|jpe?g|png|gif|zip|docx?|xlsx?)$/i.test(n)) {
+            seen.add(n);
+            queue.push(n);
+          }
         }
+      } catch (e) {
+        errors.push({ url, phase: 'goto', error: String(e).slice(0, 200) });
+        console.log(`[err] ${url} :: ${String(e).slice(0, 120)}`);
+      } finally {
+        if (page) { try { await page.close(); } catch { /* already gone */ } }
       }
-    } catch (e) {
-      errors.push({ url, phase: 'goto', error: String(e).slice(0, 200) });
-      console.log(`[err] ${url} :: ${String(e).slice(0, 120)}`);
-    } finally {
-      await page.close();
     }
+  } catch (e) {
+    // Fatal crawl error (not scoped to a single page). Record it and fall
+    // through to report whatever we collected before the failure.
+    errors.push({ url: BASE, phase: 'crawl', error: String(e).slice(0, 200) });
+    console.error(`[fatal] crawl aborted after ${pages.length} page(s): ${String(e).slice(0, 200)}`);
+  } finally {
+    if (browser) { try { await browser.close(); } catch { /* already gone */ } }
   }
-  await browser.close();
 
-  buildReports(pages, errors, queue.length);
+  await buildReports(pages, errors, queue.length);
 }
 
 // ---- report builders -------------------------------------------------------
-function buildReports(pages, errors, remaining) {
+async function buildReports(pages, errors, remaining) {
   // Inventory JSON
-  writeJSON('inventory.json', { base: BASE, generatedPages: pages.length, remainingInQueue: remaining, pages, errors });
+  await writeJSON('inventory.json', { base: BASE, generatedPages: pages.length, remainingInQueue: remaining, pages, errors });
 
   // A11y JSON (flattened)
   const a11y = pages.map((p) => ({ url: p.url, violations: p.violations }));
-  writeJSON('a11y.json', { base: BASE, pages: a11y, errors });
+  await writeJSON('a11y.json', { base: BASE, pages: a11y, errors });
 
   // ---- inventory.md
   let md = `# BCA content & asset inventory\n\n`;
@@ -285,7 +299,7 @@ function buildReports(pages, errors, remaining) {
     }
     md += `---\n\n`;
   }
-  writeText('inventory.md', md);
+  await writeText('inventory.md', md);
 
   // ---- a11y.md
   let am = `# BCA accessibility scan (axe-core, WCAG 2.1 A/AA + best-practice)\n\n`;
@@ -317,7 +331,7 @@ function buildReports(pages, errors, remaining) {
     }
     am += `\n`;
   }
-  writeText('a11y.md', am);
+  await writeText('a11y.md', am);
 
   // ---- summary.md
   const totalImgs = pages.reduce((s, p) => s + p.images.length, 0);
@@ -329,7 +343,7 @@ function buildReports(pages, errors, remaining) {
   sm += `- Crawl errors: ${errors.length}\n\n`;
   sm += `Reports: \`inventory.md\` / \`inventory.json\`, \`a11y.md\` / \`a11y.json\`.\n`;
   if (errors.length) { sm += `\n## Errors\n\n`; for (const e of errors) sm += `- ${e.phase} ${e.url}: ${e.error}\n`; }
-  writeText('summary.md', sm);
+  await writeText('summary.md', sm);
 
   console.log(`\n[done] ${pages.length} pages → ${OUT_DIR}`);
   console.log(`  images ${totalImgs} (bad alt ${badAlt}) | axe instances ${totalViol} | rules ${rules.length} | errors ${errors.length}`);
