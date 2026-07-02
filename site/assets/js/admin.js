@@ -206,7 +206,11 @@
     document.getElementById('download').hidden = mode !== 'static';
     document.getElementById('accounts').hidden = mode !== 'live';
     document.getElementById('messages').hidden = mode !== 'live';
-    if (mode === 'live') { loadUserList(); loadMessages(); }
+    document.getElementById('media').hidden = mode !== 'live';
+    // Events sits alone until Messages joins it (signed in) — then they split
+    // the row two-up on wide screens.
+    document.getElementById('work-cols').classList.toggle('split', mode === 'live');
+    if (mode === 'live') { loadUserList(); loadMessages(); loadMedia(); }
   }
 
   saveBtn.addEventListener('click', async () => {
@@ -452,6 +456,134 @@
       msgStatus.hidden = false;
       msgStatus.className = 'save-status err';
       msgStatus.textContent = '⚠ Could not delete that message — try again.';
+    }
+  }
+
+  // ---- media (swappable support PDFs; visible only when signed in) ----
+  const mediaList = document.getElementById('media-list');
+  const mediaStatus = document.getElementById('media-status');
+  const fmtSize = (n) => (n >= 1024 * 1024
+    ? `${(n / (1024 * 1024)).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(n / 1024))} KB`);
+  const fmtDate = (iso) => {
+    try { return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(iso)); }
+    catch { return iso; }
+  };
+
+  function mediaMsg(kind, text) {
+    mediaStatus.hidden = false;
+    mediaStatus.className = `save-status ${kind}`.trim();
+    mediaStatus.textContent = text;
+  }
+
+  function renderMedia(docs) {
+    mediaList.innerHTML = '';
+    docs.forEach((d) => {
+      const li = document.createElement('li');
+      li.className = `media-item${d.override ? ' replaced' : ''}`;
+
+      const head = document.createElement('div');
+      head.className = 'media-head';
+      const label = document.createElement('span');
+      label.className = 'media-label';
+      label.textContent = d.label;
+      const tag = document.createElement('span');
+      tag.className = 'media-tag';
+      if (d.override) {
+        tag.classList.add('is-replaced');
+        tag.textContent = `Replaced ${fmtDate(d.override.updated)} · ${fmtSize(d.override.size)}`;
+      } else {
+        tag.textContent = 'Original';
+      }
+      head.append(label, tag);
+
+      // Link the live file, cache-busted so a fresh swap shows immediately.
+      const view = document.createElement('a');
+      view.className = 'media-view';
+      const stamp = d.override ? new Date(d.override.updated).getTime() : 0;
+      view.href = `${d.url}?t=${stamp}`;
+      view.target = '_blank';
+      view.rel = 'noopener';
+      view.textContent = 'View current PDF';
+
+      const form = document.createElement('form');
+      form.className = 'media-upload';
+      const file = document.createElement('input');
+      file.type = 'file';
+      file.accept = 'application/pdf,.pdf';
+      file.required = true;
+      const replace = document.createElement('button');
+      replace.type = 'submit';
+      replace.className = 'btn btn-secondary';
+      replace.textContent = 'Replace…';
+      form.append(file, replace);
+      form.addEventListener('submit', (e) => { e.preventDefault(); uploadMedia(d, file.files[0], form); });
+
+      const actions = document.createElement('p');
+      actions.className = 'media-actions';
+      actions.append(view);
+      if (d.override) {
+        const restore = document.createElement('button');
+        restore.type = 'button';
+        restore.className = 'btn-link';
+        restore.textContent = 'Restore original';
+        restore.addEventListener('click', () => restoreMedia(d));
+        actions.append(restore);
+      }
+
+      li.append(head, form, actions);
+      mediaList.append(li);
+    });
+  }
+
+  async function loadMedia() {
+    try {
+      const res = await fetch('/api/media');
+      if (!res.ok) return;
+      const { docs } = await res.json();
+      renderMedia(docs || []);
+    } catch { /* leave the list as-is */ }
+  }
+
+  async function uploadMedia(doc, fileObj, form) {
+    if (!fileObj) return;
+    if (fileObj.type && fileObj.type !== 'application/pdf' && !/\.pdf$/i.test(fileObj.name)) {
+      mediaMsg('err', `⚠ ${doc.label}: choose a PDF file.`);
+      return;
+    }
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    mediaMsg('', `Uploading ${doc.label}…`);
+    try {
+      const res = await fetch(`/api/media/${doc.slug}`, {
+        method: 'PUT',
+        headers: { 'content-type': 'application/pdf' },
+        body: fileObj,   // raw bytes; same-origin so the API's Origin check passes
+      });
+      const out = await res.json().catch(() => ({}));
+      if (res.status === 401) { setMode('login'); throw new Error('session expired — sign in again'); }
+      if (!res.ok) throw new Error(out.error || `upload failed (${res.status})`);
+      form.reset();
+      mediaMsg('ok', `${doc.label} replaced ✓`);
+      await loadMedia();
+    } catch (err) {
+      mediaMsg('err', `⚠ ${err.message}`);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function restoreMedia(doc) {
+    if (!confirm(`Restore the original ${doc.label}? The uploaded version will be removed.`)) return;
+    try {
+      const res = await fetch(`/api/media/${doc.slug}`, { method: 'DELETE' });
+      const out = await res.json().catch(() => ({}));
+      if (res.status === 401) { setMode('login'); throw new Error('session expired — sign in again'); }
+      if (!res.ok) throw new Error(out.error || `restore failed (${res.status})`);
+      mediaMsg('ok', `${doc.label} restored to the original ✓`);
+      await loadMedia();
+    } catch (err) {
+      mediaMsg('err', `⚠ ${err.message}`);
     }
   }
 

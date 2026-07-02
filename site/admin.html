@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Backstage: Events manager | Bonita Center for the Arts</title>
+<title>Backstage | Bonita Center for the Arts</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=d55762f5">
+<link rel="stylesheet" href="/assets/css/site.css?v=d443770a">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -31,8 +31,8 @@
   <header class="page-head">
     <div class="inner">
       <p class="eyebrow">Backstage</p>
-      <h1>Events manager</h1>
-      <p class="lede">The shows listed on the home page and the Calendar page. Click an event to edit it, or add a new one — then publish under Publish.</p>
+      <h1>Backstage</h1>
+      <p class="lede">The shows on the home page and Calendar, the messages sent through the website, and the downloadable support files — managed in one place. Edit below, then publish under Publish.</p>
     </div>
   </header>
   <div class="wrap section">
@@ -41,6 +41,7 @@
   <p class="note" id="publish-note-login" hidden>Fill in the form below. To publish, <strong>sign in with the staff password</strong> under Publish, then press <strong>Save to site</strong>. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
   <p class="note" id="publish-note-live" hidden>Fill in the form below, then press <strong>Save to site</strong> under Publish — changes go live immediately. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
 
+  <div class="admin-cols" id="work-cols">
   <section id="editor" aria-labelledby="editor-h">
     <div class="editor-head">
       <h2 id="editor-h">Events</h2>
@@ -56,6 +57,18 @@
       </p>
     </form>
   </section>
+
+  <section id="messages" aria-labelledby="messages-h" hidden>
+    <div class="editor-head">
+      <h2 id="messages-h">Messages</h2>
+      <span id="messages-count" class="msg-count" hidden></span>
+    </div>
+    <p class="preview-note">Rental inquiries and lost &amp; found reports submitted through the website. Mark one handled once you’ve followed up, or delete spam. Email and phone values are clickable so you can reply directly.</p>
+    <p id="messages-status" class="save-status" role="status" hidden></p>
+    <p id="messages-empty" class="preview-note" hidden>No messages yet.</p>
+    <ul id="message-list" class="message-list"></ul>
+  </section>
+  </div>
 
   <section id="output" aria-labelledby="output-h">
     <h2 id="output-h">Publish</h2>
@@ -92,12 +105,11 @@
     </details>
   </section>
 
-  <section id="messages" aria-labelledby="messages-h" hidden>
-    <h2 id="messages-h">Messages <span id="messages-count" class="msg-count" hidden></span></h2>
-    <p class="preview-note">Rental inquiries and lost &amp; found reports submitted through the website. Mark one handled once you’ve followed up, or delete spam. Email and phone values are clickable so you can reply directly.</p>
-    <p id="messages-status" class="save-status" role="status" hidden></p>
-    <p id="messages-empty" class="preview-note" hidden>No messages yet.</p>
-    <ul id="message-list" class="message-list"></ul>
+  <section id="media" aria-labelledby="media-h" hidden>
+    <h2 id="media-h">Media</h2>
+    <p class="preview-note">Downloadable support files linked from the public pages — the technical specs, building layout, and seating chart. Upload a new PDF to swap it in right away; the file it replaces is kept as a backup. <strong>Restore original</strong> reverts to the version that ships with the site.</p>
+    <p id="media-status" class="save-status" role="status" hidden></p>
+    <ul id="media-list" class="media-list"></ul>
   </section>
 
   <section id="accounts" aria-labelledby="accounts-h" hidden>
@@ -148,6 +160,6 @@
   </div>
 </footer>
 <script src="/assets/js/events.js?v=093aa7d2" defer></script>
-<script src="/assets/js/admin.js?v=0ab1f0fb" defer></script>
+<script src="/assets/js/admin.js?v=8758db13" defer></script>
 </body>
 </html>
