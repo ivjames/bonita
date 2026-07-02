@@ -27,6 +27,13 @@
 //                              outside the git clone it serves, so staff
 //                              saves never collide with `sudo bonita`
 //                              (git pull) deploys.
+//   GET    /api/media       -> list the swappable support PDFs (stage
+//                              dimensions, building layout, seating chart)
+//                              with whether a staff override is installed
+//   PUT    /api/media/:slug  -> replace a support PDF: writes the upload to
+//                              $BCA_DATA/media/ (timestamped backups kept),
+//                              which nginx serves in place of the repo seed
+//   DELETE /api/media/:slug  -> drop the override, restoring the shipped PDF
 //   POST   /api/password    -> {current, new}: change your own password
 //                              (signs out your other sessions)
 //   GET    /api/users       -> list staff accounts
@@ -44,7 +51,7 @@ import http from 'node:http';
 import { execFile } from 'node:child_process';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, readdir, rename, unlink, writeFile, appendFile, copyFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, unlink, writeFile, appendFile, copyFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 const DATA = process.env.BCA_DATA || '/var/lib/bca';
@@ -53,6 +60,7 @@ const MAIL_TO = process.env.BCA_MAIL_TO || '';
 const SENDMAIL = '/usr/sbin/sendmail';
 const USERS_FILE = () => path.join(DATA, 'users.json');
 const MAX_BODY = 256 * 1024;
+const MAX_PDF = 20 * 1024 * 1024;   // support PDFs run to a few hundred KB; leave headroom
 const MAX_EVENTS = 200;
 const KEEP_BACKUPS = 30;
 const SESSION_TTL = 12 * 60 * 60 * 1000;
@@ -75,6 +83,20 @@ const readBody = (req) => new Promise((resolve, reject) => {
     chunks.push(c);
   });
   req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+  req.on('error', reject);
+});
+
+// Like readBody but keeps the raw bytes (for binary uploads) and takes its own
+// size cap — PDFs are far bigger than the JSON MAX_BODY allows.
+const readRawBody = (req, max) => new Promise((resolve, reject) => {
+  let size = 0;
+  const chunks = [];
+  req.on('data', (c) => {
+    size += c.length;
+    if (size > max) { reject(new Error('body too large')); req.destroy(); return; }
+    chunks.push(c);
+  });
+  req.on('end', () => resolve(Buffer.concat(chunks)));
   req.on('error', reject);
 });
 
@@ -209,6 +231,44 @@ async function saveEvents(raw) {
     }
   }
   await atomicWrite(file, raw);
+}
+
+// ---- media (swappable support PDFs) ----
+//
+// A fixed registry of the PDFs the public pages link to. Staff can upload a
+// replacement for any of them; the upload lands in $BCA_DATA/media/ (outside
+// the git clone), which nginx serves in place of the repo seed — same
+// survive-a-git-deploy trick as events.json. The registry is closed on
+// purpose: only these known filenames can be written, so an upload can never
+// create an arbitrary path.
+const MEDIA_DIR = () => path.join(DATA, 'media');
+const MEDIA_DOCS = [
+  { slug: 'stage-dimensions', file: 'bca-stage-dimensions.pdf', label: 'Stage dimensions drawing', page: '/rentals/tech-specs' },
+  { slug: 'building-layout',  file: 'bca-building-layout.pdf',  label: 'Building layout',           page: '/rentals/building' },
+  { slug: 'seating-chart',    file: 'bca-seating-chart.pdf',    label: 'Seating chart',             page: '/about/visit' },
+];
+const mediaDoc = (slug) => MEDIA_DOCS.find((d) => d.slug === slug);
+
+// The current state of every registered doc: whether a staff override is
+// installed and, if so, its size and upload time.
+async function listMedia() {
+  const dir = MEDIA_DIR();
+  return Promise.all(MEDIA_DOCS.map(async (d) => {
+    let override = null;
+    try {
+      const st = await stat(path.join(dir, d.file));
+      override = { size: st.size, updated: st.mtime.toISOString() };
+    } catch { /* no override uploaded — the repo seed is live */ }
+    return { slug: d.slug, label: d.label, file: d.file, page: d.page, url: `/assets/pdf/${d.file}`, override };
+  }));
+}
+
+// Prune a doc's backups down to KEEP_BACKUPS, oldest first.
+async function pruneMediaBackups(backups, slug) {
+  const old = (await readdir(backups)).filter((f) => f.startsWith(`${slug}-`)).sort();
+  for (const f of old.slice(0, Math.max(0, old.length - KEEP_BACKUPS))) {
+    await unlink(path.join(backups, f));
+  }
 }
 
 // ---- forms ----
@@ -365,6 +425,54 @@ const server = http.createServer(async (req, res) => {
       await saveEvents(`${JSON.stringify(data, null, 2)}\n`);
       console.log(`events.json saved (${data.events.length} events) by ${session.user} from ${ip}`);
       return json(res, 200, { ok: true, events: data.events.length });
+    }
+
+    if (route === 'GET /api/media') {
+      return json(res, 200, { docs: await listMedia() });
+    }
+
+    const mediaPut = /^(?:PUT|POST) \/api\/media\/([a-z0-9-]{2,40})$/.exec(route);
+    if (mediaPut) {
+      const doc = mediaDoc(mediaPut[1]);
+      if (!doc) return json(res, 404, { error: 'no such document' });
+      const ctype = (req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
+      if (ctype && ctype !== 'application/pdf') return json(res, 415, { error: 'upload must be a PDF' });
+      let buf;
+      try { buf = await readRawBody(req, MAX_PDF); }
+      catch { return json(res, 413, { error: `PDF too large (max ${MAX_PDF / (1024 * 1024)} MB)` }); }
+      if (buf.length < 5 || buf.subarray(0, 5).toString('latin1') !== '%PDF-') {
+        return json(res, 422, { error: "that doesn't look like a PDF file" });
+      }
+      const dir = MEDIA_DIR();
+      const backups = path.join(dir, 'backups');
+      await mkdir(backups, { recursive: true });
+      const dest = path.join(dir, doc.file);
+      if (existsSync(dest)) {   // keep the replaced copy before overwriting
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+        await copyFile(dest, path.join(backups, `${doc.slug}-${stamp}.pdf`));
+        await pruneMediaBackups(backups, doc.slug);
+      }
+      const tmp = `${dest}.tmp`;
+      await writeFile(tmp, buf);   // atomic replace: readers never see a partial PDF
+      await rename(tmp, dest);
+      console.log(`media "${doc.slug}" replaced (${buf.length} bytes) by ${session.user} from ${ip}`);
+      return json(res, 200, { ok: true, size: buf.length });
+    }
+
+    const mediaDel = /^DELETE \/api\/media\/([a-z0-9-]{2,40})$/.exec(route);
+    if (mediaDel) {
+      const doc = mediaDoc(mediaDel[1]);
+      if (!doc) return json(res, 404, { error: 'no such document' });
+      const dest = path.join(MEDIA_DIR(), doc.file);
+      if (!existsSync(dest)) return json(res, 200, { ok: true, existed: false });
+      const backups = path.join(MEDIA_DIR(), 'backups');
+      await mkdir(backups, { recursive: true });
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+      await copyFile(dest, path.join(backups, `${doc.slug}-${stamp}.pdf`));   // keep the override in case it's wanted back
+      await pruneMediaBackups(backups, doc.slug);
+      await unlink(dest);
+      console.log(`media "${doc.slug}" reverted to the shipped original by ${session.user} from ${ip}`);
+      return json(res, 200, { ok: true, existed: true });
     }
 
     if (route === 'POST /api/password') {

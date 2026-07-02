@@ -14,6 +14,27 @@ location = /assets/data/events.json {
     add_header X-Content-Type-Options "nosniff" always;
 }
 
+# Swappable support PDFs. Staff can replace these from /admin (Media); the
+# upload lands in /var/lib/bca/media/ (outside the git clone), the same
+# survive-a-git-deploy trick as events.json above. Serve the override if one
+# has been uploaded, otherwise fall through to the repo seed. This regex
+# location wins over the /assets/ prefix block in common.conf; the filename
+# set is closed, so nothing but the known PDFs can be requested here.
+location ~ ^/assets/pdf/(?<pdfname>bca-(?:stage-dimensions|building-layout|seating-chart)\.pdf)$ {
+    root /var/lib/bca/media;
+    try_files /$pdfname @seed_pdf;
+    add_header Cache-Control "no-cache" always;
+    add_header X-Robots-Tag "noindex, nofollow" always;
+    add_header X-Content-Type-Options "nosniff" always;
+}
+# Fallback: the seed PDF shipped in the repo. No root here, so it inherits the
+# server block's root (the checkout) and serves the original request URI.
+location @seed_pdf {
+    add_header Cache-Control "public, max-age=86400" always;
+    add_header X-Robots-Tag "noindex, nofollow" always;
+    add_header X-Content-Type-Options "nosniff" always;
+}
+
 # The backend: login/logout + events save (session-gated in the app) and
 # the public form intake + health probe.
 location /api/ {
