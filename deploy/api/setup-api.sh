@@ -81,17 +81,25 @@ echo "==> Service status"
 sleep 1
 curl -sf http://127.0.0.1:8787/api/health && echo
 
+echo "==> Linking nginx API locations (snippets/bonita.d/api.conf)"
+if grep -q 'snippets/bonita\.d' "/etc/nginx/sites-available/$DOMAIN.conf" 2>/dev/null; then
+  install -d /etc/nginx/snippets/bonita.d
+  ln -sfn "$REPO_DIR/deploy/nginx/bca-api.locations" /etc/nginx/snippets/bonita.d/api.conf
+  nginx -t
+  systemctl reload nginx
+else
+  cat >&2 <<EOF
+!! The installed nginx conf predates the snippets/bonita.d include layout.
+   Migrate first (idempotent, re-runs certbot):
+     sudo bash $REPO_DIR/deploy/setup-droplet.sh
+   then re-run this script.
+EOF
+  exit 1
+fi
+
 cat <<EOF
 
-Done, except one manual step: add the location blocks from
-  $REPO_DIR/deploy/nginx/bca-api.locations
-inside the server { } block(s) of
-  /etc/nginx/sites-available/$DOMAIN.conf
-(both the 443 and, if you want, the 80 block once certbot has split them),
-then:
-  sudo nginx -t && sudo systemctl reload nginx
-
-After that: staff open https://$DOMAIN/admin and sign in on the page
-itself. Publishing events, changing passwords, and adding or removing
-staff accounts are all done there — no droplet access needed again.
+Done. Staff open https://$DOMAIN/admin and sign in on the page itself.
+Publishing events, changing passwords, and adding or removing staff
+accounts are all done there — no droplet access needed again.
 EOF

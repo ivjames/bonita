@@ -37,9 +37,21 @@ if command -v ufw >/dev/null; then
   ufw --force enable >/dev/null
 fi
 
+echo "==> Linking nginx routing snippet into the checkout"
+# All routing lives in snippets/bonita.d/, SYMLINKED into this checkout —
+# same trick as serving site/ directly: `sudo bonita` (git pull + nginx
+# reload) updates the conf with no copying and no re-setup. The glob
+# include also picks up api.conf if deploy/api/setup-api.sh later
+# provisions the backend. Only the certbot-managed server block below
+# stays outside the repo.
+install -d /etc/nginx/snippets/bonita.d
+ln -sfn "$REPO_DIR/deploy/nginx/bonita-common.conf" /etc/nginx/snippets/bonita.d/common.conf
+
 echo "==> Installing nginx server block (root -> $REPO_DIR/site, served directly)"
 # Template the conf so `root` points at this checkout's site/ wherever the
 # clone lives; no copying, `sudo bonita` (git pull) is the whole deploy.
+# NOTE: this overwrites certbot's in-place TLS edits — that's fine here
+# because certbot --nginx re-applies them at the end of this script.
 sed "s#^\( *root \).*#\1$REPO_DIR/site;#" "$REPO_DIR/deploy/nginx/$DOMAIN.conf" \
   > "/etc/nginx/sites-available/$DOMAIN.conf"
 chmod 644 "/etc/nginx/sites-available/$DOMAIN.conf"
