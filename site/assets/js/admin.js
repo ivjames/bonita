@@ -1,10 +1,15 @@
-// Backstage events manager (/admin). Loads the current
-// /assets/data/events.json, lets staff edit the list with a live preview,
-// and generates the file. Publishing adapts to the environment: if the
-// bca-api backend is running (deploy/api/ — GET /api/health answers), a
-// "Save to site" button PUTs to /api/events, which nginx protects with
-// basic auth; otherwise the page falls back to download/copy for manual
-// installation.
+// Backstage manager (/admin). Sign-in gated end to end: the page shows
+// nothing editable until staff authenticate against the bca-api backend
+// (deploy/api/ — GET /api/health reports whether it's up and whether this
+// request is signed in). Modes, decided by that probe:
+//   backend unreachable / not configured -> a locked "unavailable" notice
+//   backend up, signed out               -> the staff sign-in form, nothing else
+//   backend up, signed in                -> the full manager (events, messages,
+//                                           media, staff accounts). "Save to site"
+//                                           PUTs /api/events; the server enforces
+//                                           the session cookie on every write.
+// There is deliberately no open, no-login fallback: if the backend is down
+// the manager locks rather than exposing an editor.
 (() => {
   const rowsEl = document.getElementById('rows');
   const rowsEmpty = document.getElementById('rows-empty');
@@ -183,10 +188,10 @@
   });
   rowsEl.addEventListener('input', refresh);
 
-  // Publishing modes, decided by /api/health:
-  //   no backend            -> download/copy only (static mode)
-  //   backend, signed out   -> staff login form
-  //   backend, signed in    -> "Save to site" + staff accounts section
+  // Modes, decided by /api/health:
+  //   'down'  backend unreachable / not configured -> locked notice only
+  //   'login' backend up, signed out               -> sign-in form only
+  //   'live'  backend up, signed in                -> the full manager
   const saveBtn = document.getElementById('save');
   const saveStatus = document.getElementById('save-status');
   const loginForm = document.getElementById('login');
@@ -194,29 +199,30 @@
   const logoutBtn = document.getElementById('logout');
   const whoami = document.getElementById('whoami');
 
-  function setMode(mode, user) {   // 'static' | 'login' | 'live'
-    document.getElementById('publish-note').hidden = mode !== 'static';
-    document.getElementById('publish-note-login').hidden = mode !== 'login';
-    document.getElementById('publish-note-live').hidden = mode !== 'live';
-    loginForm.hidden = mode !== 'login';
-    saveBtn.hidden = mode !== 'live';
-    logoutBtn.hidden = mode !== 'live';
-    whoami.hidden = mode !== 'live';
+  function setMode(mode, user) {   // 'down' | 'login' | 'live'
+    const live = mode === 'live', login = mode === 'login', down = mode === 'down';
+    // Everything editable is live-only. Signed out shows just the sign-in
+    // form; unreachable shows just the notice. There is no state in which the
+    // editor, the generated-file dump, or the tools render without a session.
+    document.getElementById('publish-note-down').hidden = !down;
+    document.getElementById('publish-note-login').hidden = !login;
+    document.getElementById('publish-note-live').hidden = !live;
+    document.getElementById('output').hidden = down;   // the whole Publish block (incl. sign-in)
+    loginForm.hidden = !login;
+    saveBtn.hidden = !live;
+    logoutBtn.hidden = !live;
+    whoami.hidden = !live;
     if (user) whoami.textContent = `Signed in as ${user}`;
-    document.getElementById('download').hidden = mode !== 'static';
-    document.getElementById('accounts').hidden = mode !== 'live';
-    document.getElementById('messages').hidden = mode !== 'live';
-    document.getElementById('media').hidden = mode !== 'live';
-    // The events editor and the generated-file block stay available in static
-    // mode (the no-backend, download-a-file tool), but once a backend exists
-    // they're hidden until sign-in — no editing surface, and no dump of the
-    // events file, for anyone who merely has the URL.
-    document.getElementById('editor').hidden = mode === 'login';
-    document.getElementById('manual').hidden = mode === 'login';
+    document.getElementById('download').hidden = !live;   // signed-in backup export
+    document.getElementById('accounts').hidden = !live;
+    document.getElementById('messages').hidden = !live;
+    document.getElementById('media').hidden = !live;
+    document.getElementById('editor').hidden = !live;
+    document.getElementById('manual').hidden = !live;
     // Events sits alone until Messages joins it (signed in) — then they split
     // the row two-up on wide screens.
-    document.getElementById('work-cols').classList.toggle('split', mode === 'live');
-    if (mode === 'live') { loadUserList(); loadMessages(); loadMedia(); }
+    document.getElementById('work-cols').classList.toggle('split', live);
+    if (live) { loadUserList(); loadMessages(); loadMedia(); }
   }
 
   saveBtn.addEventListener('click', async () => {
@@ -597,9 +603,9 @@
     try {
       const res = await fetch('/api/health');
       const h = await res.json();
-      if (!res.ok || !h.ok || !h.configured) { setMode('static'); return; }
+      if (!res.ok || !h.ok || !h.configured) { setMode('down'); return; }
       setMode(h.auth ? 'live' : 'login', h.user);
-    } catch { setMode('static'); /* no backend: download/copy tool */ }
+    } catch { setMode('down'); /* backend unreachable: lock, don't fall open */ }
   })();
 
   (async () => {
