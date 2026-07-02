@@ -102,3 +102,57 @@ const revealTarget = () => {
 };
 window.addEventListener('hashchange', revealTarget);
 revealTarget();
+
+// Gallery lightbox: click a photo to view it enlarged, with keyboard
+// navigation (← → to move, Esc to close). Progressive enhancement — with no
+// JS the masonry grid still shows every photo; this only adds the zoom.
+const gallery = document.querySelector('.gallery');
+if (gallery) {
+  const imgs = [...gallery.querySelectorAll('img')];
+  const dlg = document.createElement('dialog');
+  dlg.className = 'lightbox';
+  dlg.setAttribute('aria-label', 'Photo viewer');
+  dlg.innerHTML =
+    '<button type="button" class="lb-close" aria-label="Close viewer">×</button>' +
+    '<button type="button" class="lb-nav lb-prev" aria-label="Previous photo">‹</button>' +
+    '<figure class="lb-stage"><img class="lb-img" alt=""><figcaption class="lb-cap"></figcaption></figure>' +
+    '<button type="button" class="lb-nav lb-next" aria-label="Next photo">›</button>';
+  document.body.appendChild(dlg);
+  const lbImg = dlg.querySelector('.lb-img');
+  const lbCap = dlg.querySelector('.lb-cap');
+  let idx = 0;
+  let opener = null;
+
+  const show = (i) => {
+    idx = (i + imgs.length) % imgs.length;
+    lbImg.src = imgs[idx].currentSrc || imgs[idx].src;
+    lbImg.alt = imgs[idx].alt;
+    // Visible caption is the photo's own title (data-caption); some have none.
+    const cap = imgs[idx].dataset.caption || '';
+    lbCap.textContent = cap;
+    lbCap.hidden = !cap;
+  };
+
+  // Turn each thumbnail into a button that opens the viewer.
+  imgs.forEach((img, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'gz';
+    btn.setAttribute('aria-label', `View larger: ${img.alt}`);
+    img.parentNode.insertBefore(btn, img);
+    btn.appendChild(img);
+    btn.addEventListener('click', () => { opener = btn; show(i); dlg.showModal(); });
+  });
+
+  dlg.querySelector('.lb-close').addEventListener('click', () => dlg.close());
+  dlg.querySelector('.lb-prev').addEventListener('click', () => show(idx - 1));
+  dlg.querySelector('.lb-next').addEventListener('click', () => show(idx + 1));
+  dlg.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); show(idx - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); show(idx + 1); }
+  });
+  // A click on the backdrop (outside the image and controls) closes.
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  // Return focus to the thumbnail that opened the viewer.
+  dlg.addEventListener('close', () => { if (opener) opener.focus(); });
+}
