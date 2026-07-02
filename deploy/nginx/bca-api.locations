@@ -1,11 +1,9 @@
-# Location blocks for the bca-api backend — paste (or `include`) these
-# inside the `server { }` block(s) of bonita.lab980.com.conf AFTER running
-# deploy/api/setup-api.sh. Kept as a separate file because certbot rewrites
-# the main conf in place.
+# Location blocks for the bca-api backend. deploy/api/setup-api.sh symlinks
+# this as /etc/nginx/snippets/bonita.d/api.conf (picked up by the server
+# block's glob include), so changes here go live with `sudo bonita`.
 #
 # No auth config here: staff sign in on the /admin page itself and the API
 # enforces the session (app-level auth, no HTTP basic auth).
-# After editing: sudo nginx -t && sudo systemctl reload nginx
 
 # Staff saves of the events list go to /var/lib/bca/events.json (outside the
 # git clone nginx serves), so serve that copy instead of the repo seed.

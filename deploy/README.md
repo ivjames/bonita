@@ -46,22 +46,38 @@ Merge to `main`, then on the droplet, from any directory:
 sudo bonita
 ```
 
-(= fetch + ff-only pull of main. That's the whole deploy: nginx serves the
-clone's `site/` directly, so the pull is the publish. The command is a
-symlink to `deploy/update.sh`, re-asserted on every run. If it doesn't
-exist yet, bootstrap once with `sudo bash deploy/update.sh` from the clone.)
+(= fetch + ff-only pull of main, then `nginx -t` + reload. nginx serves the
+clone's `site/` directly and the routing conf — headers, clean URLs,
+redirects, API locations — is *symlinked* from
+`/etc/nginx/snippets/bonita.d/` into [`nginx/`](nginx/), so the pull
+updates content and conf alike and the zero-downtime reload makes it all
+live. The command is a symlink to `deploy/update.sh`, re-asserted on every
+run. If it doesn't exist yet, bootstrap once with
+`sudo bash deploy/update.sh` from the clone.)
 
-No nginx reload is needed for content changes — only when the `.conf` changes
-(`sudo nginx -t && sudo systemctl reload nginx`).
+nginx conf changes therefore deploy like content changes: edit
+[`nginx/bonita-common.conf`](nginx/bonita-common.conf) (or
+`nginx/bca-api.locations`), merge, `sudo bonita`. The one file that lives
+outside the repo is the certbot-managed server-block shell
+(`sites-available/bonita.lab980.com.conf` — just listen/server_name/root
+plus the include), which shouldn't ever need to change.
+
+**One-time migration for a droplet provisioned before the symlink layout:**
+run `sudo bash deploy/setup-droplet.sh` once (idempotent; re-runs certbot so
+TLS survives the re-templated shell). If the API location blocks were
+hand-pasted into the old conf, run `sudo bash deploy/api/setup-api.sh` once
+too. After that it's `sudo bonita` forever.
 
 ## Decisions baked into the config
 
 - **Staging is noindex.** `robots.txt` disallows everything and nginx sends
   `X-Robots-Tag: noindex, nofollow` — the rebuild must not compete with the
   live Wix site in search. **At cutover** (when this becomes the real site):
-  remove that header from the nginx conf, replace `robots.txt` with an
-  allow-all, and update the `<link rel="canonical">` tags in `site/*.html`
-  to the production domain.
+  remove that header from
+  [`nginx/bonita-common.conf`](nginx/bonita-common.conf), replace
+  `robots.txt` with an allow-all, and update the `<link rel="canonical">`
+  tags in the site's HTML to the production domain — then merge and
+  `sudo bonita`.
 - **URL paths mirror Wix** (`/about`, `/booking-calendar`, `/get-involved`,
   `/rentals`) via `try_files $uri $uri.html`, so existing links keep working
   at cutover with no redirect map. The three PDFs the Wix site served from
@@ -123,9 +139,9 @@ To provision, after `setup-droplet.sh`:
 sudo bash deploy/api/setup-api.sh
 ```
 
-(installs node + the systemd unit `bca-api`, seeds `/var/lib/bca`, and
-creates the **first** staff account), then paste the location blocks from
-[`nginx/bca-api.locations`](nginx/bca-api.locations) into the server block
-and `sudo nginx -t && sudo systemctl reload nginx`. That's the last time
-the droplet is involved in account management. If everyone is ever locked
-out: delete `/var/lib/bca/users.json`, re-run the script.
+(installs node + the systemd unit `bca-api`, seeds `/var/lib/bca`, creates
+the **first** staff account, and installs the nginx location blocks from
+[`nginx/bca-api.locations`](nginx/bca-api.locations) as
+`snippets/bonita.d/api.conf` + reloads nginx). That's the last time the
+droplet is involved in account management. If everyone is ever locked out:
+delete `/var/lib/bca/users.json`, re-run the script.
