@@ -2,8 +2,12 @@
 # One-time provisioning for bonita.lab980.com on a standard Ubuntu DO droplet.
 # Run as root ON THE DROPLET, from a checkout of this repo:
 #
-#   git clone https://github.com/ivjames/bonita.git && cd bonita
+#   git clone https://github.com/ivjames/bonita.git /var/www/bonita
+#   cd /var/www/bonita
 #   sudo bash deploy/setup-droplet.sh
+#
+# nginx serves this checkout's site/ directory directly — there is no
+# separate webroot and no copying. Updates are `sudo bonita` (= git pull).
 #
 # Prerequisite: a DNS A record for bonita.lab980.com pointing at this
 # droplet's public IP (certbot's HTTP-01 challenge needs it resolving here).
@@ -13,9 +17,6 @@
 set -euo pipefail
 
 DOMAIN=bonita.lab980.com
-# Must match `root` in deploy/nginx/$DOMAIN.conf. The droplet serves from
-# /var/www/bonita; override with BCA_WEBROOT=... if yours differs.
-WEBROOT="${BCA_WEBROOT:-/var/www/bonita}"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CERTBOT_EMAIL="${CERTBOT_EMAIL:-ivjames@gmail.com}"
 
@@ -27,7 +28,7 @@ fi
 echo "==> Installing nginx + certbot"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq nginx certbot python3-certbot-nginx rsync
+apt-get install -y -qq nginx certbot python3-certbot-nginx
 
 echo "==> Firewall (ufw): allow SSH + HTTP/HTTPS"
 if command -v ufw >/dev/null; then
@@ -36,22 +37,12 @@ if command -v ufw >/dev/null; then
   ufw --force enable >/dev/null
 fi
 
-# HARD GUARD: never deploy over the checkout itself — rsync --delete into a
-# webroot that contains the clone wipes the repo. Clone outside /var/www.
-case "$REPO_DIR/" in
-  "$WEBROOT/"|"$WEBROOT"/*)
-    echo "Refusing: this checkout ($REPO_DIR) is inside the webroot ($WEBROOT)." >&2
-    echo "Clone the repo outside the webroot (e.g. /root/bonita) and re-run." >&2
-    exit 1;;
-esac
-
-echo "==> Deploying site content to $WEBROOT"
-mkdir -p "$WEBROOT"
-rsync -a --delete "$REPO_DIR/site/" "$WEBROOT/"
-chown -R www-data:www-data "$WEBROOT"
-
-echo "==> Installing nginx server block"
-install -m 644 "$REPO_DIR/deploy/nginx/$DOMAIN.conf" "/etc/nginx/sites-available/$DOMAIN.conf"
+echo "==> Installing nginx server block (root -> $REPO_DIR/site, served directly)"
+# Template the conf so `root` points at this checkout's site/ wherever the
+# clone lives; no copying, `sudo bonita` (git pull) is the whole deploy.
+sed "s#^\( *root \).*#\1$REPO_DIR/site;#" "$REPO_DIR/deploy/nginx/$DOMAIN.conf" \
+  > "/etc/nginx/sites-available/$DOMAIN.conf"
+chmod 644 "/etc/nginx/sites-available/$DOMAIN.conf"
 ln -sf "/etc/nginx/sites-available/$DOMAIN.conf" "/etc/nginx/sites-enabled/$DOMAIN.conf"
 # Drop the stock catch-all so $DOMAIN isn't shadowed on plain-IP requests.
 rm -f /etc/nginx/sites-enabled/default
