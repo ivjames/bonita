@@ -410,6 +410,75 @@ main { display: block; }
 .card h3 a:hover { text-decoration: underline; text-decoration-color: var(--gold); }
 .card p { margin: .4rem 0 .3rem; color: var(--ink-soft); }
 
+/* ---- event list (rendered by events.js from /assets/data/events.json) ---- */
+.event-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.4rem 0;
+  display: grid;
+  gap: .9rem;
+  max-width: 46rem;
+}
+.event-list .event a {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: .85rem 1.15rem;
+  text-decoration: none;
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.event-list .event a:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+  border-color: var(--gold);
+  color: var(--ink);
+}
+.event-date {
+  flex: none;
+  width: 3.4rem;
+  text-align: center;
+  padding-right: 1rem;
+  border-right: 1px dashed var(--line);  /* ticket-stub perforation */
+}
+.event-date .d {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.7rem;
+  font-weight: 550;
+  line-height: 1.1;
+  color: var(--maroon);
+}
+.event-date .m {
+  display: block;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+.event-info { display: grid; gap: .1rem; min-width: 0; }
+.event-title { font-family: var(--serif); font-size: 1.15rem; font-weight: 600; }
+.event-meta { font-size: .92rem; color: var(--ink-soft); }
+.event-cta {
+  margin-left: auto;
+  flex: none;
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--maroon);
+}
+@media (max-width: 480px) {
+  .event-cta { display: none; }
+}
+
+/* container for the Ludus embed widget once the account add-on is enabled;
+   Ludus requires an unrestricted-height block that can grow freely */
+.ludus-embed { margin: 1.4rem 0; min-height: 0; }
+
 figure { margin: 1.2rem 0; }
 figcaption { font-size: .9rem; color: var(--ink-soft); margin-top: .5rem; }
 figure img {

@@ -42,7 +42,29 @@
     </div>
   </header>
   <div class="wrap section">
+  <ul class="event-list" data-events data-max="12" hidden></ul>
   <p><a class="btn btn-primary" href="https://bonitacenterforthearts.ludus.com/index.php">View the events calendar &amp; buy tickets</a></p>
+
+  <!-- Ludus embed widget: plumbed and inert, pending Ludus account access.
+       The widget lets patrons browse events and buy seats without leaving
+       this page. To activate (needs whoever administers the BCA's Ludus
+       account, via More → Embed Widget → Get Started):
+         1. Accept the embed add-on (adds $0.50/ticket to the base Ludus fee
+            — patrons pay it; confirm the BCA is OK with that).
+         2. Give Ludus the domains to whitelist: bonita.lab980.com now, and
+            the production domain at cutover.
+         3. Paste the embed code Ludus provides inside the div below and
+            delete this comment. It is a script snippet configured with
+            subdomain: 'bonitacenterforthearts' and sections: 'events'.
+         4. Keep everything above this comment as the no-JS/static fallback,
+            and re-run the axe audit (tools/README.md) after enabling.
+       Ludus best practice: the widget wants an unrestricted-height container
+       (.ludus-embed provides one) and no fixed header floating over it — if
+       the sticky header crowds it, scope `.site-header { position: sticky }`
+       in site.css to exclude this page.
+  <div class="ludus-embed"></div>
+  -->
+
 
   <p class="note">The public calendar shows ticketed events only. The venue is in district use November through June, and not every booked rental event is listed — if you're planning around venue availability, please <a href="/rentals#inquiry">send a rental inquiry</a>.</p>
 
@@ -81,5 +103,6 @@
     <p>The Bonita Center for the Arts is owned and operated by the Bonita Unified School District.</p>
   </div>
 </footer>
+<script src="/assets/js/events.js" defer></script>
 </body>
 </html>
