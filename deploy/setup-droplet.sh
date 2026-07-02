@@ -57,7 +57,8 @@ echo "==> Installing nginx server block (root -> $REPO_DIR/site, served directly
 # Template the conf so `root` points at this checkout's site/ wherever the
 # clone lives; no copying, `sudo bonita` (git pull) is the whole deploy.
 # NOTE: this overwrites certbot's in-place TLS edits — that's fine here
-# because certbot --nginx re-applies them at the end of this script.
+# because the certbot step below re-applies them (offline `certbot install`
+# when a cert already exists on disk, obtain only when there is none).
 sed "s#^\( *root \).*#\1$REPO_DIR/site;#" "$REPO_DIR/deploy/nginx/$DOMAIN.conf" \
   > "/etc/nginx/sites-available/$DOMAIN.conf"
 chmod 644 "/etc/nginx/sites-available/$DOMAIN.conf"
@@ -70,18 +71,27 @@ systemctl reload nginx
 echo "==> Installing 'bonita' update command"
 ln -sf "$REPO_DIR/deploy/update.sh" /usr/local/bin/bonita
 
-echo "==> Checking DNS for $DOMAIN"
-if ! getent hosts "$DOMAIN" >/dev/null; then
-  echo "!! $DOMAIN does not resolve yet. Create the A record, wait for DNS,"
-  echo "   then re-run this script (or just the certbot command below)."
-  exit 1
-fi
+if [[ -d /etc/letsencrypt/live/$DOMAIN ]]; then
+  echo "==> Re-installing existing Let's Encrypt certificate"
+  # A cert is already on disk, and the re-templated server block above just
+  # lost its TLS lines — wire the existing cert back in. `certbot install`
+  # is purely local (no ACME/network calls), so this works even when
+  # letsencrypt.org is unreachable, and never wastes an issuance.
+  certbot install --nginx --cert-name "$DOMAIN" --redirect --non-interactive
+else
+  echo "==> Checking DNS for $DOMAIN"
+  if ! getent hosts "$DOMAIN" >/dev/null; then
+    echo "!! $DOMAIN does not resolve yet. Create the A record, wait for DNS,"
+    echo "   then re-run this script (or just the certbot command below)."
+    exit 1
+  fi
 
-echo "==> Obtaining/renewing Let's Encrypt certificate"
-# --nginx rewrites the server block: adds the 443 block + HTTP->HTTPS redirect.
-# Renewal is automatic via the certbot systemd timer.
-certbot --nginx -d "$DOMAIN" \
-  --non-interactive --agree-tos -m "$CERTBOT_EMAIL" --redirect
+  echo "==> Obtaining Let's Encrypt certificate"
+  # --nginx rewrites the server block: adds the 443 block + HTTP->HTTPS
+  # redirect. Renewal is automatic via the certbot systemd timer.
+  certbot --nginx -d "$DOMAIN" \
+    --non-interactive --agree-tos -m "$CERTBOT_EMAIL" --redirect
+fi
 
 echo "==> Provisioning the bca-api backend"
 # Second half of the deploy. Runs last, after certbot has (re)written the

@@ -27,9 +27,11 @@ running nginx, with TLS from Let's Encrypt (certbot).
    The script is idempotent and does, in order: installs nginx + certbot,
    opens the firewall (SSH + HTTP/HTTPS), installs the server block from
    [`nginx/bonita.lab980.com.conf`](nginx/bonita.lab980.com.conf) with its
-   `root` rewritten to this checkout's `site/`, then runs `certbot --nginx`
-   to obtain the certificate and turn on the HTTPS redirect. Certbot
-   registers with `ivjames@gmail.com` by default — override with
+   `root` rewritten to this checkout's `site/`, then handles TLS: if a
+   certificate already exists on disk it re-wires it with `certbot install`
+   (purely local — no Let's Encrypt network calls), and only obtains a new
+   one via `certbot --nginx` when there is none. Certbot registers with
+   `ivjames@gmail.com` by default — override with
    `CERTBOT_EMAIL=... sudo -E bash deploy/setup-droplet.sh`.
 
    If DNS hasn't propagated yet the script stops before certbot; re-run it
@@ -63,10 +65,11 @@ outside the repo is the certbot-managed server-block shell
 plus the include), which shouldn't ever need to change.
 
 **One-time migration for a droplet provisioned before the symlink layout:**
-run `sudo bash deploy/setup-droplet.sh` once (idempotent; re-runs certbot so
-TLS survives the re-templated shell). If the API location blocks were
-hand-pasted into the old conf, run `sudo bash deploy/api/setup-api.sh` once
-too. After that it's `sudo bonita` forever.
+run `sudo bash deploy/setup-droplet.sh` once (idempotent; it re-wires the
+existing certificate into the re-templated shell offline, without touching
+Let's Encrypt). If the API location blocks were hand-pasted into the old
+conf, run `sudo bash deploy/api/setup-api.sh` once too. After that it's
+`sudo bonita` forever.
 
 ## Decisions baked into the config
 
