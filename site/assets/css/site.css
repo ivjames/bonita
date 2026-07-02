@@ -766,6 +766,93 @@ form.contact.compact .fields .full { grid-column: 1 / -1; }
   border: 1px solid var(--line);
   box-shadow: var(--shadow-1);
 }
+/* Thumbnails become zoom buttons once the lightbox JS runs (progressive
+   enhancement — plain <img>s otherwise). */
+.gallery .gz {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  border-radius: var(--radius);
+}
+.gallery .gz img { transition: opacity .15s ease; }
+.gallery .gz:hover img { opacity: .9; }
+.gallery .gz:focus-visible {
+  outline: 3px solid var(--maroon);
+  outline-offset: 3px;
+}
+
+/* ---- lightbox (gallery zoom) ---- */
+.lightbox {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  margin: 0;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+}
+.lightbox::backdrop { background: rgba(20, 16, 14, .92); }
+.lb-stage {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .9rem;
+  padding: 3.75rem 4.25rem 3rem;
+  box-sizing: border-box;
+}
+.lb-img {
+  max-width: min(94vw, 1400px);
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+  background: #000;
+}
+.lb-cap {
+  color: #f2ebdf;
+  text-align: center;
+  max-width: 62ch;
+  font-size: .95rem;
+  line-height: 1.45;
+}
+.lb-close, .lb-nav {
+  position: fixed;
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .12);
+  color: #fff;
+  font-size: 1.9rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+.lb-close:hover, .lb-nav:hover { background: rgba(255, 255, 255, .28); }
+.lb-close:focus-visible, .lb-nav:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+.lb-close { top: 1rem; right: 1rem; font-size: 2.2rem; }
+.lb-prev { left: 1rem; top: 50%; transform: translateY(-50%); }
+.lb-next { right: 1rem; top: 50%; transform: translateY(-50%); }
+@media (max-width: 560px) {
+  .lb-stage { padding: 3.5rem 1rem 3rem; }
+  .lb-prev { left: .4rem; }
+  .lb-next { right: .4rem; }
+}
 
 /* ---- spec lists (rentals tech specs) ---- */
 .spec h3 {
