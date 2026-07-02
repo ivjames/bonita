@@ -110,7 +110,8 @@ misuses ~40 H5s (16 of them empty) for body text.
       hashed Wix PDF URLs get 301s in nginx
 - [x] Sitewide contact corrections (Stone → Brown) — corrected in the rebuild
       (still stale on live Wix)
-- [ ] Provision the droplet + DNS A record, run `deploy/setup-droplet.sh`
+- [x] Provision the droplet + DNS A record, run `deploy/setup-droplet.sh` —
+      done; the rebuild is live at bonita.lab980.com (still noindex until cutover)
 - [ ] Form backend (rental inquiry + lost & found currently compose an email
       client-side). A ready-to-provision sketch lives in `deploy/api/` —
       bca-api, a stdlib-only Node service behind nginx: `PUT /api/events`
