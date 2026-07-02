@@ -8,7 +8,7 @@
 # After editing: sudo nginx -t && sudo systemctl reload nginx
 
 # Staff saves of the events list go to /var/lib/bca/events.json (outside the
-# webroot), so serve that copy instead of the rsynced repo seed.
+# git clone nginx serves), so serve that copy instead of the repo seed.
 location = /assets/data/events.json {
     alias /var/lib/bca/events.json;
     add_header Cache-Control "no-cache" always;

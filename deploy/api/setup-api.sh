@@ -45,8 +45,7 @@ sleep 1   # let StateDirectory create /var/lib/bca
 
 echo "==> Seeding /var/lib/bca/events.json (kept if it already exists)"
 if [[ ! -f /var/lib/bca/events.json ]]; then
-  # Seed from the repo checkout this script runs from — always present and
-  # current, unlike the webroot (which may not have been rsynced yet).
+  # Seed from the repo checkout this script runs from.
   install -m 644 "$REPO_DIR/site/assets/data/events.json" /var/lib/bca/events.json
   chown --reference=/var/lib/bca /var/lib/bca/events.json
 fi

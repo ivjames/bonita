@@ -18,8 +18,9 @@
 //   PUT    /api/events      -> validate + atomically write events.json to
 //                              $BCA_DATA (timestamped backups kept). nginx
 //                              aliases /assets/data/events.json to that file,
-//                              outside the webroot, so staff saves survive
-//                              `sudo bonita` deploys (rsync --delete).
+//                              outside the git clone it serves, so staff
+//                              saves never collide with `sudo bonita`
+//                              (git pull) deploys.
 //   POST   /api/password    -> {current, new}: change your own password
 //                              (signs out your other sessions)
 //   GET    /api/users       -> list staff accounts

@@ -14,24 +14,23 @@ running nginx, with TLS from Let's Encrypt (certbot).
 
    (Add an AAAA record too if the droplet has IPv6.)
 
-2. **Provision the droplet** (Ubuntu 22.04/24.04, as root). Clone the repo
-   **outside the webroot** — the deploy rsyncs `site/` into `/var/www/bonita`
-   with `--delete`, so a clone living inside the webroot would get wiped
-   (the scripts now refuse to run in that layout):
+2. **Provision the droplet** (Ubuntu 22.04/24.04, as root). nginx serves
+   the clone's `site/` directory directly — there is no separate webroot,
+   no rsync, and no second copy of the site on disk:
 
    ```bash
-   git clone https://github.com/ivjames/bonita.git /root/bonita
-   cd /root/bonita
+   git clone https://github.com/ivjames/bonita.git /var/www/bonita
+   cd /var/www/bonita
    sudo bash deploy/setup-droplet.sh
    ```
 
    The script is idempotent and does, in order: installs nginx + certbot,
-   opens the firewall (SSH + HTTP/HTTPS), rsyncs `site/` to
-   `/var/www/bonita`, installs the server block from
-   [`nginx/bonita.lab980.com.conf`](nginx/bonita.lab980.com.conf), then runs
-   `certbot --nginx` to obtain the certificate and turn on the HTTPS
-   redirect. Certbot registers with `ivjames@gmail.com` by default —
-   override with `CERTBOT_EMAIL=... sudo -E bash deploy/setup-droplet.sh`.
+   opens the firewall (SSH + HTTP/HTTPS), installs the server block from
+   [`nginx/bonita.lab980.com.conf`](nginx/bonita.lab980.com.conf) with its
+   `root` rewritten to this checkout's `site/`, then runs `certbot --nginx`
+   to obtain the certificate and turn on the HTTPS redirect. Certbot
+   registers with `ivjames@gmail.com` by default — override with
+   `CERTBOT_EMAIL=... sudo -E bash deploy/setup-droplet.sh`.
 
    If DNS hasn't propagated yet the script stops before certbot; re-run it
    once `bonita.lab980.com` resolves.
@@ -47,13 +46,10 @@ Merge to `main`, then on the droplet, from any directory:
 sudo bonita
 ```
 
-(= fetch + ff-only pull of main + rsync into the webroot + chown. The
-command is a symlink to `deploy/update.sh`, installed by `setup-droplet.sh`
-and re-asserted on every run. If it doesn't exist yet on an older droplet,
-bootstrap once with `cd bonita && sudo bash deploy/update.sh`.)
-
-Alternative, if you'd rather push from your machine without touching the
-droplet's clone: `deploy/deploy.sh root@bonita.lab980.com`.
+(= fetch + ff-only pull of main. That's the whole deploy: nginx serves the
+clone's `site/` directly, so the pull is the publish. The command is a
+symlink to `deploy/update.sh`, re-asserted on every run. If it doesn't
+exist yet, bootstrap once with `sudo bash deploy/update.sh` from the clone.)
 
 No nginx reload is needed for content changes — only when the `.conf` changes
 (`sudo nginx -t && sudo systemctl reload nginx`).
@@ -93,9 +89,9 @@ static site its two missing write paths:
   "Save to site" button. Validates the payload (same rules the admin page
   enforces), writes atomically to `/var/lib/bca/events.json`, and keeps the
   last 30 timestamped backups in `/var/lib/bca/backups/`. nginx serves that
-  file for `/assets/data/events.json` via an alias, **outside the webroot**,
-  because `sudo bonita` rsyncs `--delete` into the webroot and would
-  otherwise clobber staff edits on the next deploy.
+  file for `/assets/data/events.json` via an alias, **outside the clone**,
+  so staff edits never collide with git (`sudo bonita` pulls would refuse
+  to overwrite a dirty tracked file).
 - **`POST /api/forms`** — form intake: appends to `/var/lib/bca/forms.jsonl`
   and, if sendmail is available and `BCA_MAIL_TO` is set in the unit, emails
   the submission. Honeypot-aware and rate-limited. The public forms still
