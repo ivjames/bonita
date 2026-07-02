@@ -24,6 +24,7 @@ const NAV = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about', home: 'Our story', sub: [
     { label: 'Plan your visit', href: '/about/visit' },
+    { label: 'Gallery', href: '/about/gallery' },
     { label: 'Contact us', href: '/about/contact' },
     { label: 'House policies', href: '/about/policies' },
   ] },
