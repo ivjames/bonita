@@ -45,7 +45,7 @@
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=d443770a">
+<link rel="stylesheet" href="/assets/css/site.css?v=88d282a9">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -63,6 +63,7 @@
           <a href="/about">About</a>
           <ul class="sub">
             <li><a href="/about/visit">Plan your visit</a></li>
+            <li><a href="/about/gallery">Gallery</a></li>
             <li><a href="/about/contact" aria-current="page">Contact us</a></li>
             <li><a href="/about/policies">House policies</a></li>
           </ul>
@@ -98,6 +99,7 @@
     <ul>
       <li><a href="/about">Our story</a></li>
       <li><a href="/about/visit">Plan your visit</a></li>
+      <li><a href="/about/gallery">Gallery</a></li>
       <li><a href="/about/contact" aria-current="page">Contact us</a></li>
       <li><a href="/about/policies">House policies</a></li>
     </ul>
@@ -130,34 +132,35 @@
   <section id="lost-and-found" aria-labelledby="lost-h">
     <h2 id="lost-h">Lost &amp; found</h2>
     <p>Left something behind at a show? Tell us what you lost and how to reach you, and we'll let you know if it turns up.</p>
-    <form class="contact" data-mailto="KBrown@Bonita.k12.ca.us" data-subject="Lost &amp; Found" data-form="lost-and-found">
-      <p class="required-note">Fields marked with * are required.</p>
-      <div>
-        <label for="lf-name">Name *</label>
-        <input id="lf-name" name="name" data-label="Name" type="text" autocomplete="name" required>
-      </div>
-      <div>
-        <label for="lf-item">Item description *</label>
-        <input id="lf-item" name="item-description" data-label="Item description" type="text" required>
-      </div>
-      <div>
-        <label for="lf-info">Additional information (event, date, where you were seated&hellip;)</label>
-        <input id="lf-info" name="additional-information" data-label="Additional information" type="text">
-      </div>
-      <div>
-        <label for="lf-email">Email *</label>
-        <input id="lf-email" name="email" data-label="Email" type="email" autocomplete="email" required>
-      </div>
-      <div>
-        <label for="lf-phone">Phone</label>
-        <input id="lf-phone" name="phone" data-label="Phone" type="tel" autocomplete="tel">
+    <form class="contact compact" data-mailto="KBrown@Bonita.k12.ca.us" data-subject="Lost &amp; Found" data-form="lost-and-found">
+      <div class="fields">
+        <div>
+          <label for="lf-name">Name *</label>
+          <input id="lf-name" name="name" data-label="Name" type="text" autocomplete="name" required>
+        </div>
+        <div>
+          <label for="lf-email">Email *</label>
+          <input id="lf-email" name="email" data-label="Email" type="email" autocomplete="email" required>
+        </div>
+        <div class="full">
+          <label for="lf-item">Item description *</label>
+          <input id="lf-item" name="item-description" data-label="Item description" type="text" required>
+        </div>
+        <div class="full">
+          <label for="lf-info">Additional information (event, date, where you were seated&hellip;)</label>
+          <input id="lf-info" name="additional-information" data-label="Additional information" type="text">
+        </div>
+        <div>
+          <label for="lf-phone">Phone</label>
+          <input id="lf-phone" name="phone" data-label="Phone" type="tel" autocomplete="tel">
+        </div>
       </div>
       <div class="hp" aria-hidden="true">
         <label for="lf-website">Leave this field blank</label>
         <input id="lf-website" name="website" type="text" tabindex="-1" autocomplete="off">
       </div>
       <button class="btn btn-primary" type="submit">Send message</button>
-      <p class="required-note">Submitting sends your message to our staff. You can also email us directly at <a href="mailto:KBrown@Bonita.k12.ca.us?subject=Lost%20%26%20Found">KBrown@Bonita.k12.ca.us</a>.</p>
+      <p class="required-note">Fields marked with * are required. You can also email us directly at <a href="mailto:KBrown@Bonita.k12.ca.us?subject=Lost%20%26%20Found">KBrown@Bonita.k12.ca.us</a>.</p>
     </form>
   </section>
   </div>

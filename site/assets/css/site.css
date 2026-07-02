@@ -710,6 +710,62 @@ form.contact input:focus, form.contact textarea:focus {
 form.contact textarea { min-height: 8rem; resize: vertical; }
 form.contact .required-note { font-size: .9rem; color: var(--ink-soft); margin: 0; }
 
+/* Compact variant (e.g. lost & found): short fields pair up so the form
+   stays a tidy block instead of a tall single-column stack. */
+form.contact.compact { max-width: 38rem; }
+form.contact.compact .fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .85rem 1.1rem;
+}
+form.contact.compact .fields .full { grid-column: 1 / -1; }
+@media (max-width: 560px) {
+  form.contact.compact .fields { grid-template-columns: 1fr; }
+}
+
+/* ---- partner logos (About) ---- */
+.partners {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.2rem;
+  list-style: none;
+  padding: 0;
+  margin: 1.1rem 0 0;
+}
+.partners li {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .55rem .9rem;
+  box-shadow: var(--shadow-1);
+}
+.partners img {
+  display: block;
+  height: 2.4rem;
+  width: auto;
+}
+
+/* ---- photo gallery (About) ---- */
+.gallery {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  list-style: none;
+  padding: 0;
+  margin: 1.4rem 0;
+}
+.gallery figure { margin: 0; }
+.gallery img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+}
+
 /* ---- spec lists (rentals tech specs) ---- */
 .spec h3 {
   font-family: inherit;
