@@ -9,7 +9,7 @@
 set -euo pipefail
 
 HOST="${1:?usage: deploy/deploy.sh <ssh-host, e.g. root@bonita.lab980.com>}"
-WEBROOT=/var/www/bonita.lab980.com
+WEBROOT="${BCA_WEBROOT:-/var/www/bonita}"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 rsync -avz --delete --chown=www-data:www-data \

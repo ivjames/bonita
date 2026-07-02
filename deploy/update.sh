@@ -10,7 +10,19 @@
 
 set -euo pipefail
 
-WEBROOT=/var/www/bonita.lab980.com
+# The webroot nginx actually serves. Override with BCA_WEBROOT=...; otherwise
+# use whichever known location exists (the droplet uses /var/www/bonita).
+WEBROOT="${BCA_WEBROOT:-}"
+if [[ -z $WEBROOT ]]; then
+  for d in /var/www/bonita /var/www/bonita.lab980.com; do
+    [[ -d $d ]] && WEBROOT=$d && break
+  done
+fi
+if [[ -z $WEBROOT ]]; then
+  echo "No webroot found (/var/www/bonita or /var/www/bonita.lab980.com)." >&2
+  echo "Provision first (deploy/setup-droplet.sh) or set BCA_WEBROOT=..." >&2
+  exit 1
+fi
 BIN_LINK=/usr/local/bin/bonita
 # Resolve through the symlink so REPO_DIR is the real checkout, not /usr/local.
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
