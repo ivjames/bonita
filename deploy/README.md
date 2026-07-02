@@ -24,7 +24,7 @@ running nginx, with TLS from Let's Encrypt (certbot).
 
    The script is idempotent and does, in order: installs nginx + certbot,
    opens the firewall (SSH + HTTP/HTTPS), rsyncs `site/` to
-   `/var/www/bonita.lab980.com`, installs the server block from
+   `/var/www/bonita`, installs the server block from
    [`nginx/bonita.lab980.com.conf`](nginx/bonita.lab980.com.conf), then runs
    `certbot --nginx` to obtain the certificate and turn on the HTTPS
    redirect. Certbot registers with `ivjames@gmail.com` by default —

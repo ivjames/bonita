@@ -13,7 +13,9 @@
 set -euo pipefail
 
 DOMAIN=bonita.lab980.com
-WEBROOT=/var/www/$DOMAIN
+# Must match `root` in deploy/nginx/$DOMAIN.conf. The droplet serves from
+# /var/www/bonita; override with BCA_WEBROOT=... if yours differs.
+WEBROOT="${BCA_WEBROOT:-/var/www/bonita}"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CERTBOT_EMAIL="${CERTBOT_EMAIL:-ivjames@gmail.com}"
 
