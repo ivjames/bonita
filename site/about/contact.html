@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Calendar | Bonita Center for the Arts</title>
-<meta name="description" content="Upcoming events at the Bonita Center for the Arts. Browse show dates and buy tickets on our ticketing site.">
-<link rel="canonical" href="https://bonita.lab980.com/booking-calendar">
+<title>Contact us | Bonita Center for the Arts</title>
+<meta name="description" content="Contact the Bonita Center for the Arts: phone, staff directory for general, box office and technical inquiries, and the lost &amp; found form.">
+<link rel="canonical" href="https://bonita.lab980.com/about/contact">
 <!-- chrome:jsonld -->
 <script type="application/ld+json">
 {
@@ -49,7 +49,6 @@
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
-
 <!-- chrome:header -->
 <header class="site-header">
   <div class="bar">
@@ -60,15 +59,15 @@
     <nav class="site-nav" aria-label="Main">
       <ul>
         <li><a href="/">Home</a></li>
-        <li class="has-sub">
+        <li class="has-sub current-section">
           <a href="/about">About</a>
           <ul class="sub">
             <li><a href="/about/visit">Plan your visit</a></li>
-            <li><a href="/about/contact">Contact us</a></li>
+            <li><a href="/about/contact" aria-current="page">Contact us</a></li>
             <li><a href="/about/policies">House policies</a></li>
           </ul>
         </li>
-        <li><a href="/booking-calendar" aria-current="page">Calendar</a></li>
+        <li><a href="/booking-calendar">Calendar</a></li>
         <li><a href="/get-involved">Get Involved</a></li>
         <li class="has-sub">
           <a href="/rentals">Rentals</a>
@@ -84,47 +83,81 @@
   </div>
 </header>
 <!-- /chrome:header -->
-
 <main id="main">
   <header class="page-head">
     <div class="inner">
-      <p class="eyebrow">What's on</p>
-      <h1>Calendar</h1>
-      <p class="lede">All public performances at the BCA are listed on our ticketing site, with show details, dates and times, and online seat selection.</p>
+      <p class="eyebrow">The venue</p>
+      <h1>Contact us</h1>
+      <p class="lede">Reach the right person directly — and let us know if you left something behind.</p>
     </div>
   </header>
   <div class="wrap section">
-  <ul class="event-list" data-events data-max="12" hidden></ul>
-  <p><a class="btn btn-primary" href="https://bonitacenterforthearts.ludus.com/index.php">View the events calendar &amp; buy tickets</a></p>
+  <!-- chrome:subnav -->
+  <nav class="toc section-nav" aria-label="In this section">
+    <h2>In this section</h2>
+    <ul>
+      <li><a href="/about">Our story</a></li>
+      <li><a href="/about/visit">Plan your visit</a></li>
+      <li><a href="/about/contact" aria-current="page">Contact us</a></li>
+      <li><a href="/about/policies">House policies</a></li>
+    </ul>
+  </nav>
+<!-- /chrome:subnav -->
 
-  <!-- Ludus embed widget: plumbed and inert, pending Ludus account access.
-       The widget lets patrons browse events and buy seats without leaving
-       this page. To activate (needs whoever administers the BCA's Ludus
-       account, via More → Embed Widget → Get Started):
-         1. Accept the embed add-on (adds $0.50/ticket to the base Ludus fee
-            — patrons pay it; confirm the BCA is OK with that).
-         2. Give Ludus the domains to whitelist: bonita.lab980.com now, and
-            the production domain at cutover.
-         3. Paste the embed code Ludus provides inside the div below and
-            delete this comment. It is a script snippet configured with
-            subdomain: 'bonitacenterforthearts' and sections: 'events'.
-         4. Keep everything above this comment as the no-JS/static fallback,
-            and re-run the axe audit (tools/README.md) after enabling.
-       Ludus best practice: the widget wants an unrestricted-height container
-       (.ludus-embed provides one) and no fixed header floating over it — if
-       the sticky header crowds it, scope `.site-header { position: sticky }`
-       in site.css to exclude this page.
-  <div class="ludus-embed"></div>
-  -->
+  <section id="contact" aria-labelledby="contact-h">
+    <h2 id="contact-h">Staff directory</h2>
+    <p>Main phone: <a href="tel:+19099718280">(909) 971-8280</a>. Please email for the fastest response.</p>
+    <ul class="staff">
+      <li>
+        <strong>Kyle Brown</strong>
+        <span class="role">Theatre Manager</span>
+        <a href="mailto:KBrown@Bonita.k12.ca.us?subject=General%20Inquiry">KBrown@Bonita.k12.ca.us</a>
+      </li>
+      <li>
+        <strong>Megan Kauffunger</strong>
+        <span class="role">Box Office Manager</span>
+        <a href="mailto:Kauffunger@Bonita.k12.ca.us?subject=Box%20Office%20Inquiry">Kauffunger@Bonita.k12.ca.us</a>
+      </li>
+      <li>
+        <strong>Scott Inlow</strong>
+        <span class="role">Technical Director</span>
+        <a href="mailto:Inlow@Bonita.k12.ca.us?subject=Technical%20Inquiry">Inlow@Bonita.k12.ca.us</a>
+      </li>
+    </ul>
+    <p>The box office opens 1 hour before showtime.</p>
+  </section>
 
-
-  <p class="note">The public calendar shows ticketed events only. The venue is in district use November through June, and not every booked rental event is listed — if you're planning around venue availability, please <a href="/rentals#inquiry">send a rental inquiry</a>.</p>
-
-  <h2>Box office</h2>
-  <p>The box office opens 1 hour before showtime. For ticketing questions, email <a href="mailto:Kauffunger@Bonita.k12.ca.us?subject=Box%20Office%20Inquiry">Kauffunger@Bonita.k12.ca.us</a> or call <a href="tel:+19099718280">(909) 971-8280</a>.</p>
+  <section id="lost-and-found" aria-labelledby="lost-h">
+    <h2 id="lost-h">Lost &amp; found</h2>
+    <p>Left something behind at a show? Tell us what you lost and how to reach you, and we'll let you know if it turns up.</p>
+    <form class="contact" data-mailto="KBrown@Bonita.k12.ca.us" data-subject="Lost &amp; Found">
+      <p class="required-note">Fields marked with * are required.</p>
+      <div>
+        <label for="lf-name">Name *</label>
+        <input id="lf-name" name="name" data-label="Name" type="text" autocomplete="name" required>
+      </div>
+      <div>
+        <label for="lf-item">Item description *</label>
+        <input id="lf-item" name="item-description" data-label="Item description" type="text" required>
+      </div>
+      <div>
+        <label for="lf-info">Additional information (event, date, where you were seated&hellip;)</label>
+        <input id="lf-info" name="additional-information" data-label="Additional information" type="text">
+      </div>
+      <div>
+        <label for="lf-email">Email *</label>
+        <input id="lf-email" name="email" data-label="Email" type="email" autocomplete="email" required>
+      </div>
+      <div>
+        <label for="lf-phone">Phone</label>
+        <input id="lf-phone" name="phone" data-label="Phone" type="tel" autocomplete="tel">
+      </div>
+      <button class="btn btn-primary" type="submit">Compose email</button>
+      <p class="required-note">Submitting opens a pre-filled message in your email app. You can also email us directly at <a href="mailto:KBrown@Bonita.k12.ca.us?subject=Lost%20%26%20Found">KBrown@Bonita.k12.ca.us</a>.</p>
+    </form>
+  </section>
   </div>
 </main>
-
 <!-- chrome:footer -->
 <footer class="site-footer">
   <div class="cols">
@@ -157,6 +190,6 @@
   </div>
 </footer>
 <!-- /chrome:footer -->
-<script src="/assets/js/events.js?v=3" defer></script>
+<script src="/assets/js/site.js?v=3"></script>
 </body>
 </html>

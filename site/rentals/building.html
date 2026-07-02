@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Calendar | Bonita Center for the Arts</title>
-<meta name="description" content="Upcoming events at the Bonita Center for the Arts. Browse show dates and buy tickets on our ticketing site.">
-<link rel="canonical" href="https://bonita.lab980.com/booking-calendar">
+<title>Building layout | Bonita Center for the Arts</title>
+<meta name="description" content="The Bonita Center for the Arts building layout: plaza, patio, scene shop and scene yard, company room, and dressing rooms, with a downloadable building map.">
+<link rel="canonical" href="https://bonita.lab980.com/rentals/building">
 <!-- chrome:jsonld -->
 <script type="application/ld+json">
 {
@@ -49,7 +49,6 @@
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
-
 <!-- chrome:header -->
 <header class="site-header">
   <div class="bar">
@@ -68,13 +67,13 @@
             <li><a href="/about/policies">House policies</a></li>
           </ul>
         </li>
-        <li><a href="/booking-calendar" aria-current="page">Calendar</a></li>
+        <li><a href="/booking-calendar">Calendar</a></li>
         <li><a href="/get-involved">Get Involved</a></li>
-        <li class="has-sub">
+        <li class="has-sub current-section">
           <a href="/rentals">Rentals</a>
           <ul class="sub">
             <li><a href="/rentals/policies">Rental policies</a></li>
-            <li><a href="/rentals/building">Building layout</a></li>
+            <li><a href="/rentals/building" aria-current="page">Building layout</a></li>
             <li><a href="/rentals/tech-specs">Technical specs</a></li>
           </ul>
         </li>
@@ -84,47 +83,73 @@
   </div>
 </header>
 <!-- /chrome:header -->
-
 <main id="main">
   <header class="page-head">
     <div class="inner">
-      <p class="eyebrow">What's on</p>
-      <h1>Calendar</h1>
-      <p class="lede">All public performances at the BCA are listed on our ticketing site, with show details, dates and times, and online seat selection.</p>
+      <p class="eyebrow">Rentals</p>
+      <h1>Building layout</h1>
+      <p class="lede">The spaces your event can use beyond the stage — from the plaza out front to the dressing rooms below.</p>
     </div>
   </header>
   <div class="wrap section">
-  <ul class="event-list" data-events data-max="12" hidden></ul>
-  <p><a class="btn btn-primary" href="https://bonitacenterforthearts.ludus.com/index.php">View the events calendar &amp; buy tickets</a></p>
+  <!-- chrome:subnav -->
+  <nav class="toc section-nav" aria-label="In this section">
+    <h2>In this section</h2>
+    <ul>
+      <li><a href="/rentals">Rental inquiry</a></li>
+      <li><a href="/rentals/policies">Rental policies</a></li>
+      <li><a href="/rentals/building" aria-current="page">Building layout</a></li>
+      <li><a href="/rentals/tech-specs">Technical specs</a></li>
+    </ul>
+  </nav>
+<!-- /chrome:subnav -->
 
-  <!-- Ludus embed widget: plumbed and inert, pending Ludus account access.
-       The widget lets patrons browse events and buy seats without leaving
-       this page. To activate (needs whoever administers the BCA's Ludus
-       account, via More → Embed Widget → Get Started):
-         1. Accept the embed add-on (adds $0.50/ticket to the base Ludus fee
-            — patrons pay it; confirm the BCA is OK with that).
-         2. Give Ludus the domains to whitelist: bonita.lab980.com now, and
-            the production domain at cutover.
-         3. Paste the embed code Ludus provides inside the div below and
-            delete this comment. It is a script snippet configured with
-            subdomain: 'bonitacenterforthearts' and sections: 'events'.
-         4. Keep everything above this comment as the no-JS/static fallback,
-            and re-run the axe audit (tools/README.md) after enabling.
-       Ludus best practice: the widget wants an unrestricted-height container
-       (.ludus-embed provides one) and no fixed header floating over it — if
-       the sticky header crowds it, scope `.site-header { position: sticky }`
-       in site.css to exclude this page.
-  <div class="ludus-embed"></div>
-  -->
+  <div id="building" class="spec">
+    <figure>
+      <img src="/assets/img/building-map.png" alt="Floor plan of the BCA complex showing the auditorium, stage, lobby, plaza, patio, scene shop, scene yard, dressing rooms and company room." width="876" height="1141">
+      <figcaption>BCA building map. <a href="/assets/pdf/bca-building-layout.pdf">Download the full building layout (PDF, 72&nbsp;KB)</a>.</figcaption>
+    </figure>
 
+    <h3>Plaza</h3>
+    <p>The plaza is between the parking lot and the entrance to the lobby. This outdoor area is partially covered and suitable for concessions or merchandise sales.</p>
 
-  <p class="note">The public calendar shows ticketed events only. The venue is in district use November through June, and not every booked rental event is listed — if you're planning around venue availability, please <a href="/rentals#inquiry">send a rental inquiry</a>.</p>
+    <h3>Patio</h3>
+    <p>The patio is a large uncovered outdoor area with greenery surrounding. It is behind a gate. This space is suitable as a holding area.</p>
 
-  <h2>Box office</h2>
-  <p>The box office opens 1 hour before showtime. For ticketing questions, email <a href="mailto:Kauffunger@Bonita.k12.ca.us?subject=Box%20Office%20Inquiry">Kauffunger@Bonita.k12.ca.us</a> or call <a href="tel:+19099718280">(909) 971-8280</a>.</p>
+    <h3>Scene shop</h3>
+    <p>This space can be used to store scenic elements or be used as a green room or holding area for performers. It is a public area and not suitable for dressing.</p>
+
+    <h3>Scene yard</h3>
+    <p>The scene yard is a large uncovered space that can be used as a holding area for performers. There are also 3 parking spaces available for crew and clients. The scene yard is the best place to unload large amounts of scenic, props, or costumes.</p>
+
+    <h3>Company room</h3>
+    <ul>
+      <li>28'-0" L &times; 34'-0" W &times; 17'-0" H</li>
+      <li>Lower level, adjacent to stage, near the production office</li>
+      <li>Typical table and chair setup for 60</li>
+      <li>44" flat panel video monitor</li>
+      <li>Dry-erase whiteboard</li>
+      <li>A/V panels, isolated ground outlets for audio, intercom</li>
+      <li>60 A, 3-phase company switch</li>
+      <li>20 A isolated power outlets for audio</li>
+      <li>High-speed Wi-Fi, wired internet</li>
+      <li>Can be configured as a dressing room, rehearsal space, black box, dining area, and more</li>
+    </ul>
+
+    <h3>Dressing rooms</h3>
+    <ul>
+      <li>2 dressing rooms, identical amenities</li>
+      <li>Each dressing room has 1 toilet, sink, and shower</li>
+      <li>Space for costume racks</li>
+      <li>12 makeup stations per dressing room with power and storage space</li>
+      <li>Mirrored walls with modern lighting</li>
+      <li>Wall-mounted 2-channel intercom</li>
+      <li>Synchronized LED clocks with Stage Manager</li>
+      <li>Program feed audio monitors</li>
+    </ul>
+  </div>
   </div>
 </main>
-
 <!-- chrome:footer -->
 <footer class="site-footer">
   <div class="cols">
@@ -157,6 +182,5 @@
   </div>
 </footer>
 <!-- /chrome:footer -->
-<script src="/assets/js/events.js?v=3" defer></script>
 </body>
 </html>

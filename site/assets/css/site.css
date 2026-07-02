@@ -222,6 +222,46 @@ h4 { font-size: 1.08rem; margin: 1.25rem 0 .35rem; }
 }
 .site-nav a.tickets:hover { color: #331a04; filter: brightness(1.07); transform: translateY(-1px); }
 
+/* Dropdown submenus — desktop only. On small screens the wrapped nav stays
+   flat; the section landing pages and the "In this section" subnav carry
+   the same links, so nothing is reachable only by hover. */
+.site-nav li.has-sub { position: relative; }
+.site-nav .sub {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 60;
+  min-width: 12.5rem;
+  margin: 0;
+  padding: .4rem;
+  list-style: none;
+  background: linear-gradient(180deg, var(--maroon-dark) 0%, var(--curtain) 100%);
+  border: 1px solid var(--gold);
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 12px 26px rgba(43, 7, 13, .4);
+}
+.site-nav .sub a { white-space: nowrap; font-size: .93rem; }
+@media (min-width: 900px) {
+  .site-nav li.has-sub > a { padding-right: 1.6rem; }
+  .site-nav li.has-sub > a::before {
+    content: "";
+    position: absolute;
+    right: .6rem;
+    top: 50%;
+    width: .42rem;
+    height: .42rem;
+    margin-top: -.34rem;
+    border-right: 2px solid var(--gold-bright);
+    border-bottom: 2px solid var(--gold-bright);
+    transform: rotate(45deg);
+  }
+  .site-nav li.has-sub:hover > .sub,
+  .site-nav li.has-sub:focus-within > .sub { display: block; }
+  /* keep the parent's gilded underline lit anywhere inside its section */
+  .site-nav li.current-section > a:not(.tickets)::after { transform: scaleX(1); }
+}
+
 /* ---- hero ---- */
 .hero {
   position: relative;
@@ -626,6 +666,51 @@ nav.toc a:hover {
   box-shadow: var(--shadow-1);
   transform: translateY(-1px);
 }
+nav.toc a[aria-current="page"] {
+  border-color: var(--gold);
+  background: var(--paper-warm);
+  font-weight: 700;
+}
+
+/* ---- tech specs: accordions with a sticky side TOC ---- */
+.specs-layout { display: grid; gap: 1.4rem; align-items: start; margin-top: 1.5rem; }
+@media (min-width: 900px) {
+  .specs-layout { grid-template-columns: 14rem minmax(0, 1fr); }
+  .specs-layout > nav.toc { position: sticky; top: 5.4rem; margin: 0; }
+  .specs-layout > nav.toc ul { flex-direction: column; align-items: stretch; }
+  .specs-layout > nav.toc a { display: block; border-radius: 8px; }
+}
+details.spec-acc {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+  margin: 0 0 1.1rem;
+}
+details.spec-acc > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .95rem 1.3rem;
+  cursor: pointer;
+  list-style: none;
+}
+details.spec-acc > summary::-webkit-details-marker { display: none; }
+details.spec-acc > summary h2 { margin: 0; font-size: 1.45rem; }
+details.spec-acc > summary::after {
+  content: "+";
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--gold-deep);
+}
+details.spec-acc[open] > summary::after { content: "\2212"; }
+details.spec-acc > summary:hover h2 { color: var(--maroon); }
+details.spec-acc > .acc-body { padding: 0 1.3rem 1.2rem; }
+details.spec-acc > .acc-body > :first-child { margin-top: .2rem; }
+
+/* anchored headings land clear of the sticky header */
+main [id] { scroll-margin-top: 5.4rem; }
 
 /* ---- backstage events manager (/admin) ---- */
 .btn-secondary {
