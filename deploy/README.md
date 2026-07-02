@@ -38,13 +38,16 @@ running nginx, with TLS from Let's Encrypt (certbot).
 
 ## Updating the site
 
-Merge to `main`, then on the droplet:
+Merge to `main`, then on the droplet, from any directory:
 
 ```bash
-cd bonita && sudo bash deploy/update.sh
+sudo bonita
 ```
 
-(`update.sh` = fetch + ff-only pull of main + rsync into the webroot + chown.)
+(= fetch + ff-only pull of main + rsync into the webroot + chown. The
+command is a symlink to `deploy/update.sh`, installed by `setup-droplet.sh`
+and re-asserted on every run. If it doesn't exist yet on an older droplet,
+bootstrap once with `cd bonita && sudo bash deploy/update.sh`.)
 
 Alternative, if you'd rather push from your machine without touching the
 droplet's clone: `deploy/deploy.sh root@bonita.lab980.com`.

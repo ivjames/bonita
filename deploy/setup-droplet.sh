@@ -47,6 +47,9 @@ rm -f /etc/nginx/sites-enabled/default
 nginx -t
 systemctl reload nginx
 
+echo "==> Installing 'bonita' update command"
+ln -sf "$REPO_DIR/deploy/update.sh" /usr/local/bin/bonita
+
 echo "==> Checking DNS for $DOMAIN"
 if ! getent hosts "$DOMAIN" >/dev/null; then
   echo "!! $DOMAIN does not resolve yet. Create the A record, wait for DNS,"
