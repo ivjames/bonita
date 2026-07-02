@@ -84,7 +84,7 @@ window.BCA.renderCalendar = (root, upcoming) => {
   const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   root.innerHTML = `
     <div class="cal-bar">
-      <h3 class="cal-title" aria-live="polite"></h3>
+      <h2 class="cal-title" aria-live="polite"></h2>
       <div class="cal-nav">
         <button type="button" class="cal-prev" aria-label="Previous month">&#8592;</button>
         <button type="button" class="cal-next" aria-label="Next month">&#8594;</button>

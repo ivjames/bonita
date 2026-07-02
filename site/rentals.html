@@ -45,7 +45,7 @@
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=6">
+<link rel="stylesheet" href="/assets/css/site.css?v=d55762f5">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -108,7 +108,7 @@
 
   <section id="inquiry" aria-labelledby="inquiry-h">
     <h2 id="inquiry-h">Rental inquiry</h2>
-    <form class="contact" data-mailto="KBrown@Bonita.k12.ca.us" data-subject="Rental Inquiry">
+    <form class="contact" data-mailto="KBrown@Bonita.k12.ca.us" data-subject="Rental Inquiry" data-form="rental-inquiry">
       <p class="required-note">Fields marked with * are required.</p>
       <div>
         <label for="ri-name">Name *</label>
@@ -134,8 +134,12 @@
         <label for="ri-message">Tell us about your event (dates, audience size, technical needs&hellip;) *</label>
         <textarea id="ri-message" name="message" data-label="Event details" required></textarea>
       </div>
-      <button class="btn btn-primary" type="submit">Compose email</button>
-      <p class="required-note">Submitting opens a pre-filled message in your email app. You can also email the theatre manager directly at <a href="mailto:KBrown@Bonita.k12.ca.us?subject=Rental%20Inquiry">KBrown@Bonita.k12.ca.us</a>.</p>
+      <div class="hp" aria-hidden="true">
+        <label for="ri-website">Leave this field blank</label>
+        <input id="ri-website" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+      <button class="btn btn-primary" type="submit">Send inquiry</button>
+      <p class="required-note">Submitting sends your inquiry to the theatre manager. You can also email directly at <a href="mailto:KBrown@Bonita.k12.ca.us?subject=Rental%20Inquiry">KBrown@Bonita.k12.ca.us</a>.</p>
     </form>
   </section>
 
@@ -190,6 +194,6 @@
   </div>
 </footer>
 <!-- /chrome:footer -->
-<script src="/assets/js/site.js?v=3"></script>
+<script src="/assets/js/site.js?v=d859e509"></script>
 </body>
 </html>

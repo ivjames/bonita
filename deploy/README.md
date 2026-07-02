@@ -83,11 +83,12 @@ too. After that it's `sudo bonita` forever.
   `/rentals`) via `try_files $uri $uri.html`, so existing links keep working
   at cutover with no redirect map. The three PDFs the Wix site served from
   hashed `/_files/ugd/...` paths get 301s to their new self-hosted homes.
-- **Forms have no backend (yet).** Lost & found (About) and the rental
-  inquiry (Rentals) compose a pre-filled email in the visitor's mail app
-  (`site/assets/js/site.js`), with the recipient's address visible as a
-  fallback. A ready-to-provision backend sketch lives in [`api/`](api/) —
-  see "Optional: the bca-api backend" below.
+- **The public forms aren't wired to the backend yet.** The bca-api backend
+  is deployed and live (see "The bca-api backend" below), but Lost & found
+  (About) and the rental inquiry (Rentals) still compose a pre-filled email
+  in the visitor's mail app (`site/assets/js/site.js`), with the recipient's
+  address visible as a fallback. Pointing them at `POST /api/forms` is the
+  remaining step.
 - **Calendar is Ludus-first.** The Wix events widget can't leave Wix, and
   Ludus sits behind Cloudflare (fragile to iframe), so the Calendar page and
   the Home events section link out to
@@ -97,10 +98,10 @@ too. After that it's `sudo bonita` forever.
   a third-party embed (maps, calendar), extend `frame-src`/`img-src` in the
   nginx conf accordingly.
 
-## Optional: the bca-api backend (`api/`)
+## The bca-api backend (`api/`)
 
-A single-file Node service (stdlib only, no npm installs) that gives the
-static site its two missing write paths:
+Deployed and live. A single-file Node service (stdlib only, no npm installs)
+that gives the static site its write paths and a submissions inbox:
 
 - **`PUT /api/events`** — the [/admin](../site/admin.html) events manager's
   "Save to site" button. Validates the payload (same rules the admin page
@@ -111,8 +112,17 @@ static site its two missing write paths:
   to overwrite a dirty tracked file).
 - **`POST /api/forms`** — form intake: appends to `/var/lib/bca/forms.jsonl`
   and, if sendmail is available and `BCA_MAIL_TO` is set in the unit, emails
-  the submission. Honeypot-aware and rate-limited. The public forms still
-  use mailto until they're pointed here.
+  the submission. Honeypot-aware and rate-limited. The rental-inquiry and
+  lost & found forms POST here, falling back to a mailto compose only if the
+  backend is unreachable.
+- **`GET /api/forms`** (+ `POST /api/forms/:id/handled`, `DELETE
+  /api/forms/:id`) — the submissions inbox behind the /admin "Messages" tab
+  (session-gated). Staff read spooled submissions newest-first, mark them
+  handled (triage state in `/var/lib/bca/forms-state.json`, kept separate so
+  reads never rewrite the append-only spool), and delete spam. This is the
+  primary way staff see submissions — no mail delivery required, which suits
+  a district that may not offer mailer access; the `POST /api/forms` sendmail
+  notification is a bonus on top.
 
 **Auth is app-level with per-user accounts** — no HTTP basic auth. Staff
 accounts live in `/var/lib/bca/users.json` (scrypt hashes; the file is the
@@ -131,18 +141,19 @@ as a global-logout lever.
 
 The admin page needs no reconfiguration: it probes `GET /api/health` and
 picks its mode — no backend → download/copy; backend + signed out → login
-form; signed in → "Save to site" + the Staff accounts section.
+form; signed in → "Save to site" + the Messages and Staff accounts sections.
 `tools/preview.mjs` mirrors the proxy locally.
 
-To provision, after `setup-droplet.sh`:
+Provisioned (after `setup-droplet.sh`) with:
 
 ```bash
 sudo bash deploy/api/setup-api.sh
 ```
 
-(installs node + the systemd unit `bca-api`, seeds `/var/lib/bca`, creates
-the **first** staff account, and installs the nginx location blocks from
+Re-runnable if you ever need to rebuild the droplet. It installs node + the
+systemd unit `bca-api`, seeds `/var/lib/bca`, creates the **first** staff
+account, and installs the nginx location blocks from
 [`nginx/bca-api.locations`](nginx/bca-api.locations) as
-`snippets/bonita.d/api.conf` + reloads nginx). That's the last time the
+`snippets/bonita.d/api.conf` + reloads nginx. That's the last time the
 droplet is involved in account management. If everyone is ever locked out:
 delete `/var/lib/bca/users.json`, re-run the script.

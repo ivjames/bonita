@@ -14,6 +14,12 @@
 //   POST /api/forms         -> form intake: appends to $BCA_DATA/forms.jsonl
 //                              and emails it if sendmail + $BCA_MAIL_TO exist
 // Session-required endpoints:
+//   GET    /api/forms       -> the submissions inbox: spooled form entries,
+//                              newest first (?limit=&offset=), each tagged
+//                              handled/unhandled
+//   POST   /api/forms/:id/handled -> {handled}: mark a submission handled
+//                              (staff triage; state in $BCA_DATA/forms-state.json)
+//   DELETE /api/forms/:id    -> delete a submission (spam removal)
 //   POST   /api/logout      -> clears the session
 //   PUT    /api/events      -> validate + atomically write events.json to
 //                              $BCA_DATA (timestamped backups kept). nginx
@@ -207,6 +213,33 @@ async function saveEvents(raw) {
 
 // ---- forms ----
 
+const FORMS_FILE = () => path.join(DATA, 'forms.jsonl');
+const FORMS_STATE_FILE = () => path.join(DATA, 'forms-state.json');
+
+// The spool (forms.jsonl) is append-only and the source of truth. "Handled"
+// is triage state kept separately so reading the inbox never rewrites the
+// log; deletion (spam) is the one operation that does.
+async function readForms() {
+  try {
+    const raw = await readFile(FORMS_FILE(), 'utf8');
+    return raw.split('\n').filter(Boolean)
+      .map((l) => { try { return JSON.parse(l); } catch { return null; } })
+      .filter(Boolean);
+  } catch { return []; }
+}
+
+async function loadHandled() {
+  try {
+    const d = JSON.parse(await readFile(FORMS_STATE_FILE(), 'utf8'));
+    return (d && typeof d.handled === 'object' && d.handled) || {};
+  } catch { return {}; }
+}
+
+async function saveHandled(handled) {
+  await mkdir(DATA, { recursive: true });
+  await atomicWrite(FORMS_STATE_FILE(), `${JSON.stringify({ handled }, null, 2)}\n`);
+}
+
 function mailForm(entry) {
   if (!MAIL_TO || !existsSync(SENDMAIL)) return;
   const lines = Object.entries(entry.fields || {}).map(([k, v]) => `${k}: ${v}`).join('\n');
@@ -263,12 +296,12 @@ const server = http.createServer(async (req, res) => {
       let body;
       try { body = JSON.parse(await readBody(req)); } catch { return json(res, 400, { error: 'invalid JSON' }); }
       if (body.website) return json(res, 200, { ok: true });   // honeypot field: pretend success
-      const entry = { at: new Date().toISOString(), ip, form: String(body.form || 'unknown').slice(0, 50), fields: {} };
+      const entry = { id: randomBytes(6).toString('hex'), at: new Date().toISOString(), ip, form: String(body.form || 'unknown').slice(0, 50), fields: {} };
       for (const [k, v] of Object.entries(body.fields || {})) {
         entry.fields[String(k).slice(0, 50)] = String(v).slice(0, 2000);
       }
       await mkdir(DATA, { recursive: true });
-      await appendFile(path.join(DATA, 'forms.jsonl'), `${JSON.stringify(entry)}\n`, 'utf8');
+      await appendFile(FORMS_FILE(), `${JSON.stringify(entry)}\n`, 'utf8');
       mailForm(entry);
       return json(res, 200, { ok: true });
     }
@@ -280,6 +313,46 @@ const server = http.createServer(async (req, res) => {
     if (route === 'POST /api/logout') {
       sessions.delete(session.token);
       res.setHeader('set-cookie', `${COOKIE}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Strict`);
+      return json(res, 200, { ok: true });
+    }
+
+    if (route === 'GET /api/forms') {
+      const q = new URL(req.url, 'http://x').searchParams;
+      const limit = Math.min(Math.max(Number(q.get('limit')) || 100, 1), 500);
+      const offset = Math.max(Number(q.get('offset')) || 0, 0);
+      const handled = await loadHandled();
+      const all = (await readForms())
+        .map((e) => ({ ...e, handled: !!handled[e.id] }))
+        .reverse();   // newest first
+      return json(res, 200, {
+        total: all.length,
+        unhandled: all.filter((e) => !e.handled).length,
+        submissions: all.slice(offset, offset + limit),
+      });
+    }
+
+    const handledRoute = /^POST \/api\/forms\/([a-f0-9]{6,32})\/handled$/.exec(route);
+    if (handledRoute) {
+      const id = handledRoute[1];
+      let body;
+      try { body = JSON.parse(await readBody(req)); } catch { return json(res, 400, { error: 'invalid JSON' }); }
+      if (!(await readForms()).some((e) => e.id === id)) return json(res, 404, { error: 'no such submission' });
+      const handled = await loadHandled();
+      if (body.handled) handled[id] = true; else delete handled[id];
+      await saveHandled(handled);
+      return json(res, 200, { ok: true, handled: !!body.handled });
+    }
+
+    const formDel = /^DELETE \/api\/forms\/([a-f0-9]{6,32})$/.exec(route);
+    if (formDel) {
+      const id = formDel[1];
+      const all = await readForms();
+      const kept = all.filter((e) => e.id !== id);
+      if (kept.length === all.length) return json(res, 404, { error: 'no such submission' });
+      await atomicWrite(FORMS_FILE(), kept.length ? `${kept.map((e) => JSON.stringify(e)).join('\n')}\n` : '');
+      const handled = await loadHandled();
+      if (handled[id]) { delete handled[id]; await saveHandled(handled); }
+      console.log(`${session.user} deleted form submission ${id} from ${ip}`);
       return json(res, 200, { ok: true });
     }
 

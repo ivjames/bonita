@@ -78,3 +78,22 @@ the top of the script. Output is committed, so nginx/deploy stay a plain
 page content outside the markers) and re-run it. `node chrome.mjs --check`
 exits non-zero if any page is stale. `admin.html` is skipped on purpose (its
 reduced nav is hand-maintained).
+
+## Asset cache-busting (`stamp-assets.mjs`)
+
+Every local CSS/JS reference in `site/**/*.html` carries a `?v=…` query for
+cache-busting. Rather than hand-picking integers (`?v=5`, `?v=6`… — easy to
+forget, and two branches bumping to the same number merged to a stale asset),
+the token is the first 8 hex of the sha256 of the referenced file:
+
+```bash
+cd tools
+npm run stamp          # or: node stamp-assets.mjs
+```
+
+The URL changes if and only if the file's bytes change, so browsers refetch
+exactly when they must. Run it after editing a stylesheet or script and
+commit the result — the hashes live in the committed HTML and deploy as-is
+with `git pull` (no build step). `npm run stamp:check` (`--check`) verifies
+without writing and exits non-zero if any stamp is stale — wire it into a
+pre-commit hook or CI. Idempotent; safe to run any time.

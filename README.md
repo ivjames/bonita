@@ -40,9 +40,9 @@ Static HTML/CSS (no build step, no third-party requests or trackers; the
 Fraunces display font is self-hosted in `site/assets/fonts/`), served by nginx
 on the droplet at **bonita.lab980.com**. Same five URL paths as Wix. See
 [`deploy/README.md`](deploy/README.md) for droplet setup (DNS → nginx →
-certbot) and the decisions baked into the config (staging is noindex, forms
-are mailto-composed pending a backend, calendar links out to Ludus, Wix PDF
-paths get 301s).
+certbot) and the decisions baked into the config (staging is noindex, the
+public forms are still mailto-composed (not yet wired to the live bca-api
+backend), calendar links out to Ludus, Wix PDF paths get 301s).
 
 Everything in "known issues" below is fixed in the rebuild; the axe-core
 audit of the rebuilt site is clean (0 violations, 0 bad alt, all forms
@@ -93,9 +93,10 @@ misuses ~40 H5s (16 of them empty) for body text.
       third-party eventscalendar.co iframe that was also fed by hand.
       Staff edit the list at **/admin** (site/admin.html — "Backstage: Events
       manager"): browser-only form UI with validation, past-date flags, and a
-      live preview; it generates events.json to download/copy until a write
-      backend exists. Not linked from the public site; noindex, and robots.txt
-      carries a commented Disallow to enable at cutover.
+      live preview; it saves straight to the site through the live bca-api
+      backend ("Save to site"), with download/copy kept as a fallback when the
+      backend is unreachable. Not linked from the public site; noindex, and
+      robots.txt carries a commented Disallow to enable at cutover.
 - [ ] Enable the Ludus embed widget (optional upgrade; needs Ludus account
       admin — Kyle Brown / box office). Ludus has no public API or iCal feed;
       the sanctioned option is their embed widget (+$0.50/ticket, More →
@@ -110,20 +111,25 @@ misuses ~40 H5s (16 of them empty) for body text.
       hashed Wix PDF URLs get 301s in nginx
 - [x] Sitewide contact corrections (Stone → Brown) — corrected in the rebuild
       (still stale on live Wix)
-- [ ] Provision the droplet + DNS A record, run `deploy/setup-droplet.sh`
-- [ ] Form backend (rental inquiry + lost & found currently compose an email
-      client-side). A ready-to-provision sketch lives in `deploy/api/` —
-      bca-api, a stdlib-only Node service behind nginx: `PUT /api/events`
-      (the /admin "Save to site" button; auto-detected via /api/health) and
-      `POST /api/forms` (intake spool + optional sendmail). Staff auth is
-      per-user accounts in /var/lib/bca/users.json (scrypt hashes) with a
-      session-cookie login form on /admin — no HTTP basic auth, and account
-      management (password changes, add/remove staff) is self-service on the
-      page; the droplet is only touched once, to bootstrap the first
-      account. Run `deploy/api/setup-api.sh` on the droplet + paste
-      `deploy/nginx/bca-api.locations` into the server block. The public
-      forms still need pointing at /api/forms once email delivery is
-      decided.
+- [x] Provision the droplet + DNS A record, run `deploy/setup-droplet.sh` —
+      done; the rebuild is live at bonita.lab980.com (still noindex until cutover)
+- [x] Form backend — deployed and live. bca-api, a stdlib-only Node service
+      behind nginx (`deploy/api/`, provisioned by `deploy/api/setup-api.sh`):
+      `PUT /api/events` (the /admin "Save to site" button; auto-detected via
+      /api/health) and `POST /api/forms` (intake spool + optional sendmail).
+      Staff auth is per-user accounts in /var/lib/bca/users.json (scrypt
+      hashes) with a session-cookie login form on /admin — no HTTP basic auth,
+      and account management (password changes, add/remove staff) is
+      self-service on the page; the droplet was only touched once, to
+      bootstrap the first account. Both public forms (rental inquiry + lost &
+      found) POST to /api/forms, falling back to a mailto compose if the
+      backend is unreachable.
+- [x] Submissions inbox — a "Messages" tab on /admin reads the form spool
+      (`GET /api/forms`), so staff triage rental/lost-and-found submissions on
+      the page (mark handled, delete spam; email/phone values are clickable)
+      without needing SSH or email delivery. This is the primary delivery path
+      given the district may not offer mailer access; `POST /api/forms`'s
+      optional sendmail notification remains a bonus if `BCA_MAIL_TO` is set.
 - [x] Structured data (JSON-LD) — a shared `PerformingArtsTheater` block in
       every public page's head (venue, address, phone, capacity, BUSD as
       parent org), plus per-show `Event` markup emitted by
