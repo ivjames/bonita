@@ -207,6 +207,10 @@
     document.getElementById('accounts').hidden = mode !== 'live';
     document.getElementById('messages').hidden = mode !== 'live';
     document.getElementById('media').hidden = mode !== 'live';
+    // The events editor stays available in static mode (the no-backend,
+    // download-a-file tool), but once a backend exists it's hidden until
+    // sign-in — no editing surface for anyone who just has the URL.
+    document.getElementById('editor').hidden = mode === 'login';
     // Events sits alone until Messages joins it (signed in) — then they split
     // the row two-up on wide screens.
     document.getElementById('work-cols').classList.toggle('split', mode === 'live');
