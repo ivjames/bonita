@@ -127,7 +127,10 @@ if (gallery) {
     idx = (i + imgs.length) % imgs.length;
     lbImg.src = imgs[idx].currentSrc || imgs[idx].src;
     lbImg.alt = imgs[idx].alt;
-    lbCap.textContent = imgs[idx].alt;
+    // Visible caption is the photo's own title (data-caption); some have none.
+    const cap = imgs[idx].dataset.caption || '';
+    lbCap.textContent = cap;
+    lbCap.hidden = !cap;
   };
 
   // Turn each thumbnail into a button that opens the viewer.
