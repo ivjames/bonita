@@ -361,6 +361,9 @@ h4 { font-size: 1.08rem; margin: 1.25rem 0 .35rem; }
 .page-head .eyebrow::before { background: var(--gold-bright); }
 .page-head h1 { color: #fff; margin-bottom: .4rem; }
 .page-head .lede { color: var(--rose-soft); margin-bottom: 0; }
+/* the global maroon link color vanishes on this maroon band */
+.page-head a { color: #fff; text-decoration-color: var(--gold-bright); }
+.page-head a:hover { color: var(--gold-bright); }
 .page-head > .inner { max-width: var(--max); margin: 0 auto; }
 
 /* ---- buttons ---- */
