@@ -185,7 +185,7 @@ function validateEvents(data) {
     }
     if (!e.title) return `${at} needs a title`;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(e.date || '')) return `${at} needs a date (YYYY-MM-DD)`;
-    if (!/^https:\/\//.test(e.url || '')) return `${at} needs an https:// ticket URL`;
+    if (e.url && !/^https:\/\//.test(e.url)) return `${at} ticket URL must start with https://`;
   }
   return null;
 }

@@ -1,14 +1,22 @@
 {
   "_readme": [
-    "Upcoming events shown on the home page and the Calendar page.",
-    "Edited by hand (box office) until Ludus embed/API access exists.",
-    "Each event needs: title, date (YYYY-MM-DD, used for sorting and for",
-    "dropping past events automatically), and url (the Ludus event page).",
-    "Optional: time (e.g. '7:00 PM'), presenter (who's putting it on), and",
-    "dateLabel (display text that overrides the formatted date, for runs",
-    "like 'July 18-20'). Keys starting with _ are ignored by the site.",
+    "Upcoming events shown on the home page (list + calendar) and the",
+    "Calendar page. Edited from the /admin page (or by hand) until Ludus",
+    "embed/API access exists.",
+    "Each event needs: title and date (YYYY-MM-DD, used for sorting, for",
+    "the calendar grid, and for dropping past events automatically).",
+    "Optional: url (the Ludus event page - without it the event shows",
+    "with no Tickets link), time (e.g. '7:00 PM'), presenter (who's",
+    "putting it on), and dateLabel (display text that overrides the",
+    "formatted date, for runs like 'July 18-20'). Enter a multi-day run",
+    "as one entry per day with the same title and dateLabel: every day",
+    "gets marked on the calendar, and the list collapses them into one.",
+    "Keys starting with _ are ignored by the site.",
     "If this list is empty or unreachable, the pages simply fall back to",
-    "the 'browse events on our ticketing site' link - nothing breaks."
+    "the 'browse events on our ticketing site' link - nothing breaks.",
+    "The entries below were copied on 2026-07-02 from the old site's",
+    "public Google Calendar (Bonita Center Calendar of Events,",
+    "bonitacenter@gmail.com) - keep them fresh via /admin."
   ],
   "_example": {
     "title": "Spring Dance Showcase",
@@ -18,5 +26,43 @@
     "url": "https://bonitacenterforthearts.ludus.com/200001234",
     "dateLabel": ""
   },
-  "events": []
+  "events": [
+    {
+      "title": "Ed Wolfe Memorial Jazz Concert",
+      "date": "2026-07-12",
+      "time": "4:00 PM",
+      "url": "https://bonitacenterforthearts.ludus.com/200537834"
+    },
+    {
+      "title": "Shrek Jr",
+      "date": "2026-07-17",
+      "dateLabel": "July 17–19",
+      "presenter": "Top Billing Entertainment"
+    },
+    {
+      "title": "Shrek Jr",
+      "date": "2026-07-18",
+      "dateLabel": "July 17–19",
+      "presenter": "Top Billing Entertainment"
+    },
+    {
+      "title": "Shrek Jr",
+      "date": "2026-07-19",
+      "dateLabel": "July 17–19",
+      "presenter": "Top Billing Entertainment"
+    },
+    {
+      "title": "Tradicion y Folklore",
+      "date": "2026-07-25",
+      "time": "1:00 PM",
+      "presenter": "Ballet Folklorico International",
+      "url": "https://bonitacenterforthearts.ludus.com/200533175"
+    },
+    {
+      "title": "Western University White Coat Ceremony (invited guests only)",
+      "date": "2026-08-07",
+      "time": "9:00 AM",
+      "presenter": "Western University"
+    }
+  ]
 }

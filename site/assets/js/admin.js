@@ -18,7 +18,7 @@
     { key: 'time', label: 'Time', type: 'text', hint: 'e.g. 7:00 PM' },
     { key: 'dateLabel', label: 'Date label', type: 'text', hint: 'Optional display override, e.g. “July 18–20”' },
     { key: 'presenter', label: 'Presenter', type: 'text', hint: 'Who’s putting it on (optional)' },
-    { key: 'url', label: 'Ticket URL *', type: 'url', required: true, hint: 'The event’s page on bonitacenterforthearts.ludus.com' },
+    { key: 'url', label: 'Ticket URL', type: 'url', hint: 'The event’s page on bonitacenterforthearts.ludus.com — leave empty if tickets aren’t sold through our site' },
   ];
 
   const today = () => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; };
@@ -70,7 +70,7 @@
   function flagRow(li, e) {
     const flag = li.querySelector('.row-flag');
     const problems = [];
-    if (!e.title || !e.date || !e.url) problems.push('needs a title, date, and ticket URL to appear on the site');
+    if (!e.title || !e.date) problems.push('needs a title and date to appear on the site');
     const day = window.BCA.parseEventDay(e.date);
     if (e.date && day && day < today()) problems.push('date is in the past — it won’t be shown (safe to remove)');
     if (e.url && !/^https:\/\//.test(e.url)) problems.push('ticket URL should start with https://');

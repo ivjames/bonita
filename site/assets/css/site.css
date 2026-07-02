@@ -459,7 +459,7 @@ main { display: block; }
   gap: .9rem;
   max-width: 46rem;
 }
-.event-list .event a {
+.event-list .event .event-card {
   display: flex;
   align-items: center;
   gap: 1.1rem;
@@ -472,7 +472,7 @@ main { display: block; }
   box-shadow: var(--shadow-1);
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-.event-list .event a:hover {
+.event-list .event a.event-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-2);
   border-color: var(--gold);
@@ -513,6 +513,107 @@ main { display: block; }
 }
 @media (max-width: 480px) {
   .event-cta { display: none; }
+}
+
+/* ---- month-grid events calendar (rendered by events.js) ---- */
+.event-calendar { margin: 1.8rem 0; }
+.cal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .7rem;
+}
+.cal-title { margin: 0; font-size: 1.35rem; }
+.cal-nav { display: flex; gap: .45rem; }
+.cal-nav button {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--maroon);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-1);
+  transition: border-color .18s ease, transform .18s ease;
+}
+.cal-nav button:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-1px); }
+.cal-nav button:disabled { opacity: .35; cursor: default; }
+.cal-grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+.cal-grid th {
+  padding: .5rem .2rem;
+  background: var(--paper-warm);
+  border-bottom: 1px solid var(--line);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+.cal-grid td {
+  height: 5.6rem;
+  padding: .3rem .35rem;
+  border-top: 1px solid var(--line);
+  vertical-align: top;
+}
+.cal-grid td + td { border-left: 1px solid var(--line); }
+.cal-grid tbody tr:first-child td { border-top: 0; }
+.cal-empty { background: color-mix(in srgb, var(--paper-warm) 45%, var(--card)); }
+.cal-num {
+  display: inline-block;
+  min-width: 1.5rem;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.cal-day.has-event .cal-num { color: var(--maroon); }
+.is-today .cal-num {
+  background: var(--gold-deep);
+  color: #fff;
+  border-radius: 999px;
+  text-align: center;
+  padding: 0 .3rem;
+}
+.cal-event {
+  display: block;
+  margin-top: .3rem;
+  padding: .2rem .45rem;
+  border-radius: 6px;
+  background: var(--maroon);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: background .18s ease;
+}
+a.cal-event:hover { background: var(--maroon-dark); color: #fff; }
+span.cal-event { background: var(--gold-deep); }
+.cal-event-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+@media (max-width: 640px) {
+  .cal-grid td { height: 3.4rem; padding: .2rem; }
+  .cal-num { min-width: 1.2rem; font-size: .78rem; }
+  /* too narrow for titles: events become solid maroon day-bars (the link's
+     aria-label still carries the show name, date, and time) */
+  .cal-event { height: 1.05rem; padding: 0; border-radius: 4px; }
+  .cal-event-name { display: none; }
 }
 
 /* container for the Ludus embed widget once the account add-on is enabled;
