@@ -133,22 +133,27 @@
 
   // Publishing modes, decided by /api/health:
   //   no backend            -> download/copy only (static mode)
-  //   backend, signed out   -> staff-password login form
-  //   backend, signed in    -> "Save to site"
+  //   backend, signed out   -> staff login form
+  //   backend, signed in    -> "Save to site" + staff accounts section
   const saveBtn = document.getElementById('save');
   const saveStatus = document.getElementById('save-status');
   const loginForm = document.getElementById('login');
   const loginStatus = document.getElementById('login-status');
   const logoutBtn = document.getElementById('logout');
+  const whoami = document.getElementById('whoami');
 
-  function setMode(mode) {   // 'static' | 'login' | 'live'
+  function setMode(mode, user) {   // 'static' | 'login' | 'live'
     document.getElementById('publish-note').hidden = mode !== 'static';
     document.getElementById('publish-note-login').hidden = mode !== 'login';
     document.getElementById('publish-note-live').hidden = mode !== 'live';
     loginForm.hidden = mode !== 'login';
     saveBtn.hidden = mode !== 'live';
     logoutBtn.hidden = mode !== 'live';
+    whoami.hidden = mode !== 'live';
+    if (user) whoami.textContent = `Signed in as ${user}`;
     document.getElementById('download').hidden = mode !== 'static';
+    document.getElementById('accounts').hidden = mode !== 'live';
+    if (mode === 'live') loadUserList();
   }
 
   saveBtn.addEventListener('click', async () => {
@@ -177,18 +182,19 @@
 
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const user = document.getElementById('login-user');
     const pass = document.getElementById('login-pass');
     loginStatus.hidden = true;
     try {
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ password: pass.value }),
+        body: JSON.stringify({ user: user.value, password: pass.value }),
       });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error || `sign-in failed (${res.status})`);
       pass.value = '';
-      setMode('live');
+      setMode('live', out.user);
     } catch (err) {
       loginStatus.hidden = false;
       loginStatus.textContent = `⚠ ${err.message}`;
@@ -201,12 +207,94 @@
     setMode('login');
   });
 
+  // ---- staff accounts (visible only when signed in) ----
+  const userList = document.getElementById('user-list');
+
+  async function loadUserList() {
+    try {
+      const res = await fetch('/api/users');
+      if (!res.ok) return;
+      const { users } = await res.json();
+      userList.innerHTML = '';
+      users.forEach(({ name }) => {
+        const li = document.createElement('li');
+        const label = document.createElement('span');
+        label.textContent = name;
+        li.append(label);
+        if (users.length > 1) {
+          const rm = document.createElement('button');
+          rm.type = 'button';
+          rm.className = 'btn-link';
+          rm.textContent = 'Remove';
+          rm.addEventListener('click', async () => {
+            if (!confirm(`Remove the account "${name}"? They won't be able to sign in.`)) return;
+            const del = await fetch(`/api/users/${encodeURIComponent(name)}`, { method: 'DELETE' });
+            if (del.ok) loadUserList();
+          });
+          li.append(rm);
+        }
+        userList.append(li);
+      });
+    } catch { /* leave the list as-is */ }
+  }
+
+  document.getElementById('password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = document.getElementById('pw-status');
+    const current = document.getElementById('pw-current');
+    const fresh = document.getElementById('pw-new');
+    status.hidden = false;
+    status.className = 'save-status';
+    status.textContent = 'Changing…';
+    try {
+      const res = await fetch('/api/password', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ current: current.value, new: fresh.value }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(out.error || `failed (${res.status})`);
+      current.value = fresh.value = '';
+      status.classList.add('ok');
+      status.textContent = 'Password changed ✓';
+    } catch (err) {
+      status.classList.add('err');
+      status.textContent = `⚠ ${err.message}`;
+    }
+  });
+
+  document.getElementById('adduser-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = document.getElementById('au-status');
+    const name = document.getElementById('au-name');
+    const pass = document.getElementById('au-pass');
+    status.hidden = false;
+    status.className = 'save-status';
+    status.textContent = 'Adding…';
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: name.value, password: pass.value }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(out.error || `failed (${res.status})`);
+      status.classList.add('ok');
+      status.textContent = out.existed ? `Password reset for ${name.value} ✓` : `Account added ✓`;
+      name.value = pass.value = '';
+      loadUserList();
+    } catch (err) {
+      status.classList.add('err');
+      status.textContent = `⚠ ${err.message}`;
+    }
+  });
+
   (async () => {
     try {
       const res = await fetch('/api/health');
       const h = await res.json();
       if (!res.ok || !h.ok || !h.configured) return;   // stays in static mode
-      setMode(h.auth ? 'live' : 'login');
+      setMode(h.auth ? 'live' : 'login', h.user);
     } catch { /* no backend: stay in download/copy mode */ }
   })();
 

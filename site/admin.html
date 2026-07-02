@@ -62,10 +62,16 @@
   <section id="output" aria-labelledby="output-h">
     <h2 id="output-h">Publish</h2>
     <form id="login" class="login-card" hidden>
-      <label for="login-pass">Staff password</label>
-      <div class="login-row">
-        <input id="login-pass" type="password" autocomplete="current-password" required>
-        <button type="submit" class="btn btn-primary">Sign in</button>
+      <div class="login-field">
+        <label for="login-user">Username</label>
+        <input id="login-user" type="text" autocomplete="username" autocapitalize="none" required>
+      </div>
+      <div class="login-field">
+        <label for="login-pass">Password</label>
+        <div class="login-row">
+          <input id="login-pass" type="password" autocomplete="current-password" required>
+          <button type="submit" class="btn btn-primary">Sign in</button>
+        </div>
       </div>
       <p id="login-status" class="save-status err" role="status" hidden></p>
     </form>
@@ -73,6 +79,7 @@
       <button type="button" class="btn btn-primary" id="save" hidden>Save to site</button>
       <button type="button" class="btn btn-primary" id="download">Download the events file</button>
       <span id="save-status" class="save-status" role="status" hidden></span>
+      <span id="whoami" class="whoami" hidden></span>
       <button type="button" class="btn-link" id="logout" hidden>Sign out</button>
     </p>
     <details id="manual">
@@ -85,6 +92,46 @@
       <label for="json-out">Generated events.json</label>
       <textarea id="json-out" class="json-out" readonly rows="14" spellcheck="false"></textarea>
     </details>
+  </section>
+
+  <section id="accounts" aria-labelledby="accounts-h" hidden>
+    <h2 id="accounts-h">Staff accounts</h2>
+    <div class="grid-2">
+      <form id="password-form" class="login-card">
+        <h3>Change my password</h3>
+        <div class="login-field">
+          <label for="pw-current">Current password</label>
+          <input id="pw-current" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="login-field">
+          <label for="pw-new">New password (8+ characters)</label>
+          <input id="pw-new" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <p class="admin-actions">
+          <button type="submit" class="btn btn-primary">Change password</button>
+          <span id="pw-status" class="save-status" role="status" hidden></span>
+        </p>
+      </form>
+      <div>
+        <h3>Who can sign in</h3>
+        <ul id="user-list" class="user-list"></ul>
+        <form id="adduser-form" class="login-card">
+          <h3>Add a staff account</h3>
+          <div class="login-field">
+            <label for="au-name">Username</label>
+            <input id="au-name" type="text" autocapitalize="none" pattern="[A-Za-z0-9._\-]{2,32}" required>
+          </div>
+          <div class="login-field">
+            <label for="au-pass">Their starting password (8+ characters; they can change it after signing in)</label>
+            <input id="au-pass" type="password" autocomplete="new-password" minlength="8" required>
+          </div>
+          <p class="admin-actions">
+            <button type="submit" class="btn btn-secondary">Add account</button>
+            <span id="au-status" class="save-status" role="status" hidden></span>
+          </p>
+        </form>
+      </div>
+    </div>
   </section>
   </div>
 </main>

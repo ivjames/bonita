@@ -718,8 +718,33 @@ nav.toc a:hover {
   margin-bottom: .35rem;
 }
 .login-card .login-row { display: flex; gap: .6rem; }
+.login-card .login-field { margin-bottom: .8rem; }
+.login-card .login-field:last-of-type { margin-bottom: 0; }
+.login-card h3 { margin: 0 0 .8rem; font-size: 1.15rem; }
+.login-card .admin-actions { margin: .9rem 0 0; }
+.whoami { color: var(--ink-soft); font-size: .95rem; }
+.user-list {
+  list-style: none;
+  margin: .8rem 0 1.2rem;
+  padding: 0;
+  display: grid;
+  gap: .4rem;
+  max-width: 22rem;
+}
+.user-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .45rem .8rem;
+  font-weight: 600;
+}
 .login-card input {
   flex: 1;
+  width: 100%;
   min-width: 0;
   padding: .55rem .7rem;
   font: inherit;

@@ -14,8 +14,8 @@ Type=simple
 ExecStart=/usr/bin/node /opt/bca/bca-api.mjs
 Environment=BCA_DATA=/var/lib/bca
 Environment=BCA_LISTEN=8787
-# BCA_ADMIN_HASH (staff password, scrypt) and optionally BCA_MAIL_TO live in
-# the root-only env file written by setup-api.sh:
+# Optional overrides (e.g. BCA_MAIL_TO for form email notifications).
+# Staff accounts live in /var/lib/bca/users.json, managed from /admin.
 EnvironmentFile=-/etc/bca-api.env
 Restart=on-failure
 RestartSec=2

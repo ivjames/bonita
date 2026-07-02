@@ -98,19 +98,25 @@ static site its two missing write paths:
   the submission. Honeypot-aware and rate-limited. The public forms still
   use mailto until they're pointed here.
 
-**Auth is app-level, not HTTP basic auth**: staff sign in with the staff
-password on the /admin page itself (an on-brand form, not a browser popup),
+**Auth is app-level with per-user accounts** — no HTTP basic auth. Staff
+accounts live in `/var/lib/bca/users.json` (scrypt hashes; the file is the
+"database" — at a handful of users that's all it needs to be). Staff sign
+in on the /admin page itself (username + password on an on-brand form),
 which sets a 12-hour HttpOnly `SameSite=Strict` session cookie; there's a
-Sign out button. The API enforces the session on `PUT /api/events`, verifies
-the password against a scrypt hash kept in root-only `/etc/bca-api.env`,
-rate-limits login attempts (5 per 15 min/IP), and rejects cross-origin
-writes. Sessions live in memory — restarting the service signs everyone out,
-which is also how you force a global logout.
+Sign out button, and saves are logged with the username
+(`journalctl -u bca-api`). Everything routine is self-service on /admin:
+change your own password, add a colleague, reset their password, remove an
+account (the last account is protected, and removing/resetting someone
+revokes their sessions). Failed logins are rate-limited per IP (5 per
+15 min — failures only, so a busy office behind one school IP can't lock
+itself out by signing in a lot); cross-origin writes are rejected. Sessions
+live in memory — restarting the service signs everyone out, which doubles
+as a global-logout lever.
 
 The admin page needs no reconfiguration: it probes `GET /api/health` and
 picks its mode — no backend → download/copy; backend + signed out → login
-form; signed in → "Save to site". `tools/preview.mjs` mirrors the proxy
-locally.
+form; signed in → "Save to site" + the Staff accounts section.
+`tools/preview.mjs` mirrors the proxy locally.
 
 To provision, after `setup-droplet.sh`:
 
@@ -118,9 +124,9 @@ To provision, after `setup-droplet.sh`:
 sudo bash deploy/api/setup-api.sh
 ```
 
-(installs node + the systemd unit `bca-api`, prompts for the staff password
-→ scrypt hash into `/etc/bca-api.env`, seeds `/var/lib/bca`), then paste the
-location blocks from [`nginx/bca-api.locations`](nginx/bca-api.locations)
-into the server block and `sudo nginx -t && sudo systemctl reload nginx`.
-To change the password: delete `/etc/bca-api.env`, re-run the script,
-restart the service. Logs: `journalctl -u bca-api`.
+(installs node + the systemd unit `bca-api`, seeds `/var/lib/bca`, and
+creates the **first** staff account), then paste the location blocks from
+[`nginx/bca-api.locations`](nginx/bca-api.locations) into the server block
+and `sudo nginx -t && sudo systemctl reload nginx`. That's the last time
+the droplet is involved in account management. If everyone is ever locked
+out: delete `/var/lib/bca/users.json`, re-run the script.
