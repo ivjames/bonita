@@ -32,13 +32,13 @@
     <div class="inner">
       <p class="eyebrow">Backstage</p>
       <h1>Events manager</h1>
-      <p class="lede">Edit the upcoming-events list shown on the home page and the Calendar page. Everything here happens in your browser — nothing is published until the generated file is installed on the site.</p>
+      <p class="lede">Add and edit the shows listed on the home page and the Calendar page — plain form fields, with a preview of exactly what visitors will see.</p>
     </div>
   </header>
   <div class="wrap section">
 
-  <p class="note" id="publish-note">This page can't save to the site directly (the backend isn't running). When you're done: <strong>Download events.json</strong> (or copy it) and send it to the site maintainer, who commits it as <code>site/assets/data/events.json</code>. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
-  <p class="note" id="publish-note-live" hidden>Changes go live when you press <strong>Save to site</strong> below. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
+  <p class="note" id="publish-note">Fill in the form below — no technical steps. When you're done, use <strong>Download the events file</strong> under Publish and email it to the site maintainer, who installs it. (Direct saving switches on automatically once the site's backend is set up.) Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
+  <p class="note" id="publish-note-live" hidden>Fill in the form below, then press <strong>Save to site</strong> under Publish — changes go live immediately. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
 
   <section id="editor" aria-labelledby="editor-h">
     <h2 id="editor-h">Events</h2>
@@ -62,13 +62,19 @@
     <h2 id="output-h">Publish</h2>
     <p class="admin-actions">
       <button type="button" class="btn btn-primary" id="save" hidden>Save to site</button>
-      <button type="button" class="btn btn-primary" id="download">Download events.json</button>
-      <button type="button" class="btn btn-secondary" id="copy">Copy JSON</button>
-      <span id="copy-done" class="copy-done" role="status" hidden>Copied ✓</span>
+      <button type="button" class="btn btn-primary" id="download">Download the events file</button>
       <span id="save-status" class="save-status" role="status" hidden></span>
     </p>
-    <label for="json-out">Generated events.json</label>
-    <textarea id="json-out" class="json-out" readonly rows="14" spellcheck="false"></textarea>
+    <details id="manual">
+      <summary>For the technically inclined: the generated file</summary>
+      <p class="preview-note">This is the <code>events.json</code> the form produces — the same thing the Download button saves (installed as <code>site/assets/data/events.json</code>). Handy for copy-paste or a quick sanity check; nobody needs to edit it.</p>
+      <p class="admin-actions">
+        <button type="button" class="btn btn-secondary" id="copy">Copy JSON</button>
+        <span id="copy-done" class="copy-done" role="status" hidden>Copied ✓</span>
+      </p>
+      <label for="json-out">Generated events.json</label>
+      <textarea id="json-out" class="json-out" readonly rows="14" spellcheck="false"></textarea>
+    </details>
   </section>
   </div>
 </main>

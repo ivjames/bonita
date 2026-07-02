@@ -700,6 +700,27 @@ nav.toc a:hover {
 .save-status.ok { color: #1c6b32; }
 .save-status.err { color: #a33000; }
 .preview-note { color: var(--ink-soft); font-size: .95rem; max-width: 46rem; }
+#manual {
+  margin: 1.4rem 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-warm);
+  padding: .7rem 1.1rem;
+}
+#manual[open] { padding-bottom: 1.1rem; }
+#manual summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+#manual summary:hover { color: var(--maroon); }
+.preview-note code, #manual code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .9em;
+  background: rgba(184, 137, 45, .12);
+  padding: .1em .35em;
+  border-radius: 4px;
+}
 .json-out {
   width: 100%;
   font: .85rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;

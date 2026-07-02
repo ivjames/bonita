@@ -161,6 +161,7 @@
       const res = await fetch('/api/health');
       if (!res.ok || !(await res.json()).ok) return;
       saveBtn.hidden = false;
+      document.getElementById('download').hidden = true;   // Save is the one true button
       document.getElementById('publish-note').hidden = true;
       document.getElementById('publish-note-live').hidden = false;
     } catch { /* no backend: stay in download/copy mode */ }
