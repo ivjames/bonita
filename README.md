@@ -1,10 +1,12 @@
 # Bonita Center for the Arts — website
 
-Working repo for maintaining and eventually rebuilding
+Working repo for maintaining and rebuilding
 [bonitacenterforthearts.com](https://www.bonitacenterforthearts.com), migrating
 it off Wix onto a self-hosted DigitalOcean droplet.
 
 - **Live site:** https://www.bonitacenterforthearts.com (Wix)
+- **Rebuild (staging):** https://bonita.lab980.com — static site in
+  [`site/`](site/), nginx + certbot config in [`deploy/`](deploy/)
 - **Ticketing:** https://bonitacenterforthearts.ludus.com (Ludus, external)
 - **Venue:** 701-seat performing-arts theatre owned by Bonita Unified School
   District (BUSD), San Dimas CA. Opened 2014.
@@ -32,14 +34,32 @@ coordinated through Kyle Brown / BUSD.
 Rentals are inquiry-gated (no public pricing); the venue is booked Nov–June for
 district use, with external rentals only in summer and fall.
 
-## Known issues to fix (in Wix now, or carry into the rebuild)
+## The rebuild (`site/` + `deploy/`)
+
+Static HTML/CSS (no build step, no external fonts/trackers), served by nginx
+on the droplet at **bonita.lab980.com**. Same five URL paths as Wix. See
+[`deploy/README.md`](deploy/README.md) for droplet setup (DNS → nginx →
+certbot) and the decisions baked into the config (staging is noindex, forms
+are mailto-composed pending a backend, calendar links out to Ludus, Wix PDF
+paths get 301s).
+
+Everything in "known issues" below is fixed in the rebuild; the axe-core
+audit of the rebuilt site is clean (0 violations, 0 bad alt, all forms
+labeled, one H1 per page — verify with `node tools/preview.mjs` +
+`node tools/audit.mjs http://127.0.0.1:8288/ --no-proxy --max 10 --wait 400 --out /tmp/rebuild-audit`).
+
+## Known issues in the live Wix site (fixed in the rebuild)
 
 - Contact info stale: About contact block + footer on Rentals/Calendar still show
   **Stone / Stone@Bonita.k12.ca.us** → should be **Brown / KBrown@Bonita.k12.ca.us**
+  (as of 2026-07-01 the visible text is updated but the About mailto still
+  points at Stone@)
 - Calendar page renders blank without JS (no static fallback)
 - "Gallery" section on About is actually just a lost & found form — no real gallery
+  (rebuild names the section Lost & found)
 - Seating chart is a PDF behind an unlabeled image ("CLICK IMAGE TO OPEN PDF")
-- 2015 Vimeo opening video duplicated on Home and Rentals
+- 2015 Vimeo opening video duplicated on Home and Rentals (rebuild embeds it
+  once, on About)
 - Wix-generated filename alt text likely throughout
 
 ## Accessibility
@@ -63,16 +83,30 @@ misuses ~40 H5s (16 of them empty) for body text.
 - [ ] Get Wix admin access (via Kyle Brown / BUSD)
 - [x] Full content + asset audit before leaving Wix — see `audit/reports/fable/inventory.md`
 - [x] Accessibility audit (axe-core) — see `audit/reports/fable/a11y.md`; Lighthouse/pa11y still TODO
-- [ ] Choose the stack for the self-hosted DO droplet
-- [ ] Calendar solution to replace the Wix bookings widget
-- [ ] Ludus ticketing integration approach
-- [ ] URL redirect strategy
-- [ ] Sitewide contact corrections (Stone → Brown)
+- [x] Choose the stack for the self-hosted DO droplet — plain static HTML/CSS + nginx (`site/`, `deploy/`)
+- [x] Calendar solution to replace the Wix bookings widget — link out to Ludus
+      (single source of truth); embeddable Ludus widget is a possible later upgrade
+- [x] Ludus ticketing integration approach — prominent links sitewide (header
+      Tickets button, Home events section, Calendar page); no iframe (Ludus
+      sits behind Cloudflare)
+- [x] URL redirect strategy — rebuild keeps the Wix paths verbatim
+      (`/about`, `/booking-calendar`, `/get-involved`, `/rentals`); the 3
+      hashed Wix PDF URLs get 301s in nginx
+- [x] Sitewide contact corrections (Stone → Brown) — corrected in the rebuild
+      (still stale on live Wix)
+- [ ] Provision the droplet + DNS A record, run `deploy/setup-droplet.sh`
+- [ ] Form backend (rental inquiry + lost & found currently compose an email
+      client-side)
+- [ ] At cutover: drop noindex (nginx header + robots.txt), point canonicals
+      at the production domain
 
 ## Repo layout
 
 ```
-tools/          audit crawler (crawl + axe-core), test fixtures, README
+site/           the rebuilt static site (5 pages + assets), deployable as-is
+deploy/         nginx server block, provisioning + deploy scripts, runbook
+tools/          audit crawler (crawl + axe-core), local preview server,
+                test fixtures, README
 audit/reports/  committed runs, one subdir per model:
                   fable/ live-site audit + Lighthouse (2026-07-01)
                   opus/  fixture self-test sample (not the live site)
