@@ -72,12 +72,13 @@ too. After that it's `sudo bonita` forever.
 
 - **Staging is noindex.** `robots.txt` disallows everything and nginx sends
   `X-Robots-Tag: noindex, nofollow` — the rebuild must not compete with the
-  live Wix site in search. **At cutover** (when this becomes the real site):
-  remove that header from
-  [`nginx/bonita-common.conf`](nginx/bonita-common.conf), replace
-  `robots.txt` with an allow-all, and update the `<link rel="canonical">`
-  tags in the site's HTML to the production domain — then merge and
-  `sudo bonita`.
+  live Wix site in search. **At cutover** (when this becomes the real site),
+  in [`nginx/bonita-common.conf`](nginx/bonita-common.conf) remove the
+  `X-Robots-Tag` header AND the staging-only `Cache-Control "no-cache"`
+  header (dev aid so deploys show instantly; once live, browsers should
+  cache HTML normally), replace `robots.txt` with an allow-all, and update
+  the `<link rel="canonical">` tags in the site's HTML to the production
+  domain — then merge and `sudo bonita`.
 - **URL paths mirror Wix** (`/about`, `/booking-calendar`, `/get-involved`,
   `/rentals`) via `try_files $uri $uri.html`, so existing links keep working
   at cutover with no redirect map. The three PDFs the Wix site served from
