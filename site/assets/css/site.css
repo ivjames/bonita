@@ -746,21 +746,22 @@ form.contact.compact .fields .full { grid-column: 1 / -1; }
   width: auto;
 }
 
-/* ---- photo gallery (About) ---- */
+/* ---- photo gallery (About) ---- masonry columns keep each photo's own
+   orientation (the venue set mixes landscape architecture with portrait
+   performance shots), no cropping. */
 .gallery {
-  display: grid;
-  gap: 1.1rem;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  columns: 3 18rem;
+  column-gap: 1.1rem;
   list-style: none;
   padding: 0;
   margin: 1.4rem 0;
 }
+.gallery li { break-inside: avoid; margin: 0 0 1.1rem; }
 .gallery figure { margin: 0; }
 .gallery img {
   display: block;
   width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
+  height: auto;
   border-radius: var(--radius);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-1);
