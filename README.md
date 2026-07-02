@@ -121,9 +121,15 @@ misuses ~40 H5s (16 of them empty) for body text.
       hashes) with a session-cookie login form on /admin — no HTTP basic auth,
       and account management (password changes, add/remove staff) is
       self-service on the page; the droplet was only touched once, to
-      bootstrap the first account. Remaining: the two public forms (rental
-      inquiry + lost & found) still compose an email client-side and need
-      pointing at /api/forms once email delivery is decided.
+      bootstrap the first account. Both public forms (rental inquiry + lost &
+      found) POST to /api/forms, falling back to a mailto compose if the
+      backend is unreachable.
+- [x] Submissions inbox — a "Messages" tab on /admin reads the form spool
+      (`GET /api/forms`), so staff triage rental/lost-and-found submissions on
+      the page (mark handled, delete spam; email/phone values are clickable)
+      without needing SSH or email delivery. This is the primary delivery path
+      given the district may not offer mailer access; `POST /api/forms`'s
+      optional sendmail notification remains a bonus if `BCA_MAIL_TO` is set.
 - [x] Structured data (JSON-LD) — a shared `PerformingArtsTheater` block in
       every public page's head (venue, address, phone, capacity, BUSD as
       parent org), plus per-show `Event` markup emitted by

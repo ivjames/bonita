@@ -101,7 +101,7 @@ too. After that it's `sudo bonita` forever.
 ## The bca-api backend (`api/`)
 
 Deployed and live. A single-file Node service (stdlib only, no npm installs)
-that gives the static site its two write paths:
+that gives the static site its write paths and a submissions inbox:
 
 - **`PUT /api/events`** — the [/admin](../site/admin.html) events manager's
   "Save to site" button. Validates the payload (same rules the admin page
@@ -112,8 +112,17 @@ that gives the static site its two write paths:
   to overwrite a dirty tracked file).
 - **`POST /api/forms`** — form intake: appends to `/var/lib/bca/forms.jsonl`
   and, if sendmail is available and `BCA_MAIL_TO` is set in the unit, emails
-  the submission. Honeypot-aware and rate-limited. The public forms still
-  use mailto until they're pointed here.
+  the submission. Honeypot-aware and rate-limited. The rental-inquiry and
+  lost & found forms POST here, falling back to a mailto compose only if the
+  backend is unreachable.
+- **`GET /api/forms`** (+ `POST /api/forms/:id/handled`, `DELETE
+  /api/forms/:id`) — the submissions inbox behind the /admin "Messages" tab
+  (session-gated). Staff read spooled submissions newest-first, mark them
+  handled (triage state in `/var/lib/bca/forms-state.json`, kept separate so
+  reads never rewrite the append-only spool), and delete spam. This is the
+  primary way staff see submissions — no mail delivery required, which suits
+  a district that may not offer mailer access; the `POST /api/forms` sendmail
+  notification is a bonus on top.
 
 **Auth is app-level with per-user accounts** — no HTTP basic auth. Staff
 accounts live in `/var/lib/bca/users.json` (scrypt hashes; the file is the
@@ -132,7 +141,7 @@ as a global-logout lever.
 
 The admin page needs no reconfiguration: it probes `GET /api/health` and
 picks its mode — no backend → download/copy; backend + signed out → login
-form; signed in → "Save to site" + the Staff accounts section.
+form; signed in → "Save to site" + the Messages and Staff accounts sections.
 `tools/preview.mjs` mirrors the proxy locally.
 
 Provisioned (after `setup-droplet.sh`) with:

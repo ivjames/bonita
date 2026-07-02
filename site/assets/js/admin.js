@@ -205,7 +205,8 @@
     if (user) whoami.textContent = `Signed in as ${user}`;
     document.getElementById('download').hidden = mode !== 'static';
     document.getElementById('accounts').hidden = mode !== 'live';
-    if (mode === 'live') loadUserList();
+    document.getElementById('messages').hidden = mode !== 'live';
+    if (mode === 'live') { loadUserList(); loadMessages(); }
   }
 
   saveBtn.addEventListener('click', async () => {
@@ -340,6 +341,119 @@
       status.textContent = `⚠ ${err.message}`;
     }
   });
+
+  // ---- messages inbox (visible only when signed in) ----
+  const msgList = document.getElementById('message-list');
+  const msgEmpty = document.getElementById('messages-empty');
+  const msgStatus = document.getElementById('messages-status');
+  const msgCount = document.getElementById('messages-count');
+  const FORM_LABELS = { 'rental-inquiry': 'Rental inquiry', 'lost-and-found': 'Lost & found' };
+  const fmtWhen = (iso) => {
+    try { return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso)); }
+    catch { return iso; }
+  };
+
+  // Render a field value as a clickable mailto:/tel: link when it looks like
+  // one (staff reply straight from the inbox), else as plain text.
+  function fieldValue(v) {
+    const s = String(v);
+    if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s)) {
+      const a = document.createElement('a'); a.href = `mailto:${s}`; a.textContent = s; return a;
+    }
+    const digits = s.replace(/\D/g, '');
+    if (/^[+\d\s().-]+$/.test(s) && digits.length >= 7 && digits.length <= 15) {
+      const a = document.createElement('a'); a.href = `tel:${s.replace(/[^+\d]/g, '')}`; a.textContent = s; return a;
+    }
+    return document.createTextNode(s);
+  }
+
+  function renderMessages(submissions) {
+    msgList.innerHTML = '';
+    msgEmpty.hidden = submissions.length > 0;
+    submissions.forEach((m) => {
+      const li = document.createElement('li');
+      li.className = `message${m.handled ? ' handled' : ''}`;
+
+      const head = document.createElement('div');
+      head.className = 'message-head';
+      const type = document.createElement('span');
+      type.className = 'message-type';
+      type.textContent = FORM_LABELS[m.form] || m.form;
+      const when = document.createElement('time');
+      when.dateTime = m.at || '';
+      when.textContent = m.at ? fmtWhen(m.at) : '';
+      head.append(type, when);
+      if (m.handled) {
+        const tag = document.createElement('span');
+        tag.className = 'message-tag';
+        tag.textContent = 'Handled';
+        head.append(tag);
+      }
+
+      const dl = document.createElement('dl');
+      dl.className = 'message-fields';
+      Object.entries(m.fields || {}).forEach(([k, v]) => {
+        const dt = document.createElement('dt'); dt.textContent = k;
+        const dd = document.createElement('dd'); dd.append(fieldValue(v));
+        dl.append(dt, dd);
+      });
+
+      const actions = document.createElement('p');
+      actions.className = 'admin-actions';
+      const handleBtn = document.createElement('button');
+      handleBtn.type = 'button';
+      handleBtn.className = 'btn btn-secondary';
+      handleBtn.textContent = m.handled ? 'Mark unhandled' : 'Mark handled';
+      handleBtn.addEventListener('click', () => setHandled(m, handleBtn));
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'btn-link';
+      delBtn.textContent = 'Delete';
+      delBtn.addEventListener('click', () => removeMessage(m));
+      actions.append(handleBtn, delBtn);
+
+      li.append(head, dl, actions);
+      msgList.append(li);
+    });
+  }
+
+  async function loadMessages() {
+    try {
+      const res = await fetch('/api/forms');
+      if (!res.ok) return;
+      const { submissions, unhandled } = await res.json();
+      renderMessages(submissions || []);
+      msgCount.textContent = unhandled ? `${unhandled} new` : '';
+      msgCount.hidden = !unhandled;
+    } catch { /* leave the list as-is */ }
+  }
+
+  async function setHandled(m, btn) {
+    btn.disabled = true;
+    try {
+      const res = await fetch(`/api/forms/${m.id}/handled`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ handled: !m.handled }),
+      });
+      if (!res.ok) throw new Error();
+      await loadMessages();
+    } catch { btn.disabled = false; }
+  }
+
+  async function removeMessage(m) {
+    if (!confirm('Delete this message? This can’t be undone.')) return;
+    msgStatus.hidden = true;
+    try {
+      const res = await fetch(`/api/forms/${m.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      await loadMessages();
+    } catch {
+      msgStatus.hidden = false;
+      msgStatus.className = 'save-status err';
+      msgStatus.textContent = '⚠ Could not delete that message — try again.';
+    }
+  }
 
   (async () => {
     try {
