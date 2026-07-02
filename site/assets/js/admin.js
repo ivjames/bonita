@@ -7,10 +7,12 @@
 // installation.
 (() => {
   const rowsEl = document.getElementById('rows');
-  const previewList = document.getElementById('preview-list');
-  const previewEmpty = document.getElementById('preview-empty');
+  const rowsEmpty = document.getElementById('rows-empty');
+  const eventCount = document.getElementById('event-count');
   const jsonOut = document.getElementById('json-out');
   let extras = {};   // _readme/_example and any other non-event keys, preserved on output
+
+  const fullDate = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   const FIELDS = [
     { key: 'title', label: 'Title *', type: 'text', required: true, hint: '' },
@@ -23,9 +25,31 @@
 
   const today = () => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; };
 
-  function addRow(event = {}) {
+  function addRow(event = {}, open = false) {
     const li = document.createElement('li');
     li.className = 'event-row';
+
+    // Collapsed summary — the row as it reads in the list. Clicking it opens
+    // the editing fields; it stays a scannable one-liner the rest of the time.
+    const summary = document.createElement('button');
+    summary.type = 'button';
+    summary.className = 'row-summary';
+    summary.setAttribute('aria-expanded', 'false');
+    const sTitle = document.createElement('span');
+    sTitle.className = 'row-title';
+    const sWhen = document.createElement('span');
+    sWhen.className = 'row-when';
+    const sBadge = document.createElement('span');
+    sBadge.className = 'row-badge';
+    sBadge.textContent = '⚠';
+    sBadge.hidden = true;
+    const sAction = document.createElement('span');
+    sAction.className = 'row-action';
+    sAction.textContent = 'Edit';
+    summary.append(sTitle, sWhen, sBadge, sAction);
+
+    const body = document.createElement('div');
+    body.className = 'row-body';
     const fields = document.createElement('div');
     fields.className = 'fields';
     FIELDS.forEach((f) => {
@@ -53,7 +77,21 @@
     remove.className = 'btn btn-secondary btn-remove';
     remove.textContent = 'Remove';
     remove.addEventListener('click', () => { li.remove(); refresh(); });
-    li.append(fields, flag, remove);
+    body.append(fields, flag, remove);
+
+    const setOpen = (state) => {
+      li.classList.toggle('open', state);
+      summary.setAttribute('aria-expanded', state ? 'true' : 'false');
+      sAction.textContent = state ? 'Done' : 'Edit';
+    };
+    summary.addEventListener('click', () => {
+      const nowOpen = !li.classList.contains('open');
+      setOpen(nowOpen);
+      if (nowOpen) fields.querySelector('input').focus();
+    });
+    if (open) setOpen(true);
+
+    li.append(summary, body);
     rowsEl.append(li);
     return li;
   }
@@ -67,15 +105,32 @@
     return e;
   }
 
-  function flagRow(li, e) {
-    const flag = li.querySelector('.row-flag');
+  // Keep a row's collapsed summary and its warnings in sync with its fields.
+  function paintRow(li, e) {
+    const day = window.BCA.parseEventDay(e.date);
+    const title = li.querySelector('.row-title');
+    title.textContent = e.title || 'Untitled event';
+    title.classList.toggle('is-empty', !e.title);
+
+    const when = [];
+    if (e.dateLabel) when.push(e.dateLabel);
+    else if (day) when.push(fullDate.format(day));
+    else when.push('no date yet');
+    if (e.time) when.push(e.time);
+    if (e.presenter) when.push(e.presenter);
+    li.querySelector('.row-when').textContent = when.join(' · ');
+
     const problems = [];
     if (!e.title || !e.date) problems.push('needs a title and date to appear on the site');
-    const day = window.BCA.parseEventDay(e.date);
     if (e.date && day && day < today()) problems.push('date is in the past — it won’t be shown (safe to remove)');
     if (e.url && !/^https:\/\//.test(e.url)) problems.push('ticket URL should start with https://');
+
+    const flag = li.querySelector('.row-flag');
     flag.textContent = problems.length ? `⚠ This event ${problems.join('; ')}.` : '';
     flag.hidden = !problems.length;
+    const badge = li.querySelector('.row-badge');
+    badge.hidden = !problems.length;
+    badge.title = problems.join('; ');
   }
 
   function currentEvents() {
@@ -83,13 +138,10 @@
   }
 
   function refresh() {
-    [...rowsEl.children].forEach((li) => flagRow(li, readRow(li)));
+    [...rowsEl.children].forEach((li) => paintRow(li, readRow(li)));
     const events = currentEvents();
-    const upcoming = window.BCA.upcomingEvents(events);
-    const shown = window.BCA.renderEvents(previewList, upcoming, 0);
-    previewEmpty.hidden = shown > 0;
-    // Neutralize preview links so a stray click doesn't leave the editor.
-    previewList.querySelectorAll('a').forEach((a) => a.addEventListener('click', (ev) => ev.preventDefault()));
+    rowsEmpty.hidden = rowsEl.children.length > 0;
+    eventCount.textContent = events.length ? `${events.length} event${events.length === 1 ? '' : 's'}` : '';
     const sorted = [...events].sort((a, b) => {
       const da = window.BCA.parseEventDay(a.date), db = window.BCA.parseEventDay(b.date);
       return (da ? da.getTime() : Infinity) - (db ? db.getTime() : Infinity);
@@ -98,7 +150,7 @@
   }
 
   document.getElementById('add').addEventListener('click', () => {
-    addRow().querySelector('input').focus();
+    addRow({}, true).querySelector('input').focus();
     refresh();
   });
   document.getElementById('sort').addEventListener('click', () => {
@@ -303,11 +355,10 @@
       const data = await (await fetch('/assets/data/events.json', { cache: 'no-store' })).json();
       const { events, ...rest } = data;
       extras = rest;
-      (events || []).forEach(addRow);
+      (events || []).forEach((e) => addRow(e));   // collapsed; index must not leak in as `open`
     } catch {
       extras = {};
     }
-    if (!rowsEl.children.length) addRow();
     refresh();
   })();
 })();

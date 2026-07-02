@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=5">
+<link rel="stylesheet" href="/assets/css/site.css?v=6">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -32,7 +32,7 @@
     <div class="inner">
       <p class="eyebrow">Backstage</p>
       <h1>Events manager</h1>
-      <p class="lede">Add and edit the shows listed on the home page and the Calendar page — plain form fields, with a preview of exactly what visitors will see.</p>
+      <p class="lede">The shows listed on the home page and the Calendar page. Click an event to edit it, or add a new one — then publish under Publish.</p>
     </div>
   </header>
   <div class="wrap section">
@@ -42,21 +42,19 @@
   <p class="note" id="publish-note-live" hidden>Fill in the form below, then press <strong>Save to site</strong> under Publish — changes go live immediately. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
 
   <section id="editor" aria-labelledby="editor-h">
-    <h2 id="editor-h">Events</h2>
+    <div class="editor-head">
+      <h2 id="editor-h">Events</h2>
+      <span id="event-count" class="event-count" aria-live="polite"></span>
+    </div>
+    <p class="preview-note">Newest additions can go anywhere in the list — use <strong>Sort by date</strong> to tidy it up. Past dates and entries missing a title or date are flagged; they’re simply left off the public site.</p>
     <form class="admin-editor" autocomplete="off">
       <ul id="rows" class="event-rows"></ul>
+      <p id="rows-empty" class="preview-note" hidden>No events yet — add your first one below.</p>
       <p class="admin-actions">
         <button type="button" class="btn btn-primary" id="add">+ Add an event</button>
         <button type="button" class="btn btn-secondary" id="sort">Sort by date</button>
       </p>
     </form>
-  </section>
-
-  <section id="preview" aria-labelledby="preview-h">
-    <h2 id="preview-h">Preview</h2>
-    <p class="preview-note">Exactly what visitors will see (past dates and incomplete entries are left out; the home page shows the first four).</p>
-    <ul class="event-list" id="preview-list"></ul>
-    <p id="preview-empty" class="preview-note" hidden>No upcoming events to show — the site will fall back to the plain “browse our ticketing site” link.</p>
   </section>
 
   <section id="output" aria-labelledby="output-h">
@@ -142,6 +140,6 @@
   </div>
 </footer>
 <script src="/assets/js/events.js?v=4" defer></script>
-<script src="/assets/js/admin.js?v=3" defer></script>
+<script src="/assets/js/admin.js?v=4" defer></script>
 </body>
 </html>
