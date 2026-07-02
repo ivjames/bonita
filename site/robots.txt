@@ -1,0 +1,6 @@
+# bonita.lab980.com is a staging rebuild of bonitacenterforthearts.com.
+# Keep it out of search indexes until it becomes the production site,
+# so it never competes with the live Wix site. Remove the Disallow
+# (and the X-Robots-Tag header in nginx) at cutover.
+User-agent: *
+Disallow: /
