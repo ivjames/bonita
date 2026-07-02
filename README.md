@@ -91,6 +91,11 @@ misuses ~40 H5s (16 of them empty) for body text.
       Home and Calendar; past dates drop off automatically; empty list = pages
       fall back to the plain Ludus link). The old Wix "calendar widget" was a
       third-party eventscalendar.co iframe that was also fed by hand.
+      Staff edit the list at **/admin** (site/admin.html — "Backstage: Events
+      manager"): browser-only form UI with validation, past-date flags, and a
+      live preview; it generates events.json to download/copy until a write
+      backend exists. Not linked from the public site; noindex, and robots.txt
+      carries a commented Disallow to enable at cutover.
 - [ ] Enable the Ludus embed widget (optional upgrade; needs Ludus account
       admin — Kyle Brown / box office). Ludus has no public API or iCal feed;
       the sanctioned option is their embed widget (+$0.50/ticket, More →
@@ -107,7 +112,8 @@ misuses ~40 H5s (16 of them empty) for body text.
       (still stale on live Wix)
 - [ ] Provision the droplet + DNS A record, run `deploy/setup-droplet.sh`
 - [ ] Form backend (rental inquiry + lost & found currently compose an email
-      client-side)
+      client-side). When it lands, also wire the /admin events manager's
+      save path to it and put /admin behind auth (nginx basic auth).
 - [ ] At cutover: drop noindex (nginx header + robots.txt), point canonicals
       at the production domain
 

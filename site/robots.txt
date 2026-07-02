@@ -1,6 +1,9 @@
 # bonita.lab980.com is a staging rebuild of bonitacenterforthearts.com.
 # Keep it out of search indexes until it becomes the production site,
-# so it never competes with the live Wix site. Remove the Disallow
-# (and the X-Robots-Tag header in nginx) at cutover.
+# so it never competes with the live Wix site. At cutover, change the
+# blanket Disallow to just the /admin line below (and drop the
+# X-Robots-Tag header in nginx).
 User-agent: *
 Disallow: /
+# Keep after cutover: the backstage events manager is staff-only.
+# Disallow: /admin

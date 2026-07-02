@@ -627,6 +627,94 @@ nav.toc a:hover {
   transform: translateY(-1px);
 }
 
+/* ---- backstage events manager (/admin) ---- */
+.btn-secondary {
+  background: transparent;
+  color: var(--maroon);
+  border-color: var(--maroon);
+}
+.btn-secondary:hover { background: rgba(142, 31, 46, .07); color: var(--maroon-dark); }
+.event-rows {
+  list-style: none;
+  margin: 1.2rem 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+.event-row {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+  box-shadow: var(--shadow-1);
+}
+.event-row .fields {
+  display: grid;
+  gap: .8rem 1.2rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+.event-row .field-title { grid-column: 1 / -1; }
+.event-row .field-url { grid-column: 1 / -1; }
+.event-row label {
+  display: block;
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: .25rem;
+}
+.event-row input {
+  width: 100%;
+  padding: .55rem .7rem;
+  font: inherit;
+  border: 1px solid #c9bda4;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.event-row input:focus {
+  border-color: var(--maroon);
+  box-shadow: 0 0 0 3px rgba(142, 31, 46, .12);
+}
+.event-row .row-flag {
+  margin: .8rem 0 0;
+  font-size: .92rem;
+  color: #8a4b00;
+}
+.event-row .btn-remove {
+  margin-top: .8rem;
+  padding: .4rem .9rem;
+  font-size: .9rem;
+}
+.admin-actions {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  flex-wrap: wrap;
+  margin: 1.2rem 0;
+}
+.copy-done { color: #1c6b32; font-weight: 700; }
+.preview-note { color: var(--ink-soft); font-size: .95rem; max-width: 46rem; }
+.json-out {
+  width: 100%;
+  font: .85rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: .9rem 1rem;
+  resize: vertical;
+}
+.note code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .9em;
+  background: rgba(184, 137, 45, .12);
+  padding: .1em .35em;
+  border-radius: 4px;
+}
+
 /* ---- policy lists ---- */
 .policies ul { padding-left: 1.25rem; }
 .policies li { margin: .45rem 0; }

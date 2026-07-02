@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backstage: Events manager | Bonita Center for the Arts</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="/">
+      <img src="/assets/img/bca-logo.png" alt="" width="44" height="52">
+      <span class="name">Bonita Center for the Arts<small>Backstage · staff only</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <ul>
+        <li><a href="/">Back to the site</a></li>
+        <li><a href="/booking-calendar">Calendar</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <header class="page-head">
+    <div class="inner">
+      <p class="eyebrow">Backstage</p>
+      <h1>Events manager</h1>
+      <p class="lede">Edit the upcoming-events list shown on the home page and the Calendar page. Everything here happens in your browser — nothing is published until the generated file is installed on the site.</p>
+    </div>
+  </header>
+  <div class="wrap section">
+
+  <p class="note">This page can't save to the site yet (there's no form backend). When you're done: <strong>Download events.json</strong> (or copy it) and send it to the site maintainer, who commits it as <code>site/assets/data/events.json</code>. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
+
+  <section id="editor" aria-labelledby="editor-h">
+    <h2 id="editor-h">Events</h2>
+    <form class="admin-editor" autocomplete="off">
+      <ul id="rows" class="event-rows"></ul>
+      <p class="admin-actions">
+        <button type="button" class="btn btn-primary" id="add">+ Add an event</button>
+        <button type="button" class="btn btn-secondary" id="sort">Sort by date</button>
+      </p>
+    </form>
+  </section>
+
+  <section id="preview" aria-labelledby="preview-h">
+    <h2 id="preview-h">Preview</h2>
+    <p class="preview-note">Exactly what visitors will see (past dates and incomplete entries are left out; the home page shows the first four).</p>
+    <ul class="event-list" id="preview-list"></ul>
+    <p id="preview-empty" class="preview-note" hidden>No upcoming events to show — the site will fall back to the plain “browse our ticketing site” link.</p>
+  </section>
+
+  <section id="output" aria-labelledby="output-h">
+    <h2 id="output-h">Publish</h2>
+    <p class="admin-actions">
+      <button type="button" class="btn btn-primary" id="download">Download events.json</button>
+      <button type="button" class="btn btn-secondary" id="copy">Copy JSON</button>
+      <span id="copy-done" class="copy-done" role="status" hidden>Copied ✓</span>
+    </p>
+    <label for="json-out">Generated events.json</label>
+    <textarea id="json-out" class="json-out" readonly rows="14" spellcheck="false"></textarea>
+  </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="fineprint">
+    <p>Backstage tool — not linked from the public site. The Bonita Center for the Arts is owned and operated by the Bonita Unified School District.</p>
+  </div>
+</footer>
+<script src="/assets/js/events.js" defer></script>
+<script src="/assets/js/admin.js" defer></script>
+</body>
+</html>
