@@ -66,3 +66,15 @@ the tool without hitting the network:
 node serve.mjs &          # serves fixtures on 127.0.0.1:8199
 node audit.mjs http://127.0.0.1:8199/ --no-proxy --max 10 --wait 300
 ```
+
+## Page chrome (`chrome.mjs`)
+
+The shared header nav, footer, venue JSON-LD, and per-section "In this
+section" subnav are generated, not hand-copied. Each page in `site/` carries
+marker comments (`<!-- chrome:header -->…<!-- /chrome:header -->`);
+`node chrome.mjs` regenerates everything between them from the nav tree at
+the top of the script. Output is committed, so nginx/deploy stay a plain
+`git pull`. Don't edit inside the markers by hand — change the script (or the
+page content outside the markers) and re-run it. `node chrome.mjs --check`
+exits non-zero if any page is stale. `admin.html` is skipped on purpose (its
+reduced nav is hand-maintained).

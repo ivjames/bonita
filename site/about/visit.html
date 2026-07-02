@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Calendar | Bonita Center for the Arts</title>
-<meta name="description" content="Upcoming events at the Bonita Center for the Arts. Browse show dates and buy tickets on our ticketing site.">
-<link rel="canonical" href="https://bonita.lab980.com/booking-calendar">
+<title>Plan your visit | Bonita Center for the Arts</title>
+<meta name="description" content="Plan your visit to the Bonita Center for the Arts in San Dimas: address, directions, and the auditorium seating chart with wheelchair-accessible spaces.">
+<link rel="canonical" href="https://bonita.lab980.com/about/visit">
 <!-- chrome:jsonld -->
 <script type="application/ld+json">
 {
@@ -49,7 +49,6 @@
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
-
 <!-- chrome:header -->
 <header class="site-header">
   <div class="bar">
@@ -60,15 +59,15 @@
     <nav class="site-nav" aria-label="Main">
       <ul>
         <li><a href="/">Home</a></li>
-        <li class="has-sub">
+        <li class="has-sub current-section">
           <a href="/about">About</a>
           <ul class="sub">
-            <li><a href="/about/visit">Plan your visit</a></li>
+            <li><a href="/about/visit" aria-current="page">Plan your visit</a></li>
             <li><a href="/about/contact">Contact us</a></li>
             <li><a href="/about/policies">House policies</a></li>
           </ul>
         </li>
-        <li><a href="/booking-calendar" aria-current="page">Calendar</a></li>
+        <li><a href="/booking-calendar">Calendar</a></li>
         <li><a href="/get-involved">Get Involved</a></li>
         <li class="has-sub">
           <a href="/rentals">Rentals</a>
@@ -84,47 +83,53 @@
   </div>
 </header>
 <!-- /chrome:header -->
-
 <main id="main">
   <header class="page-head">
     <div class="inner">
-      <p class="eyebrow">What's on</p>
-      <h1>Calendar</h1>
-      <p class="lede">All public performances at the BCA are listed on our ticketing site, with show details, dates and times, and online seat selection.</p>
+      <p class="eyebrow">The venue</p>
+      <h1>Plan your visit</h1>
+      <p class="lede">Where to find us, and where you'll be sitting when you get here.</p>
     </div>
   </header>
   <div class="wrap section">
-  <ul class="event-list" data-events data-max="12" hidden></ul>
-  <p><a class="btn btn-primary" href="https://bonitacenterforthearts.ludus.com/index.php">View the events calendar &amp; buy tickets</a></p>
+  <!-- chrome:subnav -->
+  <nav class="toc section-nav" aria-label="In this section">
+    <h2>In this section</h2>
+    <ul>
+      <li><a href="/about">Our story</a></li>
+      <li><a href="/about/visit" aria-current="page">Plan your visit</a></li>
+      <li><a href="/about/contact">Contact us</a></li>
+      <li><a href="/about/policies">House policies</a></li>
+    </ul>
+  </nav>
+<!-- /chrome:subnav -->
 
-  <!-- Ludus embed widget: plumbed and inert, pending Ludus account access.
-       The widget lets patrons browse events and buy seats without leaving
-       this page. To activate (needs whoever administers the BCA's Ludus
-       account, via More → Embed Widget → Get Started):
-         1. Accept the embed add-on (adds $0.50/ticket to the base Ludus fee
-            — patrons pay it; confirm the BCA is OK with that).
-         2. Give Ludus the domains to whitelist: bonita.lab980.com now, and
-            the production domain at cutover.
-         3. Paste the embed code Ludus provides inside the div below and
-            delete this comment. It is a script snippet configured with
-            subdomain: 'bonitacenterforthearts' and sections: 'events'.
-         4. Keep everything above this comment as the no-JS/static fallback,
-            and re-run the axe audit (tools/README.md) after enabling.
-       Ludus best practice: the widget wants an unrestricted-height container
-       (.ludus-embed provides one) and no fixed header floating over it — if
-       the sticky header crowds it, scope `.site-header { position: sticky }`
-       in site.css to exclude this page.
-  <div class="ludus-embed"></div>
-  -->
+  <section id="location" aria-labelledby="location-h">
+    <h2 id="location-h">Location</h2>
+    <address>
+      Bonita Center for the Arts<br>
+      822 W Covina Blvd<br>
+      San Dimas, CA 91773
+    </address>
+    <p><a class="btn btn-primary" href="https://www.google.com/maps/search/?api=1&amp;query=Bonita+Center+for+the+Arts%2C+822+W+Covina+Blvd%2C+San+Dimas%2C+CA+91773">Open in Google Maps</a></p>
+  </section>
 
-
-  <p class="note">The public calendar shows ticketed events only. The venue is in district use November through June, and not every booked rental event is listed — if you're planning around venue availability, please <a href="/rentals#inquiry">send a rental inquiry</a>.</p>
-
-  <h2>Box office</h2>
-  <p>The box office opens 1 hour before showtime. For ticketing questions, email <a href="mailto:Kauffunger@Bonita.k12.ca.us?subject=Box%20Office%20Inquiry">Kauffunger@Bonita.k12.ca.us</a> or call <a href="tel:+19099718280">(909) 971-8280</a>.</p>
+  <section id="seating" aria-labelledby="seating-h">
+    <h2 id="seating-h">Seating chart</h2>
+    <ul class="stat-row">
+      <li><span class="n">701</span> total seats</li>
+      <li><span class="n">322</span> Orchestra</li>
+      <li><span class="n">233</span> Parterre</li>
+      <li><span class="n">146</span> Balcony</li>
+    </ul>
+    <figure>
+      <img src="/assets/img/seating-chart.jpg" alt="Seating map of the auditorium: Orchestra level nearest the stage, Parterre in the middle, and Balcony at the rear, each split into left, center and right sections. Wheelchair spaces are marked in Orchestra row M and Parterre row U, near the entrances." width="1600" height="1344">
+      <figcaption>Auditorium seating map. Wheelchair spaces are highlighted.</figcaption>
+    </figure>
+    <p><a href="/assets/pdf/bca-seating-chart.pdf">Download the seating chart (PDF, 0.5&nbsp;MB)</a></p>
+  </section>
   </div>
 </main>
-
 <!-- chrome:footer -->
 <footer class="site-footer">
   <div class="cols">
@@ -157,6 +162,5 @@
   </div>
 </footer>
 <!-- /chrome:footer -->
-<script src="/assets/js/events.js?v=3" defer></script>
 </body>
 </html>

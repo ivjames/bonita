@@ -4,11 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>About | Bonita Center for the Arts</title>
-<meta name="description" content="About the Bonita Center for the Arts: our story, staff contacts, location, seating chart, lost &amp; found, and house policies.">
+<meta name="description" content="The story of the Bonita Center for the Arts, a 700-seat theater built by the communities of San Dimas, La Verne and the Bonita Unified School District.">
 <link rel="canonical" href="https://bonita.lab980.com/about">
-<!-- Venue structured data (JSON-LD), identical on every public page - keep the
-     copies in sync. At cutover, point the URLs at the production domain, same
-     as the canonicals. -->
+<!-- chrome:jsonld -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -43,14 +41,15 @@
   ]
 }
 </script>
+<!-- /chrome:jsonld -->
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=2">
+<link rel="stylesheet" href="/assets/css/site.css?v=3">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
-
+<!-- chrome:header -->
 <header class="site-header">
   <div class="bar">
     <a class="brand" href="/">
@@ -60,40 +59,53 @@
     <nav class="site-nav" aria-label="Main">
       <ul>
         <li><a href="/">Home</a></li>
-        <li><a href="/about" aria-current="page">About</a></li>
+        <li class="has-sub current-section">
+          <a href="/about" aria-current="page">About</a>
+          <ul class="sub">
+            <li><a href="/about/visit">Plan your visit</a></li>
+            <li><a href="/about/contact">Contact us</a></li>
+            <li><a href="/about/policies">House policies</a></li>
+          </ul>
+        </li>
         <li><a href="/booking-calendar">Calendar</a></li>
         <li><a href="/get-involved">Get Involved</a></li>
-        <li><a href="/rentals">Rentals</a></li>
+        <li class="has-sub">
+          <a href="/rentals">Rentals</a>
+          <ul class="sub">
+            <li><a href="/rentals/policies">Rental policies</a></li>
+            <li><a href="/rentals/building">Building layout</a></li>
+            <li><a href="/rentals/tech-specs">Technical specs</a></li>
+          </ul>
+        </li>
         <li><a class="tickets" href="https://bonitacenterforthearts.ludus.com/index.php">Tickets</a></li>
       </ul>
     </nav>
   </div>
 </header>
-
+<!-- /chrome:header -->
 <main id="main">
   <header class="page-head">
     <div class="inner">
       <p class="eyebrow">The venue</p>
       <h1>About the Bonita Center for the Arts</h1>
-      <p class="lede">Our story, staff contacts, location, the seating chart, and house policies.</p>
+      <p class="lede">Our story — plus everything you need to plan a visit, get in touch, and know before the show.</p>
     </div>
   </header>
   <div class="wrap section">
-
-  <nav class="toc" aria-label="On this page">
-    <h2>On this page</h2>
+  <!-- chrome:subnav -->
+  <nav class="toc section-nav" aria-label="In this section">
+    <h2>In this section</h2>
     <ul>
-      <li><a href="#overview">Overview</a></li>
-      <li><a href="#contact">Contact us</a></li>
-      <li><a href="#lost-and-found">Lost &amp; found</a></li>
-      <li><a href="#location">Location</a></li>
-      <li><a href="#seating">Seating chart</a></li>
-      <li><a href="#policies">House policies</a></li>
+      <li><a href="/about" aria-current="page">Our story</a></li>
+      <li><a href="/about/visit">Plan your visit</a></li>
+      <li><a href="/about/contact">Contact us</a></li>
+      <li><a href="/about/policies">House policies</a></li>
     </ul>
   </nav>
+<!-- /chrome:subnav -->
 
   <section id="overview" aria-labelledby="overview-h">
-    <h2 id="overview-h">Overview</h2>
+    <h2 id="overview-h">Our story</h2>
     <div class="grid-2">
       <div>
         <p>In the Fall of 2014, after 25 years of planning, the Bonita Center for the Arts officially opened to the public. This 700-seat theater, built by the communities of San Dimas, La Verne and the Bonita Unified School District, is a space for students to perform and display art as well as host meetings and special events. The BCA is open to the public and serves as a professional venue for vocal performances, concerts, dramas, musicals, and much more.</p>
@@ -108,102 +120,26 @@
     <iframe class="video-embed" src="https://player.vimeo.com/video/138108183" title="Bonita Center for the Arts opening video (Vimeo)" loading="lazy" allowfullscreen></iframe>
   </section>
 
-  <section id="contact" aria-labelledby="contact-h">
-    <h2 id="contact-h">Contact us</h2>
-    <p>Main phone: <a href="tel:+19099718280">(909) 971-8280</a>. Please email for the fastest response.</p>
-    <ul class="staff">
-      <li>
-        <strong>Kyle Brown</strong>
-        <span class="role">Theatre Manager</span>
-        <a href="mailto:KBrown@Bonita.k12.ca.us?subject=General%20Inquiry">KBrown@Bonita.k12.ca.us</a>
+  <section aria-labelledby="more-h">
+    <h2 id="more-h">More about the venue</h2>
+    <ul class="cards">
+      <li class="card">
+        <h3><a href="/about/visit">Plan your visit</a></h3>
+        <p>Where to find us, directions, and the auditorium seating chart.</p>
       </li>
-      <li>
-        <strong>Megan Kauffunger</strong>
-        <span class="role">Box Office Manager</span>
-        <a href="mailto:Kauffunger@Bonita.k12.ca.us?subject=Box%20Office%20Inquiry">Kauffunger@Bonita.k12.ca.us</a>
+      <li class="card">
+        <h3><a href="/about/contact">Contact us</a></h3>
+        <p>Staff directory, box office hours, and lost &amp; found.</p>
       </li>
-      <li>
-        <strong>Scott Inlow</strong>
-        <span class="role">Technical Director</span>
-        <a href="mailto:Inlow@Bonita.k12.ca.us?subject=Technical%20Inquiry">Inlow@Bonita.k12.ca.us</a>
+      <li class="card">
+        <h3><a href="/about/policies">House policies</a></h3>
+        <p>What to know before the show — tickets, seating, photography and more.</p>
       </li>
-    </ul>
-    <p>The box office opens 1 hour before showtime.</p>
-  </section>
-
-  <section id="lost-and-found" aria-labelledby="lost-h">
-    <h2 id="lost-h">Lost &amp; found</h2>
-    <p>Left something behind at a show? Tell us what you lost and how to reach you, and we'll let you know if it turns up.</p>
-    <form class="contact" data-mailto="KBrown@Bonita.k12.ca.us" data-subject="Lost &amp; Found">
-      <p class="required-note">Fields marked with * are required.</p>
-      <div>
-        <label for="lf-name">Name *</label>
-        <input id="lf-name" name="name" data-label="Name" type="text" autocomplete="name" required>
-      </div>
-      <div>
-        <label for="lf-item">Item description *</label>
-        <input id="lf-item" name="item-description" data-label="Item description" type="text" required>
-      </div>
-      <div>
-        <label for="lf-info">Additional information (event, date, where you were seated&hellip;)</label>
-        <input id="lf-info" name="additional-information" data-label="Additional information" type="text">
-      </div>
-      <div>
-        <label for="lf-email">Email *</label>
-        <input id="lf-email" name="email" data-label="Email" type="email" autocomplete="email" required>
-      </div>
-      <div>
-        <label for="lf-phone">Phone</label>
-        <input id="lf-phone" name="phone" data-label="Phone" type="tel" autocomplete="tel">
-      </div>
-      <button class="btn btn-primary" type="submit">Compose email</button>
-      <p class="required-note">Submitting opens a pre-filled message in your email app. You can also email us directly at <a href="mailto:KBrown@Bonita.k12.ca.us?subject=Lost%20%26%20Found">KBrown@Bonita.k12.ca.us</a>.</p>
-    </form>
-  </section>
-
-  <section id="location" aria-labelledby="location-h">
-    <h2 id="location-h">Location</h2>
-    <address>
-      Bonita Center for the Arts<br>
-      822 W Covina Blvd<br>
-      San Dimas, CA 91773
-    </address>
-    <p><a class="btn btn-primary" href="https://www.google.com/maps/search/?api=1&amp;query=Bonita+Center+for+the+Arts%2C+822+W+Covina+Blvd%2C+San+Dimas%2C+CA+91773">Open in Google Maps</a></p>
-  </section>
-
-  <section id="seating" aria-labelledby="seating-h">
-    <h2 id="seating-h">Seating chart</h2>
-    <ul class="stat-row">
-      <li><span class="n">701</span> total seats</li>
-      <li><span class="n">322</span> Orchestra</li>
-      <li><span class="n">233</span> Parterre</li>
-      <li><span class="n">146</span> Balcony</li>
-    </ul>
-    <figure>
-      <img src="/assets/img/seating-chart.jpg" alt="Seating map of the auditorium: Orchestra level nearest the stage, Parterre in the middle, and Balcony at the rear, each split into left, center and right sections. Wheelchair spaces are marked in Orchestra row M and Parterre row U, near the entrances." width="1600" height="1344">
-      <figcaption>Auditorium seating map. Wheelchair spaces are highlighted.</figcaption>
-    </figure>
-    <p><a href="/assets/pdf/bca-seating-chart.pdf">Download the seating chart (PDF, 0.5&nbsp;MB)</a></p>
-  </section>
-
-  <section id="policies" aria-labelledby="policies-h" class="policies">
-    <h2 id="policies-h">House policies</h2>
-    <ul>
-      <li>Everyone, regardless of age, must have a ticket. Please keep this in mind before bringing any little ones. Every person who enters the Theatre must be accounted for in the event of an emergency.</li>
-      <li>No food or beverage is permitted inside the Theatre, with the exception of bottled water.</li>
-      <li>Do not litter. Whatever you bring into the Theatre, please bring it out with you.</li>
-      <li>Latecomers will be seated at the discretion of the House Staff at a break in the performance.</li>
-      <li>At no time may a Guest block an entrance, exit, stairway, or aisle way. If a Guest is found to be blocking a said area, the BCA House Manager or a Front of House staff member will escort the guest to a seat or appropriate location.</li>
-      <li>Flash photography is strictly prohibited as it poses a risk to our performers. Professional photography/videography and tripods are allowed with prior approval.</li>
-      <li>No balloons permitted inside the BCA.</li>
-      <li>Animals are not permitted inside the BCA. Guests with service animals must comply with all requirements as permitted by the Americans with Disabilities Act.</li>
-      <li>Smoking is not allowed on BCA property.</li>
-      <li>Audience members are not allowed backstage unless approved and wearing the correct credentials.</li>
     </ul>
   </section>
   </div>
 </main>
-
+<!-- chrome:footer -->
 <footer class="site-footer">
   <div class="cols">
     <div class="badge">
@@ -234,6 +170,7 @@
     <p>The Bonita Center for the Arts is owned and operated by the Bonita Unified School District.</p>
   </div>
 </footer>
-<script src="/assets/js/site.js?v=2"></script>
+<!-- /chrome:footer -->
+<script src="/assets/js/site.js?v=3"></script>
 </body>
 </html>
