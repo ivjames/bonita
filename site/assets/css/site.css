@@ -750,7 +750,7 @@ form.contact.compact .fields .full { grid-column: 1 / -1; }
    orientation (the venue set mixes landscape architecture with portrait
    performance shots), no cropping. */
 .gallery {
-  columns: 3 18rem;
+  columns: 4 15rem;
   column-gap: 1.1rem;
   list-style: none;
   padding: 0;
