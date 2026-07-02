@@ -36,7 +36,8 @@ district use, with external rentals only in summer and fall.
 
 ## The rebuild (`site/` + `deploy/`)
 
-Static HTML/CSS (no build step, no external fonts/trackers), served by nginx
+Static HTML/CSS (no build step, no third-party requests or trackers; the
+Fraunces display font is self-hosted in `site/assets/fonts/`), served by nginx
 on the droplet at **bonita.lab980.com**. Same five URL paths as Wix. See
 [`deploy/README.md`](deploy/README.md) for droplet setup (DNS → nginx →
 certbot) and the decisions baked into the config (staging is noindex, forms
