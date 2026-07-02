@@ -14,11 +14,14 @@ running nginx, with TLS from Let's Encrypt (certbot).
 
    (Add an AAAA record too if the droplet has IPv6.)
 
-2. **Provision the droplet** (Ubuntu 22.04/24.04, as root):
+2. **Provision the droplet** (Ubuntu 22.04/24.04, as root). Clone the repo
+   **outside the webroot** — the deploy rsyncs `site/` into `/var/www/bonita`
+   with `--delete`, so a clone living inside the webroot would get wiped
+   (the scripts now refuse to run in that layout):
 
    ```bash
-   git clone https://github.com/ivjames/bonita.git
-   cd bonita
+   git clone https://github.com/ivjames/bonita.git /root/bonita
+   cd /root/bonita
    sudo bash deploy/setup-droplet.sh
    ```
 

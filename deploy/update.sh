@@ -33,6 +33,19 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+# HARD GUARD: never deploy over the checkout itself. If the clone lives in
+# or under the webroot, rsync --delete would wipe the repo — including
+# site/ out from under the copy ("file has vanished"). The clone belongs
+# outside the webroot, e.g. /root/bonita.
+case "$REPO_DIR/" in
+  "$WEBROOT/"|"$WEBROOT"/*)
+    echo "Refusing to deploy: this checkout ($REPO_DIR) is inside the" >&2
+    echo "webroot ($WEBROOT). Move the clone outside it, e.g.:" >&2
+    echo "  git clone https://github.com/ivjames/bonita.git /root/bonita" >&2
+    echo "  sudo bash /root/bonita/deploy/update.sh" >&2
+    exit 1;;
+esac
+
 git -C "$REPO_DIR" fetch origin main
 git -C "$REPO_DIR" checkout main >/dev/null 2>&1 || git -C "$REPO_DIR" checkout -b main origin/main
 git -C "$REPO_DIR" merge --ff-only origin/main
