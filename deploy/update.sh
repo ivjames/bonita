@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Update the live site ON THE DROPLET: `sudo bonita` = git pull, then
-# nginx test + reload. That's the whole deploy.
+# Update the live site ON THE DROPLET: `sudo bonita` = git pull, refresh the
+# bca-api service if it's installed, then nginx test + reload. That's the
+# whole deploy.
 #
 # nginx serves this checkout's site/ directory directly, and the routing
 # conf (/etc/nginx/snippets/bonita.d/*.conf) is symlinked into this
@@ -10,6 +11,13 @@
 # (Only the certbot-managed server-block shell in sites-available sits
 # outside the repo; it holds nothing but listen/server_name/root and the
 # include, and shouldn't ever need to change.)
+#
+# The one thing nginx doesn't serve from the checkout is the bca-api backend:
+# it runs from a COPY at /opt/bca/bca-api.mjs (installed by setup-api.sh), so
+# the pull alone can't update it. When that service is installed and the
+# repo's copy has changed, this script reinstalls and restarts it — so a
+# single `sudo bonita` deploys both halves. Droplets without the API
+# provisioned skip this untouched.
 #
 # First run:        sudo bash deploy/update.sh   (from the clone)
 # Every run after:  sudo bonita                  (from any directory)
@@ -40,6 +48,18 @@ git -C "$REPO_DIR" checkout main >/dev/null 2>&1 || git -C "$REPO_DIR" checkout 
 git -C "$REPO_DIR" merge --ff-only origin/main
 
 ln -sf "$SCRIPT_PATH" "$BIN_LINK"
+
+# Keep the backend service in sync. It runs from /opt/bca/bca-api.mjs, a copy
+# outside the checkout, so the git pull above updated only the repo's version.
+# When the unit is installed and that copy has drifted, refresh + restart it;
+# an unprovisioned droplet (no unit) is left alone.
+if [[ -f /etc/systemd/system/bca-api.service ]]; then
+  if ! cmp -s "$REPO_DIR/deploy/api/bca-api.mjs" /opt/bca/bca-api.mjs; then
+    install -m 644 "$REPO_DIR/deploy/api/bca-api.mjs" /opt/bca/bca-api.mjs
+    systemctl restart bca-api
+    echo "bca-api service updated and restarted."
+  fi
+fi
 
 nginx -t
 systemctl reload nginx
