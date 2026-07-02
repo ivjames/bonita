@@ -953,9 +953,9 @@ main [id] { scroll-margin-top: 5.4rem; }
   margin: 1.2rem 0;
 }
 .copy-done { color: #1c6b32; font-weight: 700; }
-.save-status { font-weight: 700; color: var(--ink-soft); }
-.save-status.ok { color: #1c6b32; }
-.save-status.err { color: #a33000; }
+.save-status, .form-status { font-weight: 700; color: var(--ink-soft); }
+.save-status.ok, .form-status.ok { color: #1c6b32; }
+.save-status.err, .form-status.err { color: #a33000; }
 .login-card {
   max-width: 26rem;
   background: var(--card);
@@ -1127,6 +1127,15 @@ main [id] { scroll-margin-top: 5.4rem; }
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+/* Honeypot: a decoy field kept off-screen (bots fill it, people don't see
+   it). aria-hidden + tabindex=-1 in the markup keep it away from assistive
+   tech and keyboard tabbing; CSP forbids inline styles so it lives here. */
+.hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px; height: 1px;
+  overflow: hidden;
 }
 .video-embed {
   aspect-ratio: 16 / 9;

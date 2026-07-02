@@ -130,7 +130,7 @@
   <section id="lost-and-found" aria-labelledby="lost-h">
     <h2 id="lost-h">Lost &amp; found</h2>
     <p>Left something behind at a show? Tell us what you lost and how to reach you, and we'll let you know if it turns up.</p>
-    <form class="contact" data-mailto="KBrown@Bonita.k12.ca.us" data-subject="Lost &amp; Found">
+    <form class="contact" data-mailto="KBrown@Bonita.k12.ca.us" data-subject="Lost &amp; Found" data-form="lost-and-found">
       <p class="required-note">Fields marked with * are required.</p>
       <div>
         <label for="lf-name">Name *</label>
@@ -152,8 +152,12 @@
         <label for="lf-phone">Phone</label>
         <input id="lf-phone" name="phone" data-label="Phone" type="tel" autocomplete="tel">
       </div>
-      <button class="btn btn-primary" type="submit">Compose email</button>
-      <p class="required-note">Submitting opens a pre-filled message in your email app. You can also email us directly at <a href="mailto:KBrown@Bonita.k12.ca.us?subject=Lost%20%26%20Found">KBrown@Bonita.k12.ca.us</a>.</p>
+      <div class="hp" aria-hidden="true">
+        <label for="lf-website">Leave this field blank</label>
+        <input id="lf-website" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+      <button class="btn btn-primary" type="submit">Send message</button>
+      <p class="required-note">Submitting sends your message to our staff. You can also email us directly at <a href="mailto:KBrown@Bonita.k12.ca.us?subject=Lost%20%26%20Found">KBrown@Bonita.k12.ca.us</a>.</p>
     </form>
   </section>
   </div>
