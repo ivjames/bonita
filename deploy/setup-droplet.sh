@@ -36,6 +36,15 @@ if command -v ufw >/dev/null; then
   ufw --force enable >/dev/null
 fi
 
+# HARD GUARD: never deploy over the checkout itself — rsync --delete into a
+# webroot that contains the clone wipes the repo. Clone outside /var/www.
+case "$REPO_DIR/" in
+  "$WEBROOT/"|"$WEBROOT"/*)
+    echo "Refusing: this checkout ($REPO_DIR) is inside the webroot ($WEBROOT)." >&2
+    echo "Clone the repo outside the webroot (e.g. /root/bonita) and re-run." >&2
+    exit 1;;
+esac
+
 echo "==> Deploying site content to $WEBROOT"
 mkdir -p "$WEBROOT"
 rsync -a --delete "$REPO_DIR/site/" "$WEBROOT/"
