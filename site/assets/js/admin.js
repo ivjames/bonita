@@ -1,9 +1,10 @@
-// Backstage events manager (/admin). Client-side only: loads the current
+// Backstage events manager (/admin). Loads the current
 // /assets/data/events.json, lets staff edit the list with a live preview,
-// and generates the file to download/copy. There is deliberately no write
-// path yet — when a form backend lands on the droplet, wire save() to it
-// (and put this page behind auth, e.g. nginx basic auth) instead of the
-// download/copy flow.
+// and generates the file. Publishing adapts to the environment: if the
+// bca-api backend is running (deploy/api/ — GET /api/health answers), a
+// "Save to site" button PUTs to /api/events, which nginx protects with
+// basic auth; otherwise the page falls back to download/copy for manual
+// installation.
 (() => {
   const rowsEl = document.getElementById('rows');
   const previewList = document.getElementById('preview-list');
@@ -129,6 +130,41 @@
     setTimeout(() => { done.hidden = true; }, 2000);
   });
   rowsEl.addEventListener('input', refresh);
+
+  // "Save to site" appears only when the bca-api backend answers.
+  const saveBtn = document.getElementById('save');
+  const saveStatus = document.getElementById('save-status');
+  saveBtn.addEventListener('click', async () => {
+    saveBtn.disabled = true;
+    saveStatus.hidden = false;
+    saveStatus.className = 'save-status';
+    saveStatus.textContent = 'Saving…';
+    try {
+      const res = await fetch('/api/events', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: jsonOut.value,
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(out.error || `save failed (${res.status})`);
+      saveStatus.classList.add('ok');
+      saveStatus.textContent = `Saved — ${out.events} event${out.events === 1 ? '' : 's'} live ✓`;
+    } catch (err) {
+      saveStatus.classList.add('err');
+      saveStatus.textContent = `⚠ ${err.message}`;
+    } finally {
+      saveBtn.disabled = false;
+    }
+  });
+  (async () => {
+    try {
+      const res = await fetch('/api/health');
+      if (!res.ok || !(await res.json()).ok) return;
+      saveBtn.hidden = false;
+      document.getElementById('publish-note').hidden = true;
+      document.getElementById('publish-note-live').hidden = false;
+    } catch { /* no backend: stay in download/copy mode */ }
+  })();
 
   (async () => {
     try {

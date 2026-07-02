@@ -696,6 +696,9 @@ nav.toc a:hover {
   margin: 1.2rem 0;
 }
 .copy-done { color: #1c6b32; font-weight: 700; }
+.save-status { font-weight: 700; color: var(--ink-soft); }
+.save-status.ok { color: #1c6b32; }
+.save-status.err { color: #a33000; }
 .preview-note { color: var(--ink-soft); font-size: .95rem; max-width: 46rem; }
 .json-out {
   width: 100%;
@@ -765,6 +768,10 @@ nav.toc a:hover {
 }
 
 /* ---- utility ---- */
+/* Author display rules (e.g. .btn { display:inline-block }) would otherwise
+   override the UA stylesheet's [hidden] { display:none }. */
+[hidden] { display: none !important; }
+
 .visually-hidden {
   position: absolute;
   width: 1px; height: 1px;

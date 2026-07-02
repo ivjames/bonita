@@ -67,12 +67,11 @@ No nginx reload is needed for content changes — only when the `.conf` changes
   `/rentals`) via `try_files $uri $uri.html`, so existing links keep working
   at cutover with no redirect map. The three PDFs the Wix site served from
   hashed `/_files/ugd/...` paths get 301s to their new self-hosted homes.
-- **Forms have no backend.** Lost & found (About) and the rental inquiry
-  (Rentals) compose a pre-filled email in the visitor's mail app
+- **Forms have no backend (yet).** Lost & found (About) and the rental
+  inquiry (Rentals) compose a pre-filled email in the visitor's mail app
   (`site/assets/js/site.js`), with the recipient's address visible as a
-  fallback. To upgrade later, point the form at a real endpoint (Formspree,
-  or a tiny handler on the droplet) — the markup already has proper
-  names/labels.
+  fallback. A ready-to-provision backend sketch lives in [`api/`](api/) —
+  see "Optional: the bca-api backend" below.
 - **Calendar is Ludus-first.** The Wix events widget can't leave Wix, and
   Ludus sits behind Cloudflare (fragile to iframe), so the Calendar page and
   the Home events section link out to
@@ -81,3 +80,37 @@ No nginx reload is needed for content changes — only when the `.conf` changes
 - **CSP is strict** (`default-src 'self'` + Vimeo frames only). If you add
   a third-party embed (maps, calendar), extend `frame-src`/`img-src` in the
   nginx conf accordingly.
+
+## Optional: the bca-api backend (`api/`)
+
+A single-file Node service (stdlib only, no npm installs) that gives the
+static site its two missing write paths:
+
+- **`PUT /api/events`** — the [/admin](../site/admin.html) events manager's
+  "Save to site" button. Validates the payload (same rules the admin page
+  enforces), writes atomically to `/var/lib/bca/events.json`, and keeps the
+  last 30 timestamped backups in `/var/lib/bca/backups/`. nginx serves that
+  file for `/assets/data/events.json` via an alias, **outside the webroot**,
+  because `sudo bonita` rsyncs `--delete` into the webroot and would
+  otherwise clobber staff edits on the next deploy.
+- **`POST /api/forms`** — form intake: appends to `/var/lib/bca/forms.jsonl`
+  and, if sendmail is available and `BCA_MAIL_TO` is set in the unit, emails
+  the submission. Honeypot-aware and rate-limited. The public forms still
+  use mailto until they're pointed here.
+
+The admin page needs no reconfiguration: it probes `GET /api/health` and
+shows "Save to site" only when the backend answers; otherwise it stays in
+download/copy mode. `tools/preview.mjs` mirrors the proxy locally.
+
+To provision, after `setup-droplet.sh`:
+
+```bash
+sudo bash deploy/api/setup-api.sh
+```
+
+(installs node + the systemd unit `bca-api`, seeds `/var/lib/bca`, creates
+`/etc/nginx/bca-htpasswd`), then paste the location blocks from
+[`nginx/bca-api.locations`](nginx/bca-api.locations) into the server block —
+that file also puts `/admin` itself behind the staff basic-auth login — and
+`sudo nginx -t && sudo systemctl reload nginx`. Logs:
+`journalctl -u bca-api`.

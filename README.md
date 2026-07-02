@@ -112,8 +112,14 @@ misuses ~40 H5s (16 of them empty) for body text.
       (still stale on live Wix)
 - [ ] Provision the droplet + DNS A record, run `deploy/setup-droplet.sh`
 - [ ] Form backend (rental inquiry + lost & found currently compose an email
-      client-side). When it lands, also wire the /admin events manager's
-      save path to it and put /admin behind auth (nginx basic auth).
+      client-side). A ready-to-provision sketch lives in `deploy/api/` —
+      bca-api, a stdlib-only Node service behind nginx: `PUT /api/events`
+      (the /admin "Save to site" button; auto-detected via /api/health) and
+      `POST /api/forms` (intake spool + optional sendmail). Run
+      `deploy/api/setup-api.sh` on the droplet + paste
+      `deploy/nginx/bca-api.locations` into the server block (that also puts
+      /admin behind basic auth). The public forms still need pointing at
+      /api/forms once email delivery is decided.
 - [ ] At cutover: drop noindex (nginx header + robots.txt), point canonicals
       at the production domain
 

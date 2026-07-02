@@ -37,7 +37,8 @@
   </header>
   <div class="wrap section">
 
-  <p class="note">This page can't save to the site yet (there's no form backend). When you're done: <strong>Download events.json</strong> (or copy it) and send it to the site maintainer, who commits it as <code>site/assets/data/events.json</code>. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
+  <p class="note" id="publish-note">This page can't save to the site directly (the backend isn't running). When you're done: <strong>Download events.json</strong> (or copy it) and send it to the site maintainer, who commits it as <code>site/assets/data/events.json</code>. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
+  <p class="note" id="publish-note-live" hidden>Changes go live when you press <strong>Save to site</strong> below. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
 
   <section id="editor" aria-labelledby="editor-h">
     <h2 id="editor-h">Events</h2>
@@ -60,9 +61,11 @@
   <section id="output" aria-labelledby="output-h">
     <h2 id="output-h">Publish</h2>
     <p class="admin-actions">
+      <button type="button" class="btn btn-primary" id="save" hidden>Save to site</button>
       <button type="button" class="btn btn-primary" id="download">Download events.json</button>
       <button type="button" class="btn btn-secondary" id="copy">Copy JSON</button>
       <span id="copy-done" class="copy-done" role="status" hidden>Copied ✓</span>
+      <span id="save-status" class="save-status" role="status" hidden></span>
     </p>
     <label for="json-out">Generated events.json</label>
     <textarea id="json-out" class="json-out" readonly rows="14" spellcheck="false"></textarea>

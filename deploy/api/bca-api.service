@@ -1,0 +1,34 @@
+# systemd unit for the bca-api backend (deploy/api/bca-api.mjs).
+# Installed by deploy/api/setup-api.sh as /etc/systemd/system/bca-api.service.
+#
+# StateDirectory gives the service /var/lib/bca (owned by the dynamic user);
+# events.json lives there — outside the webroot — so `sudo bonita` deploys
+# (rsync --delete into /var/www) can't clobber staff edits.
+
+[Unit]
+Description=BCA website backend (events save + form intake)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /opt/bca/bca-api.mjs
+Environment=BCA_DATA=/var/lib/bca
+Environment=BCA_LISTEN=8787
+# Set to enable email notifications for form submissions (needs sendmail):
+# Environment=BCA_MAIL_TO=KBrown@Bonita.k12.ca.us
+Restart=on-failure
+RestartSec=2
+
+# Hardening: no shell user, read-only system, only /var/lib/bca writable.
+DynamicUser=yes
+StateDirectory=bca
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+IPAddressAllow=localhost
+IPAddressDeny=any
+
+[Install]
+WantedBy=multi-user.target
