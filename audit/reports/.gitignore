@@ -5,6 +5,8 @@
 # Exceptions: committed runs live in one subdir per model.
 # opus/  — fixture self-test sample (see opus/README.md)
 # fable/ — live-site audit of 2026-07-01 + Lighthouse reports
+# REPORT.md — consolidated report merging the two runs
+!REPORT.md
 !opus/
 !opus/**
 !fable/
