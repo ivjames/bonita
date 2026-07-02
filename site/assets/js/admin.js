@@ -131,9 +131,26 @@
   });
   rowsEl.addEventListener('input', refresh);
 
-  // "Save to site" appears only when the bca-api backend answers.
+  // Publishing modes, decided by /api/health:
+  //   no backend            -> download/copy only (static mode)
+  //   backend, signed out   -> staff-password login form
+  //   backend, signed in    -> "Save to site"
   const saveBtn = document.getElementById('save');
   const saveStatus = document.getElementById('save-status');
+  const loginForm = document.getElementById('login');
+  const loginStatus = document.getElementById('login-status');
+  const logoutBtn = document.getElementById('logout');
+
+  function setMode(mode) {   // 'static' | 'login' | 'live'
+    document.getElementById('publish-note').hidden = mode !== 'static';
+    document.getElementById('publish-note-login').hidden = mode !== 'login';
+    document.getElementById('publish-note-live').hidden = mode !== 'live';
+    loginForm.hidden = mode !== 'login';
+    saveBtn.hidden = mode !== 'live';
+    logoutBtn.hidden = mode !== 'live';
+    document.getElementById('download').hidden = mode !== 'static';
+  }
+
   saveBtn.addEventListener('click', async () => {
     saveBtn.disabled = true;
     saveStatus.hidden = false;
@@ -146,6 +163,7 @@
         body: jsonOut.value,
       });
       const out = await res.json().catch(() => ({}));
+      if (res.status === 401) { setMode('login'); throw new Error('session expired — sign in again'); }
       if (!res.ok) throw new Error(out.error || `save failed (${res.status})`);
       saveStatus.classList.add('ok');
       saveStatus.textContent = `Saved — ${out.events} event${out.events === 1 ? '' : 's'} live ✓`;
@@ -156,14 +174,39 @@
       saveBtn.disabled = false;
     }
   });
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pass = document.getElementById('login-pass');
+    loginStatus.hidden = true;
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ password: pass.value }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(out.error || `sign-in failed (${res.status})`);
+      pass.value = '';
+      setMode('live');
+    } catch (err) {
+      loginStatus.hidden = false;
+      loginStatus.textContent = `⚠ ${err.message}`;
+    }
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    await fetch('/api/logout', { method: 'POST' }).catch(() => {});
+    saveStatus.hidden = true;
+    setMode('login');
+  });
+
   (async () => {
     try {
       const res = await fetch('/api/health');
-      if (!res.ok || !(await res.json()).ok) return;
-      saveBtn.hidden = false;
-      document.getElementById('download').hidden = true;   // Save is the one true button
-      document.getElementById('publish-note').hidden = true;
-      document.getElementById('publish-note-live').hidden = false;
+      const h = await res.json();
+      if (!res.ok || !h.ok || !h.configured) return;   // stays in static mode
+      setMode(h.auth ? 'live' : 'login');
     } catch { /* no backend: stay in download/copy mode */ }
   })();
 

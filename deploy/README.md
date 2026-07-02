@@ -98,9 +98,19 @@ static site its two missing write paths:
   the submission. Honeypot-aware and rate-limited. The public forms still
   use mailto until they're pointed here.
 
+**Auth is app-level, not HTTP basic auth**: staff sign in with the staff
+password on the /admin page itself (an on-brand form, not a browser popup),
+which sets a 12-hour HttpOnly `SameSite=Strict` session cookie; there's a
+Sign out button. The API enforces the session on `PUT /api/events`, verifies
+the password against a scrypt hash kept in root-only `/etc/bca-api.env`,
+rate-limits login attempts (5 per 15 min/IP), and rejects cross-origin
+writes. Sessions live in memory — restarting the service signs everyone out,
+which is also how you force a global logout.
+
 The admin page needs no reconfiguration: it probes `GET /api/health` and
-shows "Save to site" only when the backend answers; otherwise it stays in
-download/copy mode. `tools/preview.mjs` mirrors the proxy locally.
+picks its mode — no backend → download/copy; backend + signed out → login
+form; signed in → "Save to site". `tools/preview.mjs` mirrors the proxy
+locally.
 
 To provision, after `setup-droplet.sh`:
 
@@ -108,9 +118,9 @@ To provision, after `setup-droplet.sh`:
 sudo bash deploy/api/setup-api.sh
 ```
 
-(installs node + the systemd unit `bca-api`, seeds `/var/lib/bca`, creates
-`/etc/nginx/bca-htpasswd`), then paste the location blocks from
-[`nginx/bca-api.locations`](nginx/bca-api.locations) into the server block —
-that file also puts `/admin` itself behind the staff basic-auth login — and
-`sudo nginx -t && sudo systemctl reload nginx`. Logs:
-`journalctl -u bca-api`.
+(installs node + the systemd unit `bca-api`, prompts for the staff password
+→ scrypt hash into `/etc/bca-api.env`, seeds `/var/lib/bca`), then paste the
+location blocks from [`nginx/bca-api.locations`](nginx/bca-api.locations)
+into the server block and `sudo nginx -t && sudo systemctl reload nginx`.
+To change the password: delete `/etc/bca-api.env`, re-run the script,
+restart the service. Logs: `journalctl -u bca-api`.

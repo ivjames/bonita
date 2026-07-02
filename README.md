@@ -115,11 +115,13 @@ misuses ~40 H5s (16 of them empty) for body text.
       client-side). A ready-to-provision sketch lives in `deploy/api/` —
       bca-api, a stdlib-only Node service behind nginx: `PUT /api/events`
       (the /admin "Save to site" button; auto-detected via /api/health) and
-      `POST /api/forms` (intake spool + optional sendmail). Run
+      `POST /api/forms` (intake spool + optional sendmail). Staff auth is a
+      session-cookie login form on the /admin page itself (scrypt-hashed
+      password, rate-limited, sign-out button — no HTTP basic auth). Run
       `deploy/api/setup-api.sh` on the droplet + paste
-      `deploy/nginx/bca-api.locations` into the server block (that also puts
-      /admin behind basic auth). The public forms still need pointing at
-      /api/forms once email delivery is decided.
+      `deploy/nginx/bca-api.locations` into the server block. The public
+      forms still need pointing at /api/forms once email delivery is
+      decided.
 - [ ] At cutover: drop noindex (nginx header + robots.txt), point canonicals
       at the production domain
 

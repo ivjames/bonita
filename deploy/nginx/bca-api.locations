@@ -3,7 +3,8 @@
 # deploy/api/setup-api.sh. Kept as a separate file because certbot rewrites
 # the main conf in place.
 #
-# Requires /etc/nginx/bca-htpasswd (created by setup-api.sh).
+# No auth config here: staff sign in on the /admin page itself and the API
+# enforces the session (app-level auth, no HTTP basic auth).
 # After editing: sudo nginx -t && sudo systemctl reload nginx
 
 # Staff saves of the events list go to /var/lib/bca/events.json (outside the
@@ -15,26 +16,10 @@ location = /assets/data/events.json {
     add_header X-Content-Type-Options "nosniff" always;
 }
 
-# The backstage events manager: staff only.
-location = /admin {
-    auth_basic "BCA backstage";
-    auth_basic_user_file /etc/nginx/bca-htpasswd;
-    try_files /admin.html =404;
-}
-
-# Staff API: saving events.json (the browser reuses the /admin credentials).
-location = /api/events {
-    auth_basic "BCA backstage";
-    auth_basic_user_file /etc/nginx/bca-htpasswd;
+# The backend: login/logout + events save (session-gated in the app) and
+# the public form intake + health probe.
+location /api/ {
     proxy_pass http://127.0.0.1:8787;
     proxy_set_header X-Forwarded-For $remote_addr;
-}
-
-# Public API: form submissions and the health probe. No auth.
-location = /api/forms {
-    proxy_pass http://127.0.0.1:8787;
-    proxy_set_header X-Forwarded-For $remote_addr;
-}
-location = /api/health {
-    proxy_pass http://127.0.0.1:8787;
+    proxy_set_header Host $host;
 }

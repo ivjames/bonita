@@ -38,6 +38,7 @@
   <div class="wrap section">
 
   <p class="note" id="publish-note">Fill in the form below — no technical steps. When you're done, use <strong>Download the events file</strong> under Publish and email it to the site maintainer, who installs it. (Direct saving switches on automatically once the site's backend is set up.) Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
+  <p class="note" id="publish-note-login" hidden>Fill in the form below. To publish, <strong>sign in with the staff password</strong> under Publish, then press <strong>Save to site</strong>. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
   <p class="note" id="publish-note-live" hidden>Fill in the form below, then press <strong>Save to site</strong> under Publish — changes go live immediately. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
 
   <section id="editor" aria-labelledby="editor-h">
@@ -60,10 +61,19 @@
 
   <section id="output" aria-labelledby="output-h">
     <h2 id="output-h">Publish</h2>
+    <form id="login" class="login-card" hidden>
+      <label for="login-pass">Staff password</label>
+      <div class="login-row">
+        <input id="login-pass" type="password" autocomplete="current-password" required>
+        <button type="submit" class="btn btn-primary">Sign in</button>
+      </div>
+      <p id="login-status" class="save-status err" role="status" hidden></p>
+    </form>
     <p class="admin-actions">
       <button type="button" class="btn btn-primary" id="save" hidden>Save to site</button>
       <button type="button" class="btn btn-primary" id="download">Download the events file</button>
       <span id="save-status" class="save-status" role="status" hidden></span>
+      <button type="button" class="btn-link" id="logout" hidden>Sign out</button>
     </p>
     <details id="manual">
       <summary>For the technically inclined: the generated file</summary>

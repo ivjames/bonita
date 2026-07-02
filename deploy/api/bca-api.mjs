@@ -1,31 +1,43 @@
 // bca-api — tiny form/admin backend for bonita.lab980.com. Node stdlib only.
 //
-// Listens on 127.0.0.1 (never exposed directly); nginx proxies /api/* to it
-// and enforces auth on the staff endpoints (see deploy/nginx/bca-api.locations).
+// Listens on 127.0.0.1 (never exposed directly); nginx proxies /api/* to it.
+// Auth is app-level (session cookie from the /admin login form) — no HTTP
+// basic auth, no nginx auth config.
 //
 // Endpoints:
-//   GET  /api/health          -> {ok:true}  (admin page uses this to decide
-//                                whether to show its "Save to site" button)
-//   PUT  /api/events          -> validate + atomically write events.json to
-//                                $BCA_DATA/events.json, keeping timestamped
-//                                backups. nginx serves that file for
-//                                /assets/data/events.json via an alias, so
-//                                staff saves survive `sudo bonita` deploys
-//                                (which rsync --delete the webroot).
-//   POST /api/forms           -> append a form submission (rental inquiry /
-//                                lost & found) to $BCA_DATA/forms.jsonl and,
-//                                if sendmail exists and $BCA_MAIL_TO is set,
-//                                email it. The public forms currently use
-//                                mailto: links; point them here when ready.
+//   GET  /api/health          -> {ok, configured, auth} — the admin page uses
+//                                this to decide whether to show its login
+//                                form / "Save to site" button
+//   POST /api/login           -> {password} — verifies against the scrypt
+//                                hash in $BCA_ADMIN_HASH, rate-limited, sets
+//                                an HttpOnly session cookie (12h)
+//   POST /api/logout          -> clears the session
+//   PUT  /api/events          -> session required. Validate + atomically
+//                                write events.json to $BCA_DATA/events.json,
+//                                keeping timestamped backups. nginx serves
+//                                that file for /assets/data/events.json via
+//                                an alias, so staff saves survive
+//                                `sudo bonita` deploys (which rsync --delete
+//                                the webroot).
+//   POST /api/forms           -> public. Append a form submission (rental
+//                                inquiry / lost & found) to
+//                                $BCA_DATA/forms.jsonl and, if sendmail is
+//                                available and $BCA_MAIL_TO is set, email it.
+//                                The public forms currently use mailto:
+//                                links; point them here when ready.
 //
-// Config (environment):
-//   BCA_DATA    data directory (default /var/lib/bca; the systemd unit sets
-//               this via StateDirectory)
-//   BCA_LISTEN  port on 127.0.0.1 (default 8787)
-//   BCA_MAIL_TO recipient for form email notifications (optional)
+// Config (environment; the systemd unit loads /etc/bca-api.env):
+//   BCA_DATA        data directory (default /var/lib/bca; the unit sets this
+//                   via StateDirectory)
+//   BCA_LISTEN      port on 127.0.0.1 (default 8787)
+//   BCA_ADMIN_HASH  scrypt hash of the staff password, produced by
+//                   deploy/api/setup-api.sh ("scrypt$N$salthex$keyhex").
+//                   Unset = saving disabled (page stays in download mode).
+//   BCA_MAIL_TO     recipient for form email notifications (optional)
 
 import http from 'node:http';
 import { execFile } from 'node:child_process';
+import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { mkdir, readdir, rename, unlink, writeFile, appendFile, copyFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -33,10 +45,13 @@ import path from 'node:path';
 const DATA = process.env.BCA_DATA || '/var/lib/bca';
 const PORT = Number(process.env.BCA_LISTEN || 8787);
 const MAIL_TO = process.env.BCA_MAIL_TO || '';
+const ADMIN_HASH = process.env.BCA_ADMIN_HASH || '';
 const SENDMAIL = '/usr/sbin/sendmail';
 const MAX_BODY = 256 * 1024;
 const MAX_EVENTS = 200;
 const KEEP_BACKUPS = 30;
+const SESSION_TTL = 12 * 60 * 60 * 1000;
+const COOKIE = 'bca_session';
 
 const json = (res, code, obj) => {
   const body = JSON.stringify(obj);
@@ -103,25 +118,101 @@ function mailForm(entry) {
   child.stdin.end(msg);
 }
 
-// Cheap per-IP rate limit for the public forms endpoint.
-const hits = new Map();
-function limited(ip) {
-  const now = Date.now();
-  const windowStart = now - 10 * 60 * 1000;
-  const list = (hits.get(ip) || []).filter((t) => t > windowStart);
-  list.push(now);
-  hits.set(ip, list);
-  if (hits.size > 10000) hits.clear();     // memory backstop
-  return list.length > 10;
+// Cheap per-IP rate limiting (separate buckets for forms and login).
+function makeLimiter(maxHits, windowMs) {
+  const hits = new Map();
+  return (ip) => {
+    const now = Date.now();
+    const list = (hits.get(ip) || []).filter((t) => t > now - windowMs);
+    list.push(now);
+    hits.set(ip, list);
+    if (hits.size > 10000) hits.clear();   // memory backstop
+    return list.length > maxHits;
+  };
+}
+const formsLimited = makeLimiter(10, 10 * 60 * 1000);
+const loginLimited = makeLimiter(5, 15 * 60 * 1000);
+
+// ---- sessions (in-memory; a service restart just means signing in again) ----
+const sessions = new Map();   // token -> expiry epoch ms
+
+function sessionToken(req) {
+  const m = /(?:^|;\s*)bca_session=([a-f0-9]{64})/.exec(req.headers.cookie || '');
+  return m ? m[1] : null;
+}
+
+function authed(req) {
+  const token = sessionToken(req);
+  if (!token) return false;
+  const expiry = sessions.get(token);
+  if (!expiry || expiry < Date.now()) { sessions.delete(token); return false; }
+  return true;
+}
+
+function verifyPassword(password) {
+  // ADMIN_HASH format: scrypt$N$salthex$keyhex (see setup-api.sh)
+  const [scheme, nStr, saltHex, keyHex] = ADMIN_HASH.split('$');
+  if (scheme !== 'scrypt') return false;
+  const key = Buffer.from(keyHex, 'hex');
+  const derived = scryptSync(password, Buffer.from(saltHex, 'hex'), key.length, { N: Number(nStr), maxmem: 128 * 1024 * 1024 });
+  return timingSafeEqual(derived, key);
+}
+
+function startSession(res) {
+  if (sessions.size > 100) {               // cap: evict the oldest
+    const oldest = [...sessions.entries()].sort((a, b) => a[1] - b[1])[0];
+    if (oldest) sessions.delete(oldest[0]);
+  }
+  const token = randomBytes(32).toString('hex');
+  sessions.set(token, Date.now() + SESSION_TTL);
+  res.setHeader('set-cookie',
+    `${COOKIE}=${token}; Max-Age=${SESSION_TTL / 1000}; Path=/; HttpOnly; Secure; SameSite=Strict`);
+}
+
+// Same-origin check for state-changing requests: browsers send Origin on
+// cross-site (and same-site fetch) requests; if present it must match Host.
+function crossOrigin(req) {
+  const origin = req.headers.origin;
+  if (!origin) return false;
+  try { return new URL(origin).host !== req.headers.host; } catch { return true; }
 }
 
 const server = http.createServer(async (req, res) => {
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress;
   const route = `${req.method} ${req.url.split('?')[0]}`;
   try {
-    if (route === 'GET /api/health') return json(res, 200, { ok: true });
+    if (route === 'GET /api/health') {
+      return json(res, 200, { ok: true, configured: !!ADMIN_HASH, auth: authed(req) });
+    }
+
+    if (req.method !== 'GET' && crossOrigin(req)) {
+      return json(res, 403, { error: 'cross-origin request rejected' });
+    }
+
+    if (route === 'POST /api/login') {
+      if (!ADMIN_HASH) return json(res, 503, { error: 'no staff password configured on the server' });
+      if (loginLimited(ip)) return json(res, 429, { error: 'too many attempts — wait 15 minutes' });
+      const raw = await readBody(req);
+      let body;
+      try { body = JSON.parse(raw); } catch { return json(res, 400, { error: 'invalid JSON' }); }
+      if (typeof body.password !== 'string' || !verifyPassword(body.password)) {
+        console.log(`failed login from ${ip}`);
+        return json(res, 401, { error: 'wrong password' });
+      }
+      startSession(res);
+      console.log(`staff signed in from ${ip}`);
+      return json(res, 200, { ok: true });
+    }
+
+    if (route === 'POST /api/logout') {
+      const token = sessionToken(req);
+      if (token) sessions.delete(token);
+      res.setHeader('set-cookie', `${COOKIE}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Strict`);
+      return json(res, 200, { ok: true });
+    }
 
     if (route === 'PUT /api/events' || route === 'POST /api/events') {
+      if (!authed(req)) return json(res, 401, { error: 'sign in first' });
       const raw = await readBody(req);
       let data;
       try { data = JSON.parse(raw); } catch { return json(res, 400, { error: 'invalid JSON' }); }
@@ -133,7 +224,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (route === 'POST /api/forms') {
-      if (limited(ip)) return json(res, 429, { error: 'too many submissions, try again later' });
+      if (formsLimited(ip)) return json(res, 429, { error: 'too many submissions, try again later' });
       const raw = await readBody(req);
       let body;
       try { body = JSON.parse(raw); } catch { return json(res, 400, { error: 'invalid JSON' }); }
@@ -156,5 +247,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, '127.0.0.1', () => {
-  console.log(`bca-api listening on 127.0.0.1:${PORT}, data in ${DATA}${MAIL_TO ? `, mailing ${MAIL_TO}` : ', mail off'}`);
+  console.log(`bca-api listening on 127.0.0.1:${PORT}, data in ${DATA}, ` +
+    `${ADMIN_HASH ? 'staff login on' : 'STAFF LOGIN NOT CONFIGURED (saving disabled)'}` +
+    `${MAIL_TO ? `, mailing ${MAIL_TO}` : ', mail off'}`);
 });

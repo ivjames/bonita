@@ -699,6 +699,50 @@ nav.toc a:hover {
 .save-status { font-weight: 700; color: var(--ink-soft); }
 .save-status.ok { color: #1c6b32; }
 .save-status.err { color: #a33000; }
+.login-card {
+  max-width: 26rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+  box-shadow: var(--shadow-1);
+  margin: 1.2rem 0;
+}
+.login-card label {
+  display: block;
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: .35rem;
+}
+.login-card .login-row { display: flex; gap: .6rem; }
+.login-card input {
+  flex: 1;
+  min-width: 0;
+  padding: .55rem .7rem;
+  font: inherit;
+  border: 1px solid #c9bda4;
+  border-radius: 8px;
+}
+.login-card input:focus {
+  border-color: var(--maroon);
+  box-shadow: 0 0 0 3px rgba(142, 31, 46, .12);
+}
+.login-card p { margin: .6rem 0 0; }
+.btn-link {
+  background: none;
+  border: 0;
+  padding: .2rem 0;
+  font: inherit;
+  font-size: .95rem;
+  color: var(--maroon);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--gold) 65%, transparent);
+  cursor: pointer;
+}
+.btn-link:hover { color: var(--maroon-dark); }
 .preview-note { color: var(--ink-soft); font-size: .95rem; max-width: 46rem; }
 #manual {
   margin: 1.4rem 0;
