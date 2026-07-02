@@ -187,8 +187,10 @@ main { display: block; }
   margin: 0 auto;
   padding: 0 1rem;
 }
-.section { padding: 2.2rem 0 1rem; }
-.section.alt { background: var(--paper-warm); padding: 2.2rem 0 2.6rem; }
+/* Vertical rhythm only — never touch horizontal padding here, or an element
+   with class="wrap section" loses .wrap's gutter on small screens. */
+.section { padding-top: 2.2rem; padding-bottom: 1rem; }
+.section.alt { background: var(--paper-warm); padding-bottom: 2.6rem; }
 .lede { font-size: 1.15rem; color: var(--ink-soft); max-width: 46rem; }
 
 .grid-2 {

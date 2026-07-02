@@ -38,13 +38,19 @@ running nginx, with TLS from Let's Encrypt (certbot).
 
 ## Updating the site
 
-Edit files in `site/`, then either:
+Merge to `main`, then on the droplet, from any directory:
 
 ```bash
-deploy/deploy.sh root@bonita.lab980.com     # rsync from your machine
+sudo bonita
 ```
 
-or on the droplet: `cd bonita && git pull && sudo rsync -a --delete site/ /var/www/bonita.lab980.com/ && sudo chown -R www-data:www-data /var/www/bonita.lab980.com`.
+(= fetch + ff-only pull of main + rsync into the webroot + chown. The
+command is a symlink to `deploy/update.sh`, installed by `setup-droplet.sh`
+and re-asserted on every run. If it doesn't exist yet on an older droplet,
+bootstrap once with `cd bonita && sudo bash deploy/update.sh`.)
+
+Alternative, if you'd rather push from your machine without touching the
+droplet's clone: `deploy/deploy.sh root@bonita.lab980.com`.
 
 No nginx reload is needed for content changes — only when the `.conf` changes
 (`sudo nginx -t && sudo systemctl reload nginx`).
