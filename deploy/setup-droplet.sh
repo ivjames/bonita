@@ -6,13 +6,19 @@
 #   cd /var/www/bonita
 #   sudo bash deploy/setup-droplet.sh
 #
-# nginx serves this checkout's site/ directory directly — there is no
-# separate webroot and no copying. Updates are `sudo bonita` (= git pull).
+# This provisions BOTH halves in one pass: the static site (nginx serves this
+# checkout's site/ directly — no webroot, no copying) and the bca-api backend
+# (Node service + /api/ proxy + first staff account), by calling
+# deploy/api/setup-api.sh at the end. The backend isn't optional: /admin has
+# no open, no-login mode, so it needs the API to sign in at all. Set
+# BCA_ADMIN_USER / BCA_ADMIN_PASS to skip the first-account prompts.
+#
+# Updates are `sudo bonita` (= git pull + service sync + nginx reload).
 #
 # Prerequisite: a DNS A record for bonita.lab980.com pointing at this
 # droplet's public IP (certbot's HTTP-01 challenge needs it resolving here).
 #
-# Idempotent: safe to re-run.
+# Idempotent: safe to re-run (keeps existing staff accounts and events).
 
 set -euo pipefail
 
@@ -76,5 +82,13 @@ echo "==> Obtaining/renewing Let's Encrypt certificate"
 # Renewal is automatic via the certbot systemd timer.
 certbot --nginx -d "$DOMAIN" \
   --non-interactive --agree-tos -m "$CERTBOT_EMAIL" --redirect
+
+echo "==> Provisioning the bca-api backend"
+# Second half of the deploy. Runs last, after certbot has (re)written the
+# server block, because setup-api.sh needs the snippets/bonita.d include to
+# be in place to link its /api/ locations. Idempotent; keeps existing
+# accounts/events. Honours BCA_ADMIN_USER / BCA_ADMIN_PASS for the first
+# account, else prompts.
+bash "$REPO_DIR/deploy/api/setup-api.sh"
 
 echo "==> Done. https://$DOMAIN"

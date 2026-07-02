@@ -37,12 +37,12 @@
   </header>
   <div class="wrap section">
 
-  <p class="note" id="publish-note">Fill in the form below — no technical steps. When you're done, use <strong>Download the events file</strong> under Publish and email it to the site maintainer, who installs it. (Direct saving switches on automatically once the site's backend is set up.) Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
-  <p class="note" id="publish-note-login" hidden><strong>Sign in under Publish</strong> to manage the events, messages, and downloadable support files. Nothing is editable until you sign in with the staff password.</p>
+  <p class="note" id="publish-note-down" hidden>The manager can’t reach the site’s backend right now, so it’s temporarily unavailable. Wait a moment and refresh. If it keeps happening, let the site maintainer know.</p>
+  <p class="note" id="publish-note-login" hidden><strong>Sign in below</strong> to manage the events, messages, and downloadable support files. Nothing is editable until you sign in with the staff password.</p>
   <p class="note" id="publish-note-live" hidden>Fill in the form below, then press <strong>Save to site</strong> under Publish — changes go live immediately. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
 
   <div class="admin-cols" id="work-cols">
-  <section id="editor" aria-labelledby="editor-h">
+  <section id="editor" aria-labelledby="editor-h" hidden>
     <div class="editor-head">
       <h2 id="editor-h">Events</h2>
       <span id="event-count" class="event-count" aria-live="polite"></span>
@@ -70,7 +70,7 @@
   </section>
   </div>
 
-  <section id="output" aria-labelledby="output-h">
+  <section id="output" aria-labelledby="output-h" hidden>
     <h2 id="output-h">Publish</h2>
     <form id="login" class="login-card" hidden>
       <div class="login-field">
@@ -88,12 +88,12 @@
     </form>
     <p class="admin-actions">
       <button type="button" class="btn btn-primary" id="save" hidden>Save to site</button>
-      <button type="button" class="btn btn-primary" id="download">Download the events file</button>
+      <button type="button" class="btn btn-primary" id="download" hidden>Download the events file</button>
       <span id="save-status" class="save-status" role="status" hidden></span>
       <span id="whoami" class="whoami" hidden></span>
       <button type="button" class="btn-link" id="logout" hidden>Sign out</button>
     </p>
-    <details id="manual">
+    <details id="manual" hidden>
       <summary>For the technically inclined: the generated file</summary>
       <p class="preview-note">This is the <code>events.json</code> the form produces — the same thing the Download button saves (installed as <code>site/assets/data/events.json</code>). Handy for copy-paste or a quick sanity check; nobody needs to edit it.</p>
       <p class="admin-actions">
@@ -160,6 +160,6 @@
   </div>
 </footer>
 <script src="/assets/js/events.js?v=093aa7d2" defer></script>
-<script src="/assets/js/admin.js?v=352ee894" defer></script>
+<script src="/assets/js/admin.js?v=04f69e02" defer></script>
 </body>
 </html>
