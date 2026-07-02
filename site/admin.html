@@ -42,7 +42,7 @@
   <p class="note" id="publish-note-live" hidden>Fill in the form below, then press <strong>Save to site</strong> under Publish — changes go live immediately. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
 
   <div class="admin-cols" id="work-cols">
-  <section id="editor" aria-labelledby="editor-h">
+  <section id="editor" aria-labelledby="editor-h" hidden>
     <div class="editor-head">
       <h2 id="editor-h">Events</h2>
       <span id="event-count" class="event-count" aria-live="polite"></span>
@@ -93,7 +93,7 @@
       <span id="whoami" class="whoami" hidden></span>
       <button type="button" class="btn-link" id="logout" hidden>Sign out</button>
     </p>
-    <details id="manual">
+    <details id="manual" hidden>
       <summary>For the technically inclined: the generated file</summary>
       <p class="preview-note">This is the <code>events.json</code> the form produces — the same thing the Download button saves (installed as <code>site/assets/data/events.json</code>). Handy for copy-paste or a quick sanity check; nobody needs to edit it.</p>
       <p class="admin-actions">
@@ -160,6 +160,6 @@
   </div>
 </footer>
 <script src="/assets/js/events.js?v=093aa7d2" defer></script>
-<script src="/assets/js/admin.js?v=352ee894" defer></script>
+<script src="/assets/js/admin.js?v=8f1adc97" defer></script>
 </body>
 </html>

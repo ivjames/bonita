@@ -207,10 +207,12 @@
     document.getElementById('accounts').hidden = mode !== 'live';
     document.getElementById('messages').hidden = mode !== 'live';
     document.getElementById('media').hidden = mode !== 'live';
-    // The events editor stays available in static mode (the no-backend,
-    // download-a-file tool), but once a backend exists it's hidden until
-    // sign-in — no editing surface for anyone who just has the URL.
+    // The events editor and the generated-file block stay available in static
+    // mode (the no-backend, download-a-file tool), but once a backend exists
+    // they're hidden until sign-in — no editing surface, and no dump of the
+    // events file, for anyone who merely has the URL.
     document.getElementById('editor').hidden = mode === 'login';
+    document.getElementById('manual').hidden = mode === 'login';
     // Events sits alone until Messages joins it (signed in) — then they split
     // the row two-up on wide screens.
     document.getElementById('work-cols').classList.toggle('split', mode === 'live');
@@ -595,9 +597,9 @@
     try {
       const res = await fetch('/api/health');
       const h = await res.json();
-      if (!res.ok || !h.ok || !h.configured) return;   // stays in static mode
+      if (!res.ok || !h.ok || !h.configured) { setMode('static'); return; }
       setMode(h.auth ? 'live' : 'login', h.user);
-    } catch { /* no backend: stay in download/copy mode */ }
+    } catch { setMode('static'); /* no backend: download/copy tool */ }
   })();
 
   (async () => {
