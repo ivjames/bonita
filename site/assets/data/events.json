@@ -1,0 +1,22 @@
+{
+  "_readme": [
+    "Upcoming events shown on the home page and the Calendar page.",
+    "Edited by hand (box office) until Ludus embed/API access exists.",
+    "Each event needs: title, date (YYYY-MM-DD, used for sorting and for",
+    "dropping past events automatically), and url (the Ludus event page).",
+    "Optional: time (e.g. '7:00 PM'), presenter (who's putting it on), and",
+    "dateLabel (display text that overrides the formatted date, for runs",
+    "like 'July 18-20'). Keys starting with _ are ignored by the site.",
+    "If this list is empty or unreachable, the pages simply fall back to",
+    "the 'browse events on our ticketing site' link - nothing breaks."
+  ],
+  "_example": {
+    "title": "Spring Dance Showcase",
+    "date": "2026-05-09",
+    "time": "7:00 PM",
+    "presenter": "Bonita Unified School District",
+    "url": "https://bonitacenterforthearts.ludus.com/200001234",
+    "dateLabel": ""
+  },
+  "events": []
+}

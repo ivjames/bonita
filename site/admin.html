@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backstage: Events manager | Bonita Center for the Arts</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="/">
+      <img src="/assets/img/bca-logo.png" alt="" width="44" height="52">
+      <span class="name">Bonita Center for the Arts<small>Backstage · staff only</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <ul>
+        <li><a href="/">Back to the site</a></li>
+        <li><a href="/booking-calendar">Calendar</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <header class="page-head">
+    <div class="inner">
+      <p class="eyebrow">Backstage</p>
+      <h1>Events manager</h1>
+      <p class="lede">Add and edit the shows listed on the home page and the Calendar page — plain form fields, with a preview of exactly what visitors will see.</p>
+    </div>
+  </header>
+  <div class="wrap section">
+
+  <p class="note" id="publish-note">Fill in the form below — no technical steps. When you're done, use <strong>Download the events file</strong> under Publish and email it to the site maintainer, who installs it. (Direct saving switches on automatically once the site's backend is set up.) Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
+  <p class="note" id="publish-note-login" hidden>Fill in the form below. To publish, <strong>sign in with the staff password</strong> under Publish, then press <strong>Save to site</strong>. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
+  <p class="note" id="publish-note-live" hidden>Fill in the form below, then press <strong>Save to site</strong> under Publish — changes go live immediately. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
+
+  <section id="editor" aria-labelledby="editor-h">
+    <h2 id="editor-h">Events</h2>
+    <form class="admin-editor" autocomplete="off">
+      <ul id="rows" class="event-rows"></ul>
+      <p class="admin-actions">
+        <button type="button" class="btn btn-primary" id="add">+ Add an event</button>
+        <button type="button" class="btn btn-secondary" id="sort">Sort by date</button>
+      </p>
+    </form>
+  </section>
+
+  <section id="preview" aria-labelledby="preview-h">
+    <h2 id="preview-h">Preview</h2>
+    <p class="preview-note">Exactly what visitors will see (past dates and incomplete entries are left out; the home page shows the first four).</p>
+    <ul class="event-list" id="preview-list"></ul>
+    <p id="preview-empty" class="preview-note" hidden>No upcoming events to show — the site will fall back to the plain “browse our ticketing site” link.</p>
+  </section>
+
+  <section id="output" aria-labelledby="output-h">
+    <h2 id="output-h">Publish</h2>
+    <form id="login" class="login-card" hidden>
+      <div class="login-field">
+        <label for="login-user">Username</label>
+        <input id="login-user" type="text" autocomplete="username" autocapitalize="none" required>
+      </div>
+      <div class="login-field">
+        <label for="login-pass">Password</label>
+        <div class="login-row">
+          <input id="login-pass" type="password" autocomplete="current-password" required>
+          <button type="submit" class="btn btn-primary">Sign in</button>
+        </div>
+      </div>
+      <p id="login-status" class="save-status err" role="status" hidden></p>
+    </form>
+    <p class="admin-actions">
+      <button type="button" class="btn btn-primary" id="save" hidden>Save to site</button>
+      <button type="button" class="btn btn-primary" id="download">Download the events file</button>
+      <span id="save-status" class="save-status" role="status" hidden></span>
+      <span id="whoami" class="whoami" hidden></span>
+      <button type="button" class="btn-link" id="logout" hidden>Sign out</button>
+    </p>
+    <details id="manual">
+      <summary>For the technically inclined: the generated file</summary>
+      <p class="preview-note">This is the <code>events.json</code> the form produces — the same thing the Download button saves (installed as <code>site/assets/data/events.json</code>). Handy for copy-paste or a quick sanity check; nobody needs to edit it.</p>
+      <p class="admin-actions">
+        <button type="button" class="btn btn-secondary" id="copy">Copy JSON</button>
+        <span id="copy-done" class="copy-done" role="status" hidden>Copied ✓</span>
+      </p>
+      <label for="json-out">Generated events.json</label>
+      <textarea id="json-out" class="json-out" readonly rows="14" spellcheck="false"></textarea>
+    </details>
+  </section>
+
+  <section id="accounts" aria-labelledby="accounts-h" hidden>
+    <h2 id="accounts-h">Staff accounts</h2>
+    <div class="grid-2">
+      <form id="password-form" class="login-card">
+        <h3>Change my password</h3>
+        <div class="login-field">
+          <label for="pw-current">Current password</label>
+          <input id="pw-current" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="login-field">
+          <label for="pw-new">New password (8+ characters)</label>
+          <input id="pw-new" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <p class="admin-actions">
+          <button type="submit" class="btn btn-primary">Change password</button>
+          <span id="pw-status" class="save-status" role="status" hidden></span>
+        </p>
+      </form>
+      <div>
+        <h3>Who can sign in</h3>
+        <ul id="user-list" class="user-list"></ul>
+        <form id="adduser-form" class="login-card">
+          <h3>Add a staff account</h3>
+          <div class="login-field">
+            <label for="au-name">Username</label>
+            <input id="au-name" type="text" autocapitalize="none" pattern="[A-Za-z0-9._\-]{2,32}" required>
+          </div>
+          <div class="login-field">
+            <label for="au-pass">Their starting password (8+ characters; they can change it after signing in)</label>
+            <input id="au-pass" type="password" autocomplete="new-password" minlength="8" required>
+          </div>
+          <p class="admin-actions">
+            <button type="submit" class="btn btn-secondary">Add account</button>
+            <span id="au-status" class="save-status" role="status" hidden></span>
+          </p>
+        </form>
+      </div>
+    </div>
+  </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="fineprint">
+    <p>Backstage tool — not linked from the public site. The Bonita Center for the Arts is owned and operated by the Bonita Unified School District.</p>
+  </div>
+</footer>
+<script src="/assets/js/events.js" defer></script>
+<script src="/assets/js/admin.js" defer></script>
+</body>
+</html>

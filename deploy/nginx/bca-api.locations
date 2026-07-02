@@ -1,0 +1,25 @@
+# Location blocks for the bca-api backend — paste (or `include`) these
+# inside the `server { }` block(s) of bonita.lab980.com.conf AFTER running
+# deploy/api/setup-api.sh. Kept as a separate file because certbot rewrites
+# the main conf in place.
+#
+# No auth config here: staff sign in on the /admin page itself and the API
+# enforces the session (app-level auth, no HTTP basic auth).
+# After editing: sudo nginx -t && sudo systemctl reload nginx
+
+# Staff saves of the events list go to /var/lib/bca/events.json (outside the
+# webroot), so serve that copy instead of the rsynced repo seed.
+location = /assets/data/events.json {
+    alias /var/lib/bca/events.json;
+    add_header Cache-Control "no-cache" always;
+    add_header X-Robots-Tag "noindex, nofollow" always;
+    add_header X-Content-Type-Options "nosniff" always;
+}
+
+# The backend: login/logout + events save (session-gated in the app) and
+# the public form intake + health probe.
+location /api/ {
+    proxy_pass http://127.0.0.1:8787;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header Host $host;
+}

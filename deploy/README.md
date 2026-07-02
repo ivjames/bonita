@@ -67,12 +67,11 @@ No nginx reload is needed for content changes — only when the `.conf` changes
   `/rentals`) via `try_files $uri $uri.html`, so existing links keep working
   at cutover with no redirect map. The three PDFs the Wix site served from
   hashed `/_files/ugd/...` paths get 301s to their new self-hosted homes.
-- **Forms have no backend.** Lost & found (About) and the rental inquiry
-  (Rentals) compose a pre-filled email in the visitor's mail app
+- **Forms have no backend (yet).** Lost & found (About) and the rental
+  inquiry (Rentals) compose a pre-filled email in the visitor's mail app
   (`site/assets/js/site.js`), with the recipient's address visible as a
-  fallback. To upgrade later, point the form at a real endpoint (Formspree,
-  or a tiny handler on the droplet) — the markup already has proper
-  names/labels.
+  fallback. A ready-to-provision backend sketch lives in [`api/`](api/) —
+  see "Optional: the bca-api backend" below.
 - **Calendar is Ludus-first.** The Wix events widget can't leave Wix, and
   Ludus sits behind Cloudflare (fragile to iframe), so the Calendar page and
   the Home events section link out to
@@ -81,3 +80,53 @@ No nginx reload is needed for content changes — only when the `.conf` changes
 - **CSP is strict** (`default-src 'self'` + Vimeo frames only). If you add
   a third-party embed (maps, calendar), extend `frame-src`/`img-src` in the
   nginx conf accordingly.
+
+## Optional: the bca-api backend (`api/`)
+
+A single-file Node service (stdlib only, no npm installs) that gives the
+static site its two missing write paths:
+
+- **`PUT /api/events`** — the [/admin](../site/admin.html) events manager's
+  "Save to site" button. Validates the payload (same rules the admin page
+  enforces), writes atomically to `/var/lib/bca/events.json`, and keeps the
+  last 30 timestamped backups in `/var/lib/bca/backups/`. nginx serves that
+  file for `/assets/data/events.json` via an alias, **outside the webroot**,
+  because `sudo bonita` rsyncs `--delete` into the webroot and would
+  otherwise clobber staff edits on the next deploy.
+- **`POST /api/forms`** — form intake: appends to `/var/lib/bca/forms.jsonl`
+  and, if sendmail is available and `BCA_MAIL_TO` is set in the unit, emails
+  the submission. Honeypot-aware and rate-limited. The public forms still
+  use mailto until they're pointed here.
+
+**Auth is app-level with per-user accounts** — no HTTP basic auth. Staff
+accounts live in `/var/lib/bca/users.json` (scrypt hashes; the file is the
+"database" — at a handful of users that's all it needs to be). Staff sign
+in on the /admin page itself (username + password on an on-brand form),
+which sets a 12-hour HttpOnly `SameSite=Strict` session cookie; there's a
+Sign out button, and saves are logged with the username
+(`journalctl -u bca-api`). Everything routine is self-service on /admin:
+change your own password, add a colleague, reset their password, remove an
+account (the last account is protected, and removing/resetting someone
+revokes their sessions). Failed logins are rate-limited per IP (5 per
+15 min — failures only, so a busy office behind one school IP can't lock
+itself out by signing in a lot); cross-origin writes are rejected. Sessions
+live in memory — restarting the service signs everyone out, which doubles
+as a global-logout lever.
+
+The admin page needs no reconfiguration: it probes `GET /api/health` and
+picks its mode — no backend → download/copy; backend + signed out → login
+form; signed in → "Save to site" + the Staff accounts section.
+`tools/preview.mjs` mirrors the proxy locally.
+
+To provision, after `setup-droplet.sh`:
+
+```bash
+sudo bash deploy/api/setup-api.sh
+```
+
+(installs node + the systemd unit `bca-api`, seeds `/var/lib/bca`, and
+creates the **first** staff account), then paste the location blocks from
+[`nginx/bca-api.locations`](nginx/bca-api.locations) into the server block
+and `sudo nginx -t && sudo systemctl reload nginx`. That's the last time
+the droplet is involved in account management. If everyone is ever locked
+out: delete `/var/lib/bca/users.json`, re-run the script.
