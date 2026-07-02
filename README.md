@@ -124,8 +124,18 @@ misuses ~40 H5s (16 of them empty) for body text.
       `deploy/nginx/bca-api.locations` into the server block. The public
       forms still need pointing at /api/forms once email delivery is
       decided.
+- [x] Structured data (JSON-LD) — a shared `PerformingArtsTheater` block in
+      every public page's head (venue, address, phone, capacity, BUSD as
+      parent org), plus per-show `Event` markup emitted by
+      `assets/js/events.js` alongside the rendered list. Note Lighthouse's
+      structured-data check is a manual audit and never affects the SEO
+      score; while the staging noindex is in place that score is capped
+      (~69, "page is blocked from indexing") by design — it recovers at
+      cutover.
 - [ ] At cutover: drop noindex (nginx header + robots.txt), point canonicals
-      at the production domain
+      at the production domain — and the structured-data URLs with them (the
+      JSON-LD `#venue` block in each page head + the venue `@id` in
+      `assets/js/events.js`)
 
 ## Repo layout
 

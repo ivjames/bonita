@@ -51,6 +51,39 @@ window.BCA.renderEvents = (list, upcoming, max) => {
   return shown.length;
 };
 
+// Mirror the rendered list as schema.org Event structured data so search
+// engines can pick up the show listings. `upcoming` must come from
+// upcomingEvents(). (A JSON-LD <script> is a data block, never executed,
+// so the site's script-src CSP doesn't apply to it.)
+window.BCA.eventsJsonLd = (upcoming) => upcoming.map((e) => {
+  // "7:00 PM" -> T19:00:00; date-only startDate when the time doesn't parse.
+  const m = /^(\d{1,2}):(\d{2})\s*([AP])\.?M\.?$/i.exec(String(e.time || '').trim());
+  const h = m ? (Number(m[1]) % 12) + (/p/i.test(m[3]) ? 12 : 0) : 0;
+  const ev = {
+    '@type': 'Event',
+    name: e.title,
+    startDate: m ? `${e.date}T${String(h).padStart(2, '0')}:${m[2]}:00` : e.date,
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    location: {
+      '@type': 'PerformingArtsTheater',
+      '@id': 'https://bonita.lab980.com/#venue',
+      name: 'Bonita Center for the Arts',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: '822 West Covina Boulevard',
+        addressLocality: 'San Dimas',
+        addressRegion: 'CA',
+        postalCode: '91773',
+        addressCountry: 'US'
+      }
+    },
+    url: e.url,
+    offers: { '@type': 'Offer', url: e.url }
+  };
+  if (e.presenter) ev.organizer = { '@type': 'Organization', name: e.presenter };
+  return ev;
+});
+
 (async () => {
   const lists = document.querySelectorAll('ul[data-events]');
   if (!lists.length) return;
@@ -66,4 +99,8 @@ window.BCA.renderEvents = (list, upcoming, max) => {
     window.BCA.renderEvents(list, upcoming, parseInt(list.dataset.max, 10) || 0);
     list.hidden = false;
   });
+  const ld = document.createElement('script');
+  ld.type = 'application/ld+json';
+  ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@graph': window.BCA.eventsJsonLd(upcoming) });
+  document.head.append(ld);
 })();
