@@ -301,15 +301,25 @@
      whole console (panels, cards, rows) wider than the viewport. Let it shrink
      and scroll the strip internally instead. */
   .admin-side { position: static; min-width: 0; }
+  /* Wrap the section tabs onto as many rows as they need — a single scrolling
+     strip left Media/Staff clipped off the right edge, which reads as broken. */
   .admin-nav {
     flex-direction: row;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    justify-content: center;
     min-width: 0;
     padding: .4rem;
     gap: .3rem;
   }
-  .nav-item { white-space: nowrap; }
+  /* Base .nav-item is full-width for the vertical rail; here they size to their
+     label and sit side by side, wrapping to a second row as space runs out. */
+  .nav-item {
+    width: auto;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
   .nav-ico { display: none; }
+  .nav-badge { margin-left: .1rem; }
 }
 @media (max-width: 34rem) {
   .panel { padding: 1.1rem 1rem 1.2rem; border-radius: 12px; }
