@@ -44,7 +44,10 @@ function header(page) {
   const items = NAV.map((item) => {
     if (!item.sub) return `        <li><a href="${item.href}"${current(item.href, page)}>${item.label}</a></li>`;
     const cls = inSection(item, page) ? 'has-sub current-section' : 'has-sub';
-    const sub = item.sub.map((s) => `            <li><a href="${s.href}"${current(s.href, page)}>${s.label}</a></li>`).join('\n');
+    // Lead the dropdown with the section landing page (e.g. "Our story"),
+    // matching the "In this section" subnav so it's reachable from the menu.
+    const entries = [{ label: item.home, href: item.href }, ...item.sub];
+    const sub = entries.map((s) => `            <li><a href="${s.href}"${current(s.href, page)}>${s.label}</a></li>`).join('\n');
     return `        <li class="${cls}">
           <a href="${item.href}"${current(item.href, page)}>${item.label}</a>
           <ul class="sub">
