@@ -1050,11 +1050,24 @@ form.contact.rental .btn { justify-self: start; }
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* The policies content is wrapped in a table so its <thead>/<tfoot> can repeat
+   as a running header/footer on every printed page. On screen the table parts
+   collapse to plain blocks and the running rows are hidden entirely. */
+.print-doc { display: block; width: 100%; }
+.print-doc > tbody,
+.print-doc > tbody > tr,
+.print-doc > tbody > tr > td { display: block; }
+.print-doc > thead,
+.print-doc > tfoot { display: none; }
 
 /* Clean printout of the policies page: drop the site chrome and the maroon
    band's heavy ink, flatten each policy card, and keep a card whole on a page
    where it fits. Scoped to the policies page via its body class. */
 @media print {
+  /* Give the exported PDF a proper page margin — without this the flattened
+     content runs to the paper edge, since we zero the on-screen .wrap gutter.
+     The generous top/bottom band also holds the running header and footer. */
+  @page { margin: 16mm 15mm; }
   body.policies-page { background: #fff; }
   .policies-page .site-header,
   .policies-page .site-footer,
@@ -1062,12 +1075,43 @@ form.contact.rental .btn { justify-self: start; }
   .policies-page .policy-nav,
   .policies-page .skip-link,
   .policies-page .print-btn { display: none !important; }
+
+  /* Restore table semantics so <thead>/<tfoot> become repeating page groups —
+     Chromium reprints them at the top and bottom of every page, inside the
+     @page margin, with the body rows flowing between (no overlap). */
+  .policies-page .print-doc { display: table; width: 100%; }
+  .policies-page .print-doc > thead { display: table-header-group; }
+  .policies-page .print-doc > tfoot { display: table-footer-group; }
+  .policies-page .print-doc > tbody { display: table-row-group; }
+  .policies-page .print-doc tr { display: table-row; }
+  .policies-page .print-doc td { display: table-cell; }
+  .policies-page .print-header,
+  .policies-page .print-footer {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 8.5pt;
+    letter-spacing: .01em;
+    color: #333;
+  }
+  .policies-page .print-header {
+    margin-bottom: 5mm;
+    padding-bottom: 2mm;
+    border-bottom: .5pt solid #999;
+    font-weight: 700;
+  }
+  .policies-page .print-header .doc { font-weight: 400; color: #555; }
+  .policies-page .print-footer {
+    margin-top: 5mm;
+    padding-top: 2mm;
+    border-top: .5pt solid #999;
+  }
   .policies-page .page-head {
     background: none !important;
     color: #000;
-    border-bottom: 2px solid #000;
-    padding: 0 0 .8rem;
-    margin-bottom: 1rem;
+    padding: 0;
+    margin-bottom: .3rem;
   }
   .policies-page .page-head .eyebrow,
   .policies-page .page-head h1,
@@ -1081,6 +1125,7 @@ form.contact.rental .btn { justify-self: start; }
     border: 1px solid #bbb;
     padding: .6rem .85rem;
     break-inside: avoid;
+    background: transparent;
   }
   .policies-page .policy-ico {
     background: none !important;
