@@ -7,19 +7,23 @@
     "the calendar grid, and for dropping past events automatically).",
     "Optional: url (the Ludus event page - without it the event shows",
     "with no Tickets link), time (e.g. '7:00 PM'), presenter (who's",
-    "putting it on), and dateLabel (display text that overrides the",
-    "formatted date, for runs like 'July 18-20'). Enter a multi-day run",
-    "as one entry per day with the same title and dateLabel: every day",
-    "gets marked on the calendar, and the list collapses them into one.",
+    "putting it on), dateLabel (display text that overrides the",
+    "formatted date, for runs like 'July 18-20'), and description (the",
+    "event blurb as Markdown, mirroring the live calendar's blurb with",
+    "its HTML converted to Markdown; not yet rendered on the page).",
+    "Enter a multi-day run as one entry per day with the same title and",
+    "dateLabel: every day gets marked on the calendar, and the list",
+    "collapses them into one.",
     "Keys starting with _ are ignored by the site.",
     "If this list is empty or unreachable, the pages simply fall back to",
     "the 'browse events on our ticketing site' link - nothing breaks.",
     "The entries below mirror the live site's calendar as of 2026-07-03:",
     "the eventscalendar.co widget on bonitacenterforthearts.com, which is",
     "fed by the public Google Calendar (bonitacenter@gmail.com). Titles",
-    "are kept verbatim from the live calendar; school-district entries",
-    "(First Day of School, breaks) are included because the live calendar",
-    "shows them. Keep this in sync via /admin."
+    "are kept verbatim; descriptions are the live calendar's blurbs",
+    "with their HTML converted to Markdown; school-district entries",
+    "(First Day of School, breaks) are included",
+    "because the live calendar shows them. Keep this in sync via /admin."
   ],
   "_example": {
     "title": "Spring Dance Showcase",
@@ -27,44 +31,52 @@
     "time": "7:00 PM",
     "presenter": "Bonita Unified School District",
     "url": "https://bonitacenterforthearts.ludus.com/200001234",
-    "dateLabel": ""
+    "dateLabel": "",
+    "description": "An evening of student choreography. **[Get tickets](https://bonitacenterforthearts.ludus.com/200001234)**"
   },
   "events": [
     {
       "title": "Ed Wolfe Memorial Jazz Concert",
       "date": "2026-07-12",
       "time": "4:00 PM",
-      "url": "https://bonitacenterforthearts.ludus.com/200537834"
+      "url": "https://bonitacenterforthearts.ludus.com/200537834",
+      "description": "**[RESERVE YOUR SEATS](https://bonitacenterforthearts.ludus.com/200537834) (available soon)**"
     },
     {
       "title": "Top Billing Entertainment presents \"Shrek Jr\"",
       "date": "2026-07-17",
-      "dateLabel": "July 17–19"
+      "dateLabel": "July 17–19",
+      "description": "_\\*This is not a BUSD event & we are not in charge of tickets sales_\n\nPlease contact Top Billing Entertainment to view showtimes & purchase tickets"
     },
     {
       "title": "Top Billing Entertainment presents \"Shrek Jr\"",
       "date": "2026-07-18",
-      "dateLabel": "July 17–19"
+      "dateLabel": "July 17–19",
+      "description": "_\\*This is not a BUSD event & we are not in charge of tickets sales_\n\nPlease contact Top Billing Entertainment to view showtimes & purchase tickets"
     },
     {
       "title": "Top Billing Entertainment presents \"Shrek Jr\"",
       "date": "2026-07-19",
-      "dateLabel": "July 17–19"
+      "dateLabel": "July 17–19",
+      "description": "_\\*This is not a BUSD event & we are not in charge of tickets sales_\n\nPlease contact Top Billing Entertainment to view showtimes & purchase tickets"
     },
     {
       "title": "Ballet Folklorico International presents \"Tradicion y Folklore\"",
       "date": "2026-07-25",
       "time": "1:00 PM",
-      "url": "https://bonitacenterforthearts.ludus.com/200533175"
+      "url": "https://bonitacenterforthearts.ludus.com/200533175",
+      "description": "_\\*This is not a BUSD event_\n\nTickets: $35\n\n**[GET TICKETS!](https://bonitacenterforthearts.ludus.com/200533175)**"
     },
     {
-      "title": "Western University White Coat Ceremony (invited guests only)",
+      "title": "Western University White Coat Ceremony",
       "date": "2026-08-07",
-      "time": "9:00 AM"
+      "time": "9:00 AM",
+      "description": "\\*This event is for invited guests only"
     },
     {
       "title": "First Day of School",
-      "date": "2026-08-17"
+      "date": "2026-08-17",
+      "description": "Permanently 3 weeks before labor day"
     },
     {
       "title": "Winter Break",
