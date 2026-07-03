@@ -1,0 +1,309 @@
+/* Backstage console (/admin) — application chrome layered over site.css.
+   The public site is "an evening at the theatre"; this is the tool that runs
+   it, so it reads as an admin console: a slim app bar, a fixed section rail,
+   and one work panel at a time. Only admin.html loads this file. */
+
+.admin-body {
+  background: var(--paper-warm);
+}
+
+/* ---- application bar (replaces the marketing site header) ---- */
+.admin-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #111;
+  border-bottom: 1px solid #000;
+  box-shadow: 0 1px 0 rgba(217, 171, 79, .45);
+}
+.admin-bar-inner {
+  max-width: 84rem;
+  margin: 0 auto;
+  padding: .5rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  text-decoration: none;
+  color: #fff;
+}
+.admin-brand img { display: block; }
+.admin-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: .01em;
+}
+.admin-brand-text small {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 600;
+  font-size: .66rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+}
+.admin-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.bar-link {
+  color: var(--rose-soft);
+  font-size: .9rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.bar-link:hover { color: #fff; }
+.whoami {
+  color: var(--rose-soft);
+  font-size: .85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.bar-signout {
+  background: rgba(255, 255, 255, .1);
+  border: 1px solid rgba(255, 255, 255, .28);
+  color: #fff;
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 700;
+  padding: .3rem .8rem;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.bar-signout:hover { background: rgba(255, 255, 255, .2); }
+
+/* ---- signed-out / unreachable gate ---- */
+.admin-gate {
+  flex: 1 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 3.5rem 1.1rem;
+}
+.gate-card {
+  width: 100%;
+  max-width: 27rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-2);
+  padding: 1.8rem 1.8rem 2rem;
+}
+.gate-eyebrow {
+  margin: 0 0 .3rem;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+.gate-title {
+  font-family: var(--serif);
+  font-size: 1.7rem;
+  margin: 0 0 .8rem;
+  color: var(--ink);
+}
+.gate-lede { color: var(--ink-soft); margin: 0 0 1.2rem; font-size: .98rem; }
+.gate-card .login-card {
+  margin: 0;
+  max-width: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  background: none;
+}
+.gate-card .admin-actions { margin: 1.2rem 0 0; }
+
+/* ---- console shell: fixed section rail + work area ---- */
+.admin-shell {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: 84rem;
+  margin: 0 auto;
+  padding: 1.4rem 1.1rem 2.4rem;
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.admin-side { position: sticky; top: 4.2rem; }
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: .5rem;
+  box-shadow: var(--shadow-1);
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  padding: .55rem .7rem;
+  font: inherit;
+  font-size: .96rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background-color .12s ease, color .12s ease;
+}
+.nav-item:hover { background: rgba(142, 31, 46, .06); color: var(--maroon); }
+.nav-item.is-active {
+  background: var(--maroon);
+  color: #fff;
+  box-shadow: var(--shadow-1);
+}
+.nav-item.is-active:hover { background: var(--maroon); color: #fff; }
+.nav-ico {
+  flex: none;
+  width: 1.3rem;
+  text-align: center;
+  font-size: .95rem;
+  opacity: .85;
+}
+.nav-badge {
+  margin-left: auto;
+  min-width: 1.3rem;
+  text-align: center;
+  font-size: .72rem;
+  font-weight: 800;
+  line-height: 1.35;
+  border-radius: 999px;
+  padding: 0 .4rem;
+  background: var(--paper-warm);
+  color: var(--ink-soft);
+}
+.nav-item.is-active .nav-badge { background: rgba(255, 255, 255, .22); color: #fff; }
+.nav-badge.alert { background: #a33000; color: #fff; }
+.nav-item.is-active .nav-badge.alert { background: #fff; color: #a33000; }
+
+/* ---- work panels ---- */
+.admin-main { min-width: 0; }
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-1);
+  padding: 1.3rem 1.4rem 1.5rem;
+}
+.panel[hidden] { display: none; }
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem 1rem;
+  flex-wrap: wrap;
+  padding-bottom: .9rem;
+  margin-bottom: 1.1rem;
+  border-bottom: 1px solid var(--line);
+}
+.panel-head h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+.panel-hint { color: var(--ink-soft); font-size: .96rem; margin: 1.2rem 0 0; }
+
+/* Dashboard tiles */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: .9rem;
+}
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  text-align: left;
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  cursor: pointer;
+  font: inherit;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-1);
+  border-color: var(--gold);
+}
+.stat-num {
+  font-family: var(--serif);
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--maroon);
+}
+.stat-label {
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* Publish action, docked to the bottom of the Events panel it publishes */
+.publish-bar {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  flex-wrap: wrap;
+  margin-top: 1.3rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+
+.accounts-sub { margin-top: 0; }
+.grid-2 { display: grid; gap: 1.4rem; align-items: start; }
+@media (min-width: 48rem) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+/* ---- footer ---- */
+.admin-footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+  padding: 1rem 1.1rem;
+}
+.admin-footer p {
+  max-width: 84rem;
+  margin: 0 auto;
+  color: var(--ink-soft);
+  font-size: .82rem;
+}
+
+/* ---- responsive: rail becomes a scrollable tab strip ---- */
+@media (max-width: 56rem) {
+  .admin-shell { grid-template-columns: 1fr; gap: 1rem; }
+  .admin-side { position: static; }
+  .admin-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: .4rem;
+    gap: .3rem;
+  }
+  .nav-item { white-space: nowrap; }
+  .nav-ico { display: none; }
+}
+@media (max-width: 34rem) {
+  .panel { padding: 1.1rem 1rem 1.2rem; border-radius: 12px; }
+  .panel-head h2 { font-size: 1.3rem; }
+}

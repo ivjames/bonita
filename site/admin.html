@@ -7,73 +7,34 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=b3ec5f64">
+<link rel="stylesheet" href="/assets/css/site.css?v=9a69d98a">
+<link rel="stylesheet" href="/assets/css/admin.css?v=d72d770b">
 </head>
-<body>
+<body class="admin-body">
 <a class="skip-link" href="#main">Skip to main content</a>
 
-<header class="site-header">
-  <div class="bar">
-    <a class="brand" href="/">
-      <img src="/assets/img/bca-logo.png" alt="" width="44" height="52">
-      <span class="name">Bonita Center for the Arts<small>Backstage · staff only</small></span>
+<!-- Slim application bar — this is a tool, not a marketing page. -->
+<header class="admin-bar">
+  <div class="admin-bar-inner">
+    <a class="admin-brand" href="/admin">
+      <img src="/assets/img/bca-logo.png" alt="" width="34" height="40">
+      <span class="admin-brand-text">Backstage<small>Bonita Center for the Arts</small></span>
     </a>
-    <nav class="site-nav" aria-label="Main">
-      <ul>
-        <li><a href="/">Back to the site</a></li>
-        <li><a href="/booking-calendar">Calendar</a></li>
-      </ul>
-    </nav>
+    <div class="admin-bar-actions">
+      <a class="bar-link" href="/">View live site&nbsp;↗</a>
+      <span id="whoami" class="whoami" hidden></span>
+      <button type="button" class="bar-signout" id="logout" hidden>Sign out</button>
+    </div>
   </div>
 </header>
 
-<main id="main">
-  <header class="page-head">
-    <div class="inner">
-      <p class="eyebrow">Backstage</p>
-      <h1>Backstage</h1>
-      <p class="lede">The shows on the home page and Calendar, the messages sent through the website, and the downloadable support files — managed in one place. Edit below, then publish under Publish.</p>
-    </div>
-  </header>
-  <div class="wrap section">
-
-  <p class="note" id="publish-note-down" hidden>The manager can’t reach the site’s backend right now, so it’s temporarily unavailable. Wait a moment and refresh. If it keeps happening, let the site maintainer know.</p>
-  <p class="note" id="publish-note-login" hidden><strong>Sign in below</strong> to manage the events, messages, and downloadable support files. Nothing is editable until you sign in with the staff password.</p>
-  <p class="note" id="publish-note-live" hidden>Fill in the form below, then press <strong>Save to site</strong> under Publish — changes go live immediately. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
-
-  <div class="admin-cols" id="work-cols">
-  <section id="editor" aria-labelledby="editor-h" hidden>
-    <div class="editor-head">
-      <div class="editor-title">
-        <h2 id="editor-h">Events</h2>
-        <span id="event-count" class="event-count" aria-live="polite"></span>
-      </div>
-      <div class="editor-tools">
-        <button type="button" class="btn btn-secondary btn-sm" id="sort">Sort by date</button>
-        <button type="button" class="btn btn-primary btn-sm" id="add">+ Add event</button>
-      </div>
-    </div>
-    <p class="preview-note">Click a row to edit it. For a run of shows, set an <strong>end date</strong> and every day is added to the calendar automatically. Entries with past dates, or missing a title or start date, are flagged and left off the public site.</p>
-    <form class="admin-editor" autocomplete="off">
-      <ul id="rows" class="event-rows"></ul>
-      <p id="rows-empty" class="preview-note" hidden>No events yet — add your first one with <strong>+ Add event</strong>.</p>
-    </form>
-  </section>
-
-  <section id="messages" aria-labelledby="messages-h" hidden>
-    <div class="editor-head">
-      <h2 id="messages-h">Messages</h2>
-      <span id="messages-count" class="msg-count" hidden></span>
-    </div>
-    <p class="preview-note">Rental inquiries and lost &amp; found reports submitted through the website. Mark one handled once you’ve followed up, or delete spam. Email and phone values are clickable so you can reply directly.</p>
-    <p id="messages-status" class="save-status" role="status" hidden></p>
-    <p id="messages-empty" class="preview-note" hidden>No messages yet.</p>
-    <ul id="message-list" class="message-list"></ul>
-  </section>
-  </div>
-
-  <section id="output" aria-labelledby="output-h" hidden>
-    <h2 id="output-h">Publish</h2>
+<!-- Signed-out / unreachable: a single centred card, no console chrome. -->
+<div id="gate" class="admin-gate" hidden>
+  <div class="gate-card">
+    <p class="gate-eyebrow">Backstage · staff only</p>
+    <h1 class="gate-title" id="gate-title">Sign in to Backstage</h1>
+    <p class="note" id="publish-note-down" hidden>The manager can’t reach the site’s backend right now, so it’s temporarily unavailable. Wait a moment and refresh. If it keeps happening, let the site maintainer know.</p>
+    <p class="gate-lede" id="publish-note-login" hidden>Manage the events, messages, and downloadable support files. Nothing is editable until you sign in with the staff password.</p>
     <form id="login" class="login-card" hidden>
       <div class="login-field">
         <label for="login-user">Username</label>
@@ -81,87 +42,176 @@
       </div>
       <div class="login-field">
         <label for="login-pass">Password</label>
-        <div class="login-row">
-          <input id="login-pass" type="password" autocomplete="current-password" required>
-          <button type="submit" class="btn btn-primary">Sign in</button>
+        <input id="login-pass" type="password" autocomplete="current-password" required>
+      </div>
+      <p class="admin-actions">
+        <button type="submit" class="btn btn-primary">Sign in</button>
+        <span id="login-status" class="save-status err" role="status" hidden></span>
+      </p>
+    </form>
+  </div>
+</div>
+
+<!-- Signed-in: the console — sidebar navigation + tabbed work panels. -->
+<div id="app" class="admin-shell" hidden>
+  <aside class="admin-side" aria-label="Sections">
+    <nav class="admin-nav">
+      <button type="button" class="nav-item is-active" data-tab="overview" aria-selected="true">
+        <span class="nav-ico" aria-hidden="true">▤</span>Overview
+      </button>
+      <button type="button" class="nav-item" data-tab="events" aria-selected="false">
+        <span class="nav-ico" aria-hidden="true">◷</span>Events<span class="nav-badge" id="nav-events" hidden></span>
+      </button>
+      <button type="button" class="nav-item" data-tab="messages" aria-selected="false">
+        <span class="nav-ico" aria-hidden="true">✉</span>Messages<span class="nav-badge alert" id="nav-messages" hidden></span>
+      </button>
+      <button type="button" class="nav-item" data-tab="media" aria-selected="false">
+        <span class="nav-ico" aria-hidden="true">▣</span>Media
+      </button>
+      <button type="button" class="nav-item" data-tab="accounts" aria-selected="false">
+        <span class="nav-ico" aria-hidden="true">◕</span>Staff
+      </button>
+    </nav>
+  </aside>
+
+  <main id="main" class="admin-main">
+
+    <!-- Overview / dashboard -->
+    <section class="panel" data-tab="overview" aria-label="Overview">
+      <div class="panel-head">
+        <h2>Overview</h2>
+      </div>
+      <div class="stat-grid">
+        <button type="button" class="stat-card" data-goto="events">
+          <span class="stat-num" id="stat-events">—</span>
+          <span class="stat-label">Events on the site</span>
+        </button>
+        <button type="button" class="stat-card" data-goto="messages">
+          <span class="stat-num" id="stat-messages">—</span>
+          <span class="stat-label">Unread messages</span>
+        </button>
+        <button type="button" class="stat-card" data-goto="media">
+          <span class="stat-num" id="stat-media">—</span>
+          <span class="stat-label">Replaced files</span>
+        </button>
+        <button type="button" class="stat-card" data-goto="accounts">
+          <span class="stat-num" id="stat-staff">—</span>
+          <span class="stat-label">Staff accounts</span>
+        </button>
+      </div>
+      <p class="panel-hint">Pick a section from the left — or a card above — to get to work. Changes to events go live the moment you press <strong>Publish to site</strong>.</p>
+    </section>
+
+    <!-- Events + Publish (the publish action lives with the content it publishes) -->
+    <section class="panel" data-tab="events" id="editor" aria-labelledby="editor-h" hidden>
+      <div class="panel-head">
+        <div class="editor-title">
+          <h2 id="editor-h">Events</h2>
+          <span id="event-count" class="event-count" aria-live="polite"></span>
+        </div>
+        <div class="editor-tools">
+          <button type="button" class="btn btn-secondary btn-sm" id="sort">Sort by date</button>
+          <button type="button" class="btn btn-primary btn-sm" id="add">+ Add event</button>
         </div>
       </div>
-      <p id="login-status" class="save-status err" role="status" hidden></p>
-    </form>
-    <p class="admin-actions">
-      <button type="button" class="btn btn-primary" id="save" hidden>Save to site</button>
-      <button type="button" class="btn btn-primary" id="download" hidden>Download the events file</button>
-      <span id="save-status" class="save-status" role="status" hidden></span>
-      <span id="whoami" class="whoami" hidden></span>
-      <button type="button" class="btn-link" id="logout" hidden>Sign out</button>
-    </p>
-    <details id="manual" hidden>
-      <summary>For the technically inclined: the generated file</summary>
-      <p class="preview-note">This is the <code>events.json</code> the form produces — the same thing the Download button saves (installed as <code>site/assets/data/events.json</code>). Handy for copy-paste or a quick sanity check; nobody needs to edit it.</p>
-      <p class="admin-actions">
-        <button type="button" class="btn btn-secondary" id="copy">Copy JSON</button>
-        <span id="copy-done" class="copy-done" role="status" hidden>Copied ✓</span>
-      </p>
-      <label for="json-out">Generated events.json</label>
-      <textarea id="json-out" class="json-out" readonly rows="14" spellcheck="false"></textarea>
-    </details>
-  </section>
-
-  <section id="media" aria-labelledby="media-h" hidden>
-    <h2 id="media-h">Media</h2>
-    <p class="preview-note">Downloadable support files linked from the public pages — the technical specs, building layout, and seating chart. Upload a new PDF to swap it in right away; the file it replaces is kept as a backup. <strong>Restore original</strong> reverts to the version that ships with the site.</p>
-    <p id="media-status" class="save-status" role="status" hidden></p>
-    <ul id="media-list" class="media-list"></ul>
-  </section>
-
-  <section id="accounts" aria-labelledby="accounts-h" hidden>
-    <h2 id="accounts-h">Staff accounts</h2>
-    <div class="grid-2">
-      <form id="password-form" class="login-card">
-        <h3>Change my password</h3>
-        <div class="login-field">
-          <label for="pw-current">Current password</label>
-          <input id="pw-current" type="password" autocomplete="current-password" required>
-        </div>
-        <div class="login-field">
-          <label for="pw-new">New password (8+ characters)</label>
-          <input id="pw-new" type="password" autocomplete="new-password" minlength="8" required>
-        </div>
-        <p class="admin-actions">
-          <button type="submit" class="btn btn-primary">Change password</button>
-          <span id="pw-status" class="save-status" role="status" hidden></span>
-        </p>
+      <p class="note" id="publish-note-live" hidden>Fill in the form below, then press <strong>Publish to site</strong> — changes go live immediately. Events with past dates drop off the site automatically, so it's fine to leave old entries in place.</p>
+      <p class="preview-note">Click a row to edit it. For a run of shows, set an <strong>end date</strong> and every day is added to the calendar automatically. Entries with past dates, or missing a title or start date, are flagged and left off the public site.</p>
+      <form class="admin-editor" autocomplete="off">
+        <ul id="rows" class="event-rows"></ul>
+        <p id="rows-empty" class="preview-note" hidden>No events yet — add your first one with <strong>+ Add event</strong>.</p>
       </form>
-      <div>
-        <h3>Who can sign in</h3>
-        <ul id="user-list" class="user-list"></ul>
-        <form id="adduser-form" class="login-card">
-          <h3>Add a staff account</h3>
+
+      <div class="publish-bar">
+        <button type="button" class="btn btn-primary" id="save">Publish to site</button>
+        <button type="button" class="btn btn-secondary" id="download">Download events file</button>
+        <span id="save-status" class="save-status" role="status" hidden></span>
+      </div>
+      <details id="manual">
+        <summary>For the technically inclined: the generated file</summary>
+        <p class="preview-note">This is the <code>events.json</code> the form produces — the same thing the Download button saves (installed as <code>site/assets/data/events.json</code>). Handy for copy-paste or a quick sanity check; nobody needs to edit it.</p>
+        <p class="admin-actions">
+          <button type="button" class="btn btn-secondary btn-sm" id="copy">Copy JSON</button>
+          <span id="copy-done" class="copy-done" role="status" hidden>Copied ✓</span>
+        </p>
+        <label for="json-out">Generated events.json</label>
+        <textarea id="json-out" class="json-out" readonly rows="14" spellcheck="false"></textarea>
+      </details>
+    </section>
+
+    <!-- Messages -->
+    <section class="panel" data-tab="messages" id="messages" aria-labelledby="messages-h" hidden>
+      <div class="panel-head">
+        <div class="editor-title">
+          <h2 id="messages-h">Messages</h2>
+          <span id="messages-count" class="msg-count" hidden></span>
+        </div>
+      </div>
+      <p class="preview-note">Rental inquiries and lost &amp; found reports submitted through the website. Mark one handled once you’ve followed up, or delete spam. Email and phone values are clickable so you can reply directly.</p>
+      <p id="messages-status" class="save-status" role="status" hidden></p>
+      <p id="messages-empty" class="preview-note" hidden>No messages yet.</p>
+      <ul id="message-list" class="message-list"></ul>
+    </section>
+
+    <!-- Media -->
+    <section class="panel" data-tab="media" id="media" aria-labelledby="media-h" hidden>
+      <div class="panel-head">
+        <h2 id="media-h">Media</h2>
+      </div>
+      <p class="preview-note">Downloadable support files linked from the public pages — the technical specs, building layout, and seating chart. Upload a new PDF to swap it in right away; the file it replaces is kept as a backup. <strong>Restore original</strong> reverts to the version that ships with the site.</p>
+      <p id="media-status" class="save-status" role="status" hidden></p>
+      <ul id="media-list" class="media-list"></ul>
+    </section>
+
+    <!-- Staff accounts -->
+    <section class="panel" data-tab="accounts" id="accounts" aria-labelledby="accounts-h" hidden>
+      <div class="panel-head">
+        <h2 id="accounts-h">Staff accounts</h2>
+      </div>
+      <div class="grid-2">
+        <form id="password-form" class="login-card">
+          <h3>Change my password</h3>
           <div class="login-field">
-            <label for="au-name">Username</label>
-            <input id="au-name" type="text" autocapitalize="none" pattern="[A-Za-z0-9._\-]{2,32}" required>
+            <label for="pw-current">Current password</label>
+            <input id="pw-current" type="password" autocomplete="current-password" required>
           </div>
           <div class="login-field">
-            <label for="au-pass">Their starting password (8+ characters; they can change it after signing in)</label>
-            <input id="au-pass" type="password" autocomplete="new-password" minlength="8" required>
+            <label for="pw-new">New password (8+ characters)</label>
+            <input id="pw-new" type="password" autocomplete="new-password" minlength="8" required>
           </div>
           <p class="admin-actions">
-            <button type="submit" class="btn btn-secondary">Add account</button>
-            <span id="au-status" class="save-status" role="status" hidden></span>
+            <button type="submit" class="btn btn-primary">Change password</button>
+            <span id="pw-status" class="save-status" role="status" hidden></span>
           </p>
         </form>
+        <div>
+          <h3 class="accounts-sub">Who can sign in</h3>
+          <ul id="user-list" class="user-list"></ul>
+          <form id="adduser-form" class="login-card">
+            <h3>Add a staff account</h3>
+            <div class="login-field">
+              <label for="au-name">Username</label>
+              <input id="au-name" type="text" autocapitalize="none" pattern="[A-Za-z0-9._\-]{2,32}" required>
+            </div>
+            <div class="login-field">
+              <label for="au-pass">Their starting password (8+ characters; they can change it after signing in)</label>
+              <input id="au-pass" type="password" autocomplete="new-password" minlength="8" required>
+            </div>
+            <p class="admin-actions">
+              <button type="submit" class="btn btn-secondary">Add account</button>
+              <span id="au-status" class="save-status" role="status" hidden></span>
+            </p>
+          </form>
+        </div>
       </div>
-    </div>
-  </section>
-  </div>
-</main>
+    </section>
 
-<footer class="site-footer">
-  <div class="fineprint">
-    <p>Backstage tool — not linked from the public site. The Bonita Center for the Arts is owned and operated by the Bonita Unified School District.</p>
-  </div>
+  </main>
+</div>
+
+<footer class="admin-footer">
+  <p>Backstage tool — not linked from the public site. The Bonita Center for the Arts is owned and operated by the Bonita Unified School District.</p>
 </footer>
 <script src="/assets/js/events.js?v=baba454d" defer></script>
-<script src="/assets/js/admin.js?v=4312693c" defer></script>
+<script src="/assets/js/admin.js?v=485bc911" defer></script>
 </body>
 </html>

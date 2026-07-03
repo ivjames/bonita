@@ -222,7 +222,18 @@
     const filled = runs.filter((r) => Object.keys(r).length);
     rowsEmpty.hidden = rowsEl.children.length > 0;
     eventCount.textContent = filled.length ? `${filled.length} event${filled.length === 1 ? '' : 's'}` : '';
+    setStat('stat-events', filled.length);
+    setBadge('nav-events', filled.length);
     jsonOut.value = `${JSON.stringify({ ...extras, events: expandRuns(filled) }, null, 2)}\n`;
+  }
+
+  // Dashboard tiles + sidebar badges reflect live counts.
+  function setStat(id, n) { const el = document.getElementById(id); if (el) el.textContent = String(n); }
+  function setBadge(id, n) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = String(n);
+    el.hidden = !n;
   }
 
   document.getElementById('add').addEventListener('click', () => {
@@ -270,30 +281,39 @@
   const logoutBtn = document.getElementById('logout');
   const whoami = document.getElementById('whoami');
 
+  // Section tabs (live only): the sidebar rail swaps one work panel at a time,
+  // so the console shows a focused view rather than one long scroll.
+  const navItems = [...document.querySelectorAll('.nav-item')];
+  const panels = [...document.querySelectorAll('.panel')];
+  function activateTab(name) {
+    navItems.forEach((b) => {
+      const on = b.dataset.tab === name;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    panels.forEach((p) => { p.hidden = p.dataset.tab !== name; });
+  }
+  navItems.forEach((b) => b.addEventListener('click', () => activateTab(b.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach((el) =>
+    el.addEventListener('click', () => activateTab(el.dataset.goto)));
+
   function setMode(mode, user) {   // 'down' | 'login' | 'live'
     const live = mode === 'live', login = mode === 'login', down = mode === 'down';
-    // Everything editable is live-only. Signed out shows just the sign-in
-    // form; unreachable shows just the notice. There is no state in which the
-    // editor, the generated-file dump, or the tools render without a session.
+    // Everything editable is live-only. Signed out / unreachable shows only the
+    // centred gate card (sign-in form or notice); the console shell — sidebar,
+    // panels, publish action — renders only with a session.
     document.getElementById('publish-note-down').hidden = !down;
     document.getElementById('publish-note-login').hidden = !login;
     document.getElementById('publish-note-live').hidden = !live;
-    document.getElementById('output').hidden = down;   // the whole Publish block (incl. sign-in)
+    document.getElementById('gate').hidden = live;
+    document.getElementById('app').hidden = !live;
+    const gateTitle = document.getElementById('gate-title');
+    if (gateTitle) gateTitle.textContent = down ? 'Backstage is unavailable' : 'Sign in to Backstage';
     loginForm.hidden = !login;
-    saveBtn.hidden = !live;
     logoutBtn.hidden = !live;
     whoami.hidden = !live;
     if (user) whoami.textContent = `Signed in as ${user}`;
-    document.getElementById('download').hidden = !live;   // signed-in backup export
-    document.getElementById('accounts').hidden = !live;
-    document.getElementById('messages').hidden = !live;
-    document.getElementById('media').hidden = !live;
-    document.getElementById('editor').hidden = !live;
-    document.getElementById('manual').hidden = !live;
-    // Events sits alone until Messages joins it (signed in) — then they split
-    // the row two-up on wide screens.
-    document.getElementById('work-cols').classList.toggle('split', live);
-    if (live) { loadUserList(); loadMessages(); loadMedia(); }
+    if (live) { activateTab('overview'); loadUserList(); loadMessages(); loadMedia(); }
   }
 
   saveBtn.addEventListener('click', async () => {
@@ -355,6 +375,7 @@
       const res = await fetch('/api/users');
       if (!res.ok) return;
       const { users } = await res.json();
+      setStat('stat-staff', users.length);
       userList.innerHTML = '';
       users.forEach(({ name }) => {
         const li = document.createElement('li');
@@ -512,6 +533,8 @@
       renderMessages(submissions || []);
       msgCount.textContent = unhandled ? `${unhandled} new` : '';
       msgCount.hidden = !unhandled;
+      setStat('stat-messages', unhandled || 0);
+      setBadge('nav-messages', unhandled || 0);
     } catch { /* leave the list as-is */ }
   }
 
@@ -625,6 +648,7 @@
       if (!res.ok) return;
       const { docs } = await res.json();
       renderMedia(docs || []);
+      setStat('stat-media', (docs || []).filter((d) => d.override).length);
     } catch { /* leave the list as-is */ }
   }
 
