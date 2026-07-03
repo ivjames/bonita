@@ -114,6 +114,9 @@ h4 { font-size: 1.05rem; margin: 1.25rem 0 .35rem; }
   margin: 0;
   padding: 0;
   align-items: center;
+  /* Center each item in its column so links (and the white Tickets
+     button) hug their text instead of stretching to fill the cell. */
+  justify-items: center;
 }
 .site-nav a {
   display: block;
