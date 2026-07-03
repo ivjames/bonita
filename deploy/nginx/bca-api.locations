@@ -6,9 +6,21 @@
 # enforces the session (app-level auth, no HTTP basic auth).
 
 # Staff saves of the events list go to /var/lib/bca/events.json (outside the
-# git clone nginx serves), so serve that copy instead of the repo seed.
+# git clone nginx serves), so prefer that copy over the repo seed — but fall
+# back to the seed (@seed_events, which inherits the checkout root) when no
+# save exists yet, so the calendar never hard-fails to a 404/403. Same
+# root+try_files shape as the PDF override below (a bare `alias` can't fall
+# back). The API writes this file 0644 so www-data can read it.
 location = /assets/data/events.json {
-    alias /var/lib/bca/events.json;
+    root /var/lib/bca;
+    try_files /events.json @seed_events;
+    add_header Cache-Control "no-cache" always;
+    add_header X-Robots-Tag "noindex, nofollow" always;
+    add_header X-Content-Type-Options "nosniff" always;
+}
+# Fallback: the events.json seed committed in the repo. No root here, so it
+# inherits the server block's root (the checkout) and serves the original URI.
+location @seed_events {
     add_header Cache-Control "no-cache" always;
     add_header X-Robots-Tag "noindex, nofollow" always;
     add_header X-Content-Type-Options "nosniff" always;

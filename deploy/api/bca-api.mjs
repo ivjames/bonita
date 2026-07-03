@@ -51,7 +51,7 @@ import http from 'node:http';
 import { execFile } from 'node:child_process';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, readdir, rename, unlink, writeFile, appendFile, copyFile, stat } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, unlink, writeFile, appendFile, copyFile, stat, chmod } from 'node:fs/promises';
 import path from 'node:path';
 
 const DATA = process.env.BCA_DATA || '/var/lib/bca';
@@ -100,9 +100,14 @@ const readRawBody = (req, max) => new Promise((resolve, reject) => {
   req.on('error', reject);
 });
 
-async function atomicWrite(file, content) {
+// mode is optional: pass 0o644 for files nginx serves directly (events.json),
+// so www-data can read them. DynamicUser's umask (0077) would otherwise leave
+// them 0600 and nginx 403s. Omit it for private files (users.json, the form
+// spool) — they keep the restrictive default and must NOT become world-readable.
+async function atomicWrite(file, content, mode) {
   const tmp = `${file}.tmp`;
   await writeFile(tmp, content, 'utf8');   // atomic replace: readers never
+  if (mode !== undefined) await chmod(tmp, mode);   // set before rename
   await rename(tmp, file);                 // see a half-written file
 }
 
@@ -230,7 +235,7 @@ async function saveEvents(raw) {
       await unlink(path.join(backups, f));
     }
   }
-  await atomicWrite(file, raw);
+  await atomicWrite(file, raw, 0o644);   // nginx serves this file directly
 }
 
 // ---- media (swappable support PDFs) ----
@@ -454,6 +459,7 @@ const server = http.createServer(async (req, res) => {
       }
       const tmp = `${dest}.tmp`;
       await writeFile(tmp, buf);   // atomic replace: readers never see a partial PDF
+      await chmod(tmp, 0o644);     // nginx serves this file directly (see atomicWrite)
       await rename(tmp, dest);
       console.log(`media "${doc.slug}" replaced (${buf.length} bytes) by ${session.user} from ${ip}`);
       return json(res, 200, { ok: true, size: buf.length });
