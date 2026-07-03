@@ -568,6 +568,29 @@ main { display: block; }
   .event-cta { display: none; }
 }
 
+/* ---- event details page (/event, rendered by events.js) ---- */
+.event-detail { max-width: 46rem; }
+.event-detail-title { margin: .2rem 0 .6rem; }
+.event-detail-when {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  color: var(--maroon);
+  margin: 0 0 .3rem;
+}
+.event-detail-presenter { color: var(--ink-soft); margin: 0 0 1.2rem; }
+.event-detail-desc {
+  padding: 0;   /* full-width on its own page, not lined up under a card */
+  font-size: 1rem;
+  margin: 1.2rem 0 1.6rem;
+  max-width: 40rem;
+}
+.event-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem;
+  margin-top: 1.6rem;
+}
+
 /* ---- month-grid events calendar (rendered by events.js) ---- */
 .event-calendar { margin: 1.8rem 0; }
 .cal-bar {

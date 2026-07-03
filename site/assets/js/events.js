@@ -31,6 +31,22 @@ window.BCA.upcomingEvents = (events) => {
 window.BCA.escapeHtml = (s) => String(s).replace(/[&<>"']/g,
   (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+// URL-safe slug of a title, for the event-details page (/event?e=…). Two
+// entries of the same run (a multi-day show) share a title, so they share a
+// slug and resolve to the same details page.
+window.BCA.slugify = (s) => String(s || '').toLowerCase()
+  .replace(/[^\w\s-]/g, '').trim().replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+
+// Link to an event's details page. The date is carried along as a tiebreaker
+// so two distinct runs that happen to share a title resolve to the right one.
+window.BCA.eventDetailHref = (e) =>
+  `/event?e=${encodeURIComponent(window.BCA.slugify(e.title))}` +
+  (e.date ? `&d=${encodeURIComponent(e.date)}` : '');
+
+// An event earns a details page only when it has something to show there —
+// a ticket link or a blurb. Bare informational entries (school breaks) don't.
+window.BCA.hasEventDetail = (e) => Boolean(e.url || e.description);
+
 // Tiny Markdown -> HTML for event descriptions — the only rich text the site
 // renders, and the whole reason there's no Markdown library here. Supports the
 // subset the live calendar's blurbs use: [text](url) links (http/https/mailto
@@ -68,8 +84,10 @@ window.BCA.mdToText = (md) => window.BCA.mdToHtml(md)
 
 // Fill a <ul> with playbill-style event cards. `upcoming` must come from
 // upcomingEvents(). Multi-day runs entered as one row per day (so each day
-// shows on the calendar grid) collapse to a single card here. Returns the
-// number of cards rendered.
+// shows on the calendar grid) collapse to a single card here. The blurb is
+// not shown here — a card links through to the event's details page (/event),
+// where the full description and the tickets link live. Returns the number of
+// cards rendered.
 window.BCA.renderEvents = (list, upcoming, max) => {
   const esc = window.BCA.escapeHtml;
   const month = new Intl.DateTimeFormat('en-US', { month: 'short' });
@@ -79,6 +97,7 @@ window.BCA.renderEvents = (list, upcoming, max) => {
   const shown = deduped.slice(0, max || deduped.length);
   list.innerHTML = shown.map((e) => {
     const when = [e.dateLabel || full.format(e.day), e.time].filter(Boolean).join(' · ');
+    const detail = window.BCA.hasEventDetail(e);
     const inner = `
         <span class="event-date">
           <span class="d">${e.day.getDate()}</span>
@@ -87,17 +106,12 @@ window.BCA.renderEvents = (list, upcoming, max) => {
         <span class="event-info">
           <span class="event-title">${esc(e.title)}</span>
           <span class="event-meta">${esc(when)}${e.presenter ? ` — ${esc(e.presenter)}` : ''}</span>
-        </span>${e.url ? `
-        <span class="event-cta" aria-hidden="true">Tickets →</span>` : ''}`;
-    const card = e.url
-      ? `<a class="event-card" href="${esc(e.url)}">${inner}</a>`
+        </span>${detail ? `
+        <span class="event-cta" aria-hidden="true">Details →</span>` : ''}`;
+    const card = detail
+      ? `<a class="event-card" href="${esc(window.BCA.eventDetailHref(e))}">${inner}</a>`
       : `<span class="event-card">${inner}</span>`;
-    // The blurb sits outside the card link: it can carry its own links
-    // (e.g. "GET TICKETS"), and an <a> can't nest inside another <a>.
-    const desc = e.description
-      ? `<div class="event-desc">${window.BCA.mdToHtml(e.description)}</div>`
-      : '';
-    return `<li class="event">${card}${desc}</li>`;
+    return `<li class="event">${card}</li>`;
   }).join('');
   return shown.length;
 };
@@ -153,8 +167,8 @@ window.BCA.renderCalendar = (root, upcoming) => {
       cells.push(`<td class="${cls}"><span class="cal-num">${d}</span>${evs.map((e) => {
         const when = [e.dateLabel || full.format(e.day), e.time].filter(Boolean).join(' · ');
         const name = `<span class="cal-event-name" aria-hidden="true">${esc(e.title)}</span>`;
-        return e.url
-          ? `<a class="cal-event" href="${esc(e.url)}" aria-label="${esc(`${e.title} — ${when} — tickets`)}">${name}</a>`
+        return window.BCA.hasEventDetail(e)
+          ? `<a class="cal-event" href="${esc(window.BCA.eventDetailHref(e))}" aria-label="${esc(`${e.title} — ${when} — details`)}">${name}</a>`
           : `<span class="cal-event">${name}<span class="visually-hidden">${esc(`${e.title} — ${when}`)}</span></span>`;
       }).join('')}</td>`);
     }
@@ -205,10 +219,49 @@ window.BCA.eventsJsonLd = (upcoming) => upcoming.map((e) => {
   return ev;
 });
 
+// Render the single-event details page (/event) into a [data-event-detail]
+// container. The event is resolved from the ?e=<title-slug>&d=<date> query
+// that the cards and calendar cells link to: match by slug, disambiguate by
+// date, then gather the whole run so a multi-day show reads as one page.
+// Replaces the container's static fallback only on a hit; returns the resolved
+// event (for the page <title> and JSON-LD) or null when nothing matched.
+window.BCA.renderEventDetail = (root, events) => {
+  const esc = window.BCA.escapeHtml;
+  const full = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('e') || '';
+  const wantDay = params.get('d') || '';
+  if (!slug) return null;
+  const withDay = (events || [])
+    .map((e) => ({ ...e, day: window.BCA.parseEventDay(e.date) }))
+    .filter((e) => e.title && e.day)
+    .sort((a, b) => a.day - b.day);
+  const matches = withDay.filter((e) => window.BCA.slugify(e.title) === slug);
+  if (!matches.length) return null;
+  // Anchor on the requested day (else the earliest match), then keep the
+  // entries sharing its identity — the same show across its multi-day run.
+  const ident = (e) => [e.title, e.dateLabel || '', e.time || '', e.presenter || '', e.url || '', e.description || ''].join(' ');
+  const e = (wantDay && matches.find((m) => m.date === wantDay)) || matches[0];
+  const when = [e.dateLabel || full.format(e.day), e.time].filter(Boolean).join(' · ');
+
+  root.innerHTML = `
+      <p class="eyebrow">Event</p>
+      <h1 class="event-detail-title">${esc(e.title)}</h1>
+      <p class="event-detail-when">${esc(when)}</p>
+      ${e.presenter ? `<p class="event-detail-presenter">Presented by ${esc(e.presenter)}</p>` : ''}
+      ${e.description ? `<div class="event-desc event-detail-desc">${window.BCA.mdToHtml(e.description)}</div>` : ''}
+      <p class="event-detail-actions">
+        ${e.url ? `<a class="btn btn-primary" href="${esc(e.url)}">Get tickets</a>` : ''}
+        <a class="btn btn-secondary" href="/booking-calendar">Back to calendar</a>
+      </p>`;
+  return e;
+};
+
 (async () => {
   const lists = document.querySelectorAll('ul[data-events]');
   const calendars = document.querySelectorAll('[data-events-calendar]');
-  if (!lists.length && !calendars.length) return;
+  const detail = document.querySelector('[data-event-detail]');
+  if (!lists.length && !calendars.length && !detail) return;
   let data;
   try {
     // Revalidate every load: the event list changes when staff edit it (via
@@ -218,6 +271,19 @@ window.BCA.eventsJsonLd = (upcoming) => upcoming.map((e) => {
     data = await (await fetch('/assets/data/events.json', { cache: 'no-cache' })).json();
   } catch {
     return;
+  }
+  const addJsonLd = (graph) => {
+    const ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
+    document.head.append(ld);
+  };
+  if (detail) {
+    const ev = window.BCA.renderEventDetail(detail, data.events);
+    if (ev) {
+      document.title = `${ev.title} | Bonita Center for the Arts`;
+      addJsonLd(window.BCA.eventsJsonLd([ev]));
+    }
   }
   const upcoming = window.BCA.upcomingEvents(data.events);
   if (!upcoming.length) return;
@@ -229,8 +295,5 @@ window.BCA.eventsJsonLd = (upcoming) => upcoming.map((e) => {
     window.BCA.renderCalendar(cal, upcoming);
     cal.hidden = false;
   });
-  const ld = document.createElement('script');
-  ld.type = 'application/ld+json';
-  ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@graph': window.BCA.eventsJsonLd(upcoming) });
-  document.head.append(ld);
+  addJsonLd(window.BCA.eventsJsonLd(upcoming));
 })();
