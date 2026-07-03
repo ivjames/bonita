@@ -14,9 +14,12 @@
     "Keys starting with _ are ignored by the site.",
     "If this list is empty or unreachable, the pages simply fall back to",
     "the 'browse events on our ticketing site' link - nothing breaks.",
-    "The entries below were copied on 2026-07-02 from the old site's",
-    "public Google Calendar (Bonita Center Calendar of Events,",
-    "bonitacenter@gmail.com) - keep them fresh via /admin."
+    "The entries below mirror the live site's calendar as of 2026-07-03:",
+    "the eventscalendar.co widget on bonitacenterforthearts.com, which is",
+    "fed by the public Google Calendar (bonitacenter@gmail.com). Titles",
+    "are kept verbatim from the live calendar; school-district entries",
+    "(First Day of School, breaks) are included because the live calendar",
+    "shows them. Keep this in sync via /admin."
   ],
   "_example": {
     "title": "Spring Dance Showcase",
@@ -34,35 +37,119 @@
       "url": "https://bonitacenterforthearts.ludus.com/200537834"
     },
     {
-      "title": "Shrek Jr",
+      "title": "Top Billing Entertainment presents \"Shrek Jr\"",
       "date": "2026-07-17",
-      "dateLabel": "July 17–19",
-      "presenter": "Top Billing Entertainment"
+      "dateLabel": "July 17–19"
     },
     {
-      "title": "Shrek Jr",
+      "title": "Top Billing Entertainment presents \"Shrek Jr\"",
       "date": "2026-07-18",
-      "dateLabel": "July 17–19",
-      "presenter": "Top Billing Entertainment"
+      "dateLabel": "July 17–19"
     },
     {
-      "title": "Shrek Jr",
+      "title": "Top Billing Entertainment presents \"Shrek Jr\"",
       "date": "2026-07-19",
-      "dateLabel": "July 17–19",
-      "presenter": "Top Billing Entertainment"
+      "dateLabel": "July 17–19"
     },
     {
-      "title": "Tradicion y Folklore",
+      "title": "Ballet Folklorico International presents \"Tradicion y Folklore\"",
       "date": "2026-07-25",
       "time": "1:00 PM",
-      "presenter": "Ballet Folklorico International",
       "url": "https://bonitacenterforthearts.ludus.com/200533175"
     },
     {
       "title": "Western University White Coat Ceremony (invited guests only)",
       "date": "2026-08-07",
-      "time": "9:00 AM",
-      "presenter": "Western University"
+      "time": "9:00 AM"
+    },
+    {
+      "title": "First Day of School",
+      "date": "2026-08-17"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2026-12-21",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2026-12-22",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2026-12-23",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2026-12-24",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2026-12-25",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2026-12-26",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2026-12-27",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2026-12-28",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2026-12-29",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2026-12-30",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2026-12-31",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Winter Break",
+      "date": "2027-01-01",
+      "dateLabel": "December 21 – January 1"
+    },
+    {
+      "title": "Spring Break",
+      "date": "2027-03-29",
+      "dateLabel": "March 29 – April 2"
+    },
+    {
+      "title": "Spring Break",
+      "date": "2027-03-30",
+      "dateLabel": "March 29 – April 2"
+    },
+    {
+      "title": "Spring Break",
+      "date": "2027-03-31",
+      "dateLabel": "March 29 – April 2"
+    },
+    {
+      "title": "Spring Break",
+      "date": "2027-04-01",
+      "dateLabel": "March 29 – April 2"
+    },
+    {
+      "title": "Spring Break",
+      "date": "2027-04-02",
+      "dateLabel": "March 29 – April 2"
     }
   ]
 }
