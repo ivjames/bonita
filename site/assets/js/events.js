@@ -31,6 +31,41 @@ window.BCA.upcomingEvents = (events) => {
 window.BCA.escapeHtml = (s) => String(s).replace(/[&<>"']/g,
   (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+// Tiny Markdown -> HTML for event descriptions — the only rich text the site
+// renders, and the whole reason there's no Markdown library here. Supports the
+// subset the live calendar's blurbs use: [text](url) links (http/https/mailto
+// only), **bold**, _italic_/*italic*, blank-line paragraphs, and
+// backslash-escaped punctuation (\* -> a literal *). Any real HTML in the
+// source is escaped first, so a description can never inject markup.
+window.BCA.mdToHtml = (md) => {
+  const esc = window.BCA.escapeHtml;
+  const held = [];
+  // 1. stash backslash-escaped punctuation so the inline passes skip it
+  let s = String(md || '').replace(/\\([\\`*_{}[\]()#+\-.!>~])/g, (_, ch) => {
+    held.push(ch);
+    return `\u0000${held.length - 1}\u0000`;
+  });
+  // 2. neutralise any real HTML in the source
+  s = esc(s);
+  // 3. inline: links first (so ** inside a label is left alone), then bold, italic
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, text, url) =>
+    `<a href="${esc(/^(https?:|mailto:)/i.test(url) ? url : '#')}">${text}</a>`);
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/_([^_]+)_/g, '<em>$1</em>').replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  // 4. paragraphs on blank lines, <br> on single newlines
+  s = s.split(/\n{2,}/).map((p) => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+  // 5. restore the stashed literals (as escaped text, never markup)
+  return s.replace(/\u0000(\d+)\u0000/g, (_, i) => esc(held[Number(i)]));
+};
+
+// Same subset flattened to plain text — for the JSON-LD, where description
+// must be a plain string (no markup).
+window.BCA.mdToText = (md) => window.BCA.mdToHtml(md)
+  .replace(/<[^>]+>/g, ' ')
+  .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+  .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+  .replace(/\s+/g, ' ').trim();
+
 // Fill a <ul> with playbill-style event cards. `upcoming` must come from
 // upcomingEvents(). Multi-day runs entered as one row per day (so each day
 // shows on the calendar grid) collapse to a single card here. Returns the
@@ -54,9 +89,15 @@ window.BCA.renderEvents = (list, upcoming, max) => {
           <span class="event-meta">${esc(when)}${e.presenter ? ` — ${esc(e.presenter)}` : ''}</span>
         </span>${e.url ? `
         <span class="event-cta" aria-hidden="true">Tickets →</span>` : ''}`;
-    return `<li class="event">${e.url
+    const card = e.url
       ? `<a class="event-card" href="${esc(e.url)}">${inner}</a>`
-      : `<span class="event-card">${inner}</span>`}</li>`;
+      : `<span class="event-card">${inner}</span>`;
+    // The blurb sits outside the card link: it can carry its own links
+    // (e.g. "GET TICKETS"), and an <a> can't nest inside another <a>.
+    const desc = e.description
+      ? `<div class="event-desc">${window.BCA.mdToHtml(e.description)}</div>`
+      : '';
+    return `<li class="event">${card}${desc}</li>`;
   }).join('');
   return shown.length;
 };
@@ -160,6 +201,7 @@ window.BCA.eventsJsonLd = (upcoming) => upcoming.map((e) => {
     ev.offers = { '@type': 'Offer', url: e.url };
   }
   if (e.presenter) ev.organizer = { '@type': 'Organization', name: e.presenter };
+  if (e.description) ev.description = window.BCA.mdToText(e.description);
   return ev;
 });
 

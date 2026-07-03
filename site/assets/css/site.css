@@ -477,6 +477,7 @@ main { display: block; }
   gap: .9rem;
   max-width: 46rem;
 }
+.event-list .event { display: flex; flex-direction: column; gap: .45rem; }
 .event-list .event .event-card {
   display: flex;
   align-items: center;
@@ -522,6 +523,16 @@ main { display: block; }
 .event-info { display: grid; gap: .1rem; min-width: 0; }
 .event-title { font-family: var(--serif); font-size: 1.15rem; font-weight: 600; }
 .event-meta { font-size: .92rem; color: var(--ink-soft); }
+.event-desc {
+  font-size: .9rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  padding: 0 1.15rem;   /* line up with the card's inner padding */
+}
+.event-desc p { margin: 0 0 .45rem; }
+.event-desc p:last-child { margin-bottom: 0; }
+.event-desc a { color: var(--maroon); font-weight: 600; }
+.event-desc a:hover { text-decoration-color: var(--gold); }
 .event-cta {
   margin-left: auto;
   flex: none;
@@ -1056,6 +1067,7 @@ main [id] { scroll-margin-top: 5.4rem; }
 }
 .event-row .field-title { grid-column: 1 / -1; }
 .event-row .field-url { grid-column: 1 / -1; }
+.event-row .field-description { grid-column: 1 / -1; }
 .event-row label {
   display: block;
   font-size: .8rem;
@@ -1065,7 +1077,8 @@ main [id] { scroll-margin-top: 5.4rem; }
   color: var(--ink-soft);
   margin-bottom: .25rem;
 }
-.event-row input {
+.event-row input,
+.event-row textarea {
   width: 100%;
   padding: .55rem .7rem;
   font: inherit;
@@ -1075,7 +1088,9 @@ main [id] { scroll-margin-top: 5.4rem; }
   color: var(--ink);
   transition: border-color .15s ease, box-shadow .15s ease;
 }
-.event-row input:focus {
+.event-row textarea { resize: vertical; min-height: 3.2rem; line-height: 1.45; }
+.event-row input:focus,
+.event-row textarea:focus {
   border-color: var(--maroon);
   box-shadow: 0 0 0 3px rgba(142, 31, 46, .12);
 }
