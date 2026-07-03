@@ -21,13 +21,86 @@
 
   const FIELDS = [
     { key: 'title', label: 'Title *', type: 'text', required: true, hint: '' },
-    { key: 'date', label: 'Date *', type: 'date', required: true, hint: 'First (or only) performance — used for ordering and expiry' },
+    { key: 'date', label: 'Start date *', type: 'date', required: true, hint: 'The day of the event, or the first day of a multi-day run' },
+    { key: 'dateEnd', label: 'End date', type: 'date', hint: 'Only for a multi-day run — the last day. Leave empty for a single day; every day in the range is added to the calendar automatically.' },
     { key: 'time', label: 'Time', type: 'text', hint: 'e.g. 7:00 PM' },
-    { key: 'dateLabel', label: 'Date label', type: 'text', hint: 'Optional display override, e.g. “July 18–20”' },
     { key: 'presenter', label: 'Presenter', type: 'text', hint: 'Who’s putting it on (optional)' },
     { key: 'url', label: 'Ticket URL', type: 'url', hint: 'The event’s page on bonitacenterforthearts.ludus.com — leave empty if tickets aren’t sold through our site' },
     { key: 'description', label: 'Description', type: 'textarea', hint: 'Optional blurb shown under the event. Markdown: **bold**, _italic_, [text](https://…). Blank line starts a new paragraph.' },
   ];
+
+  const monthLong = new Intl.DateTimeFormat('en-US', { month: 'long' });
+  const parseDay = (s) => window.BCA.parseEventDay(s);
+  const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const dayDiff = (a, b) => Math.round((b - a) / 86400000);   // whole days, DST-safe
+
+  // Display label for a multi-day run: "July 17–19" within a month/year,
+  // "December 21 – January 1" across one. Matches how events.json labels runs.
+  const rangeLabel = (startStr, endStr) => {
+    const s = parseDay(startStr), e = parseDay(endStr);
+    if (!s || !e) return '';
+    const sM = monthLong.format(s), eM = monthLong.format(e);
+    return (sM === eM && s.getFullYear() === e.getFullYear())
+      ? `${sM} ${s.getDate()}–${e.getDate()}`
+      : `${sM} ${s.getDate()} – ${eM} ${e.getDate()}`;
+  };
+
+  // Everything a run shares day-to-day (date + dateLabel are per-run, derived).
+  const runSig = (e) => JSON.stringify([e.title || '', e.time || '', e.presenter || '', e.url || '', e.description || '']);
+  const runShared = (e) => {
+    const r = { title: e.title || '', date: e.date || '' };
+    if (e.time) r.time = e.time;
+    if (e.presenter) r.presenter = e.presenter;
+    if (e.url) r.url = e.url;
+    if (e.description) r.description = e.description;
+    return r;
+  };
+
+  // events.json stores one entry per day (so the calendar grid marks each day);
+  // the editor collapses consecutive same-event days into a single run row.
+  const groupRuns = (events) => {
+    const valid = [], invalid = [];
+    for (const e of (events || [])) (parseDay(e.date) ? valid : invalid).push(e);
+    valid.sort((a, b) => parseDay(a.date) - parseDay(b.date));
+    const runs = [];
+    let cur = null, lastDay = null;
+    for (const e of valid) {
+      const day = parseDay(e.date);
+      if (cur && cur._sig === runSig(e) && dayDiff(lastDay, day) === 1) {
+        cur.dateEnd = e.date;   // extend the run
+      } else {
+        cur = runShared(e); cur._sig = runSig(e); runs.push(cur);
+      }
+      lastDay = day;
+    }
+    runs.forEach((r) => delete r._sig);
+    invalid.forEach((e) => runs.push(runShared(e)));   // keep date-less entries as their own rows
+    return runs;
+  };
+
+  // Inverse of groupRuns: a run row -> one entry per day, with the run's
+  // display label on multi-day runs, sorted by date. This is what ships.
+  const expandRuns = (runs) => {
+    const out = [];
+    for (const r of runs) {
+      const start = parseDay(r.date);
+      if (!r.title || !start) continue;   // incomplete rows don't ship (same as before)
+      const end = r.dateEnd ? parseDay(r.dateEnd) : null;
+      const multi = end && end.getTime() > start.getTime();
+      const label = multi ? rangeLabel(r.date, r.dateEnd) : '';
+      const last = multi ? end : start;
+      for (let d = new Date(start.getTime()); d.getTime() <= last.getTime(); d.setDate(d.getDate() + 1)) {
+        const ev = { title: r.title, date: ymd(d) };
+        if (r.time) ev.time = r.time;
+        if (multi) ev.dateLabel = label;
+        if (r.presenter) ev.presenter = r.presenter;
+        if (r.url) ev.url = r.url;
+        if (r.description) ev.description = r.description;
+        out.push(ev);
+      }
+    }
+    return out.sort((a, b) => parseDay(a.date) - parseDay(b.date));
+  };
 
   const today = () => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; };
 
@@ -111,24 +184,29 @@
   }
 
   // Keep a row's collapsed summary and its warnings in sync with its fields.
-  function paintRow(li, e) {
-    const day = window.BCA.parseEventDay(e.date);
+  // `r` is a run: title, date (start), optional dateEnd, time, presenter, url…
+  function paintRow(li, r) {
+    const start = parseDay(r.date);
+    const end = r.dateEnd ? parseDay(r.dateEnd) : null;
+    const multi = start && end && end.getTime() > start.getTime();
     const title = li.querySelector('.row-title');
-    title.textContent = e.title || 'Untitled event';
-    title.classList.toggle('is-empty', !e.title);
+    title.textContent = r.title || 'Untitled event';
+    title.classList.toggle('is-empty', !r.title);
 
     const when = [];
-    if (e.dateLabel) when.push(e.dateLabel);
-    else if (day) when.push(fullDate.format(day));
+    if (multi) when.push(`${rangeLabel(r.date, r.dateEnd)} · ${dayDiff(start, end) + 1} days`);
+    else if (start) when.push(fullDate.format(start));
     else when.push('no date yet');
-    if (e.time) when.push(e.time);
-    if (e.presenter) when.push(e.presenter);
+    if (r.time) when.push(r.time);
+    if (r.presenter) when.push(r.presenter);
     li.querySelector('.row-when').textContent = when.join(' · ');
 
+    const lastDay = multi ? end : start;
     const problems = [];
-    if (!e.title || !e.date) problems.push('needs a title and date to appear on the site');
-    if (e.date && day && day < today()) problems.push('date is in the past — it won’t be shown (safe to remove)');
-    if (e.url && !/^https:\/\//.test(e.url)) problems.push('ticket URL should start with https://');
+    if (!r.title || !r.date) problems.push('needs a title and start date to appear on the site');
+    if (r.dateEnd && end && start && end.getTime() < start.getTime()) problems.push('end date is before the start date');
+    if (r.date && lastDay && lastDay < today()) problems.push('date is in the past — it won’t be shown (safe to remove)');
+    if (r.url && !/^https:\/\//.test(r.url)) problems.push('ticket URL should start with https://');
 
     const flag = li.querySelector('.row-flag');
     flag.textContent = problems.length ? `⚠ This event ${problems.join('; ')}.` : '';
@@ -138,20 +216,13 @@
     badge.title = problems.join('; ');
   }
 
-  function currentEvents() {
-    return [...rowsEl.children].map(readRow).filter((e) => Object.keys(e).length);
-  }
-
   function refresh() {
-    [...rowsEl.children].forEach((li) => paintRow(li, readRow(li)));
-    const events = currentEvents();
+    const runs = [...rowsEl.children].map(readRow);
+    [...rowsEl.children].forEach((li, i) => paintRow(li, runs[i]));
+    const filled = runs.filter((r) => Object.keys(r).length);
     rowsEmpty.hidden = rowsEl.children.length > 0;
-    eventCount.textContent = events.length ? `${events.length} event${events.length === 1 ? '' : 's'}` : '';
-    const sorted = [...events].sort((a, b) => {
-      const da = window.BCA.parseEventDay(a.date), db = window.BCA.parseEventDay(b.date);
-      return (da ? da.getTime() : Infinity) - (db ? db.getTime() : Infinity);
-    });
-    jsonOut.value = `${JSON.stringify({ ...extras, events: sorted }, null, 2)}\n`;
+    eventCount.textContent = filled.length ? `${filled.length} event${filled.length === 1 ? '' : 's'}` : '';
+    jsonOut.value = `${JSON.stringify({ ...extras, events: expandRuns(filled) }, null, 2)}\n`;
   }
 
   document.getElementById('add').addEventListener('click', () => {
@@ -613,7 +684,7 @@
       const data = await (await fetch('/assets/data/events.json', { cache: 'no-store' })).json();
       const { events, ...rest } = data;
       extras = rest;
-      (events || []).forEach((e) => addRow(e));   // collapsed; index must not leak in as `open`
+      groupRuns(events).forEach((run) => addRow(run));   // collapse day-runs; all start collapsed
     } catch {
       extras = {};
     }
