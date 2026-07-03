@@ -59,8 +59,20 @@ The script is self-contained, so it can also run locally or on the DO droplet.
 
 ## Test harness
 
-`fixtures/` + `serve.mjs` are a local site with deliberate defects used to verify
-the tool without hitting the network:
+`fixtures/` is a small site with **deliberately planted defects** (missing alt,
+a heading skip, an untitled iframe, an unlabeled form control, low-contrast
+text, a missing `lang`). They are test input, not rot — each is annotated in the
+fixture's header comment, so don't "fix" the markup.
+
+`test.mjs` is the automated test: it serves the fixtures with `serve.mjs`, runs
+the full audit offline, and asserts `audit.mjs` **detects every planted defect**.
+It fails loudly if a change makes the tool stop catching one.
+
+```bash
+npm test                  # serves fixtures, audits them, asserts the findings
+```
+
+To eyeball the raw report instead of the assertions:
 
 ```bash
 node serve.mjs &          # serves fixtures on 127.0.0.1:8199

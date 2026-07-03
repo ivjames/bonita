@@ -4,6 +4,7 @@
   "type": "module",
   "description": "Live-site audit tooling for BCA website migration (crawler + axe-core a11y)",
   "scripts": {
+    "test": "node test.mjs",
     "stamp": "node stamp-assets.mjs",
     "stamp:check": "node stamp-assets.mjs --check"
   },

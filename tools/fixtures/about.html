@@ -1,4 +1,9 @@
-<!doctype html><html><head><title>About</title></head>
+<!doctype html><!--
+  TEST INPUT — do not "fix" this markup. The defects below are deliberate;
+  test.mjs asserts audit.mjs detects each one. See tools/README.md "Test harness".
+  Planted defects: <html> missing lang · h2 as sole heading (no h1) ·
+  low-contrast paragraph · team.jpg missing alt.
+--><html><head><title>About</title></head>
 <body>
 <h2>About us</h2>
 <p style="color:#bbb;background:#fff">Low contrast text sample.</p>
