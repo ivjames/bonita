@@ -933,33 +933,8 @@ form.contact.rental .btn { justify-self: start; }
   .policy-facts { max-width: 40rem; }
 }
 
-/* Quick-jump chips to each policy topic. */
-.policy-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
-  margin: 0 0 1.8rem;
-  padding: 0;
-  list-style: none;
-}
-.policy-nav a {
-  display: inline-block;
-  padding: .42rem .9rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--card);
-  box-shadow: var(--shadow-1);
-  font-size: .85rem;
-  font-weight: 600;
-  color: var(--ink-soft);
-  text-decoration: none;
-  transition: border-color .15s ease, color .15s ease, transform .15s ease;
-}
-.policy-nav a:hover {
-  border-color: var(--gold);
-  color: var(--maroon);
-  transform: translateY(-1px);
-}
+/* The policy topics live in a sticky side nav (shared .specs-layout / nav.toc
+   shell, same as Building layout and Technical specs). */
 
 /* Each policy section becomes its own card with a gilded icon medallion. */
 .policies {
@@ -1071,10 +1046,11 @@ form.contact.rental .btn { justify-self: start; }
   body.policies-page { background: #fff; }
   .policies-page .site-header,
   .policies-page .site-footer,
-  .policies-page .section-nav,
-  .policies-page .policy-nav,
+  .policies-page nav.toc,
   .policies-page .skip-link,
   .policies-page .print-btn { display: none !important; }
+  /* The topic side nav collapses away, so the cards take the full width. */
+  .policies-page .specs-layout { display: block; }
 
   /* Restore table semantics so <thead>/<tfoot> become repeating page groups —
      Chromium reprints them at the top and bottom of every page, inside the
@@ -1124,7 +1100,6 @@ form.contact.rental .btn { justify-self: start; }
     box-shadow: none;
     border: 1px solid #bbb;
     padding: .6rem .85rem;
-    break-inside: avoid;
     background: transparent;
   }
   .policies-page .policy-ico {
