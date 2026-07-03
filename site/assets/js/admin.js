@@ -26,6 +26,7 @@
     { key: 'dateLabel', label: 'Date label', type: 'text', hint: 'Optional display override, e.g. “July 18–20”' },
     { key: 'presenter', label: 'Presenter', type: 'text', hint: 'Who’s putting it on (optional)' },
     { key: 'url', label: 'Ticket URL', type: 'url', hint: 'The event’s page on bonitacenterforthearts.ludus.com — leave empty if tickets aren’t sold through our site' },
+    { key: 'description', label: 'Description', type: 'textarea', hint: 'Optional blurb shown under the event. Markdown: **bold**, _italic_, [text](https://…). Blank line starts a new paragraph.' },
   ];
 
   const today = () => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; };
@@ -64,8 +65,8 @@
       const label = document.createElement('label');
       label.htmlFor = id;
       label.textContent = f.label;
-      const input = document.createElement('input');
-      input.type = f.type;
+      const input = document.createElement(f.type === 'textarea' ? 'textarea' : 'input');
+      if (f.type === 'textarea') input.rows = 3; else input.type = f.type;
       input.id = id;
       input.dataset.key = f.key;
       if (f.required) input.required = true;
@@ -103,7 +104,7 @@
 
   function readRow(li) {
     const e = {};
-    li.querySelectorAll('input').forEach((input) => {
+    li.querySelectorAll('input, textarea').forEach((input) => {
       const v = input.value.trim();
       if (v) e[input.dataset.key] = v;
     });
