@@ -1026,6 +1026,71 @@ form.contact.rental .btn { justify-self: start; }
 }
 .policies > section > p { margin-top: .6rem; }
 
+/* Header row: quick facts on the left, a print / save affordance on the right. */
+.policies-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .9rem 1.2rem;
+  margin: 1.4rem 0 1.6rem;
+}
+.policies-top .policy-facts { flex: 1 1 22rem; margin: 0; max-width: 40rem; }
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin-left: auto;
+}
+.print-btn svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Clean printout of the policies page: drop the site chrome and the maroon
+   band's heavy ink, flatten each policy card, and keep a card whole on a page
+   where it fits. Scoped to the policies page via its body class. */
+@media print {
+  body.policies-page { background: #fff; }
+  .policies-page .site-header,
+  .policies-page .site-footer,
+  .policies-page .section-nav,
+  .policies-page .policy-nav,
+  .policies-page .skip-link,
+  .policies-page .print-btn { display: none !important; }
+  .policies-page .page-head {
+    background: none !important;
+    color: #000;
+    border-bottom: 2px solid #000;
+    padding: 0 0 .8rem;
+    margin-bottom: 1rem;
+  }
+  .policies-page .page-head .eyebrow,
+  .policies-page .page-head h1,
+  .policies-page .page-head .lede { color: #000; }
+  .policies-page .page-head .eyebrow::before { background: #000; }
+  .policies-page .wrap { max-width: none; padding: 0; }
+  .policies-page .facts strong { color: #000; }
+  .policies-page .facts li { background: none; border: 1px solid #999; }
+  .policies-page .policies > section {
+    box-shadow: none;
+    border: 1px solid #bbb;
+    padding: .6rem .85rem;
+    break-inside: avoid;
+  }
+  .policies-page .policy-ico {
+    background: none !important;
+    color: #000;
+    box-shadow: none;
+    border: 1.5px solid #000;
+  }
+  .policies-page .policies li::before { background: #000; }
+}
+
 /* ---- partner logos (About) ---- */
 .partners {
   display: flex;
@@ -1274,6 +1339,24 @@ details.spec-acc[open] > summary::after { content: "\2212"; }
 details.spec-acc > summary:hover h2 { color: var(--maroon); }
 details.spec-acc > .acc-body { padding: 0 1.3rem 1.2rem; }
 details.spec-acc > .acc-body > :first-child { margin-top: .2rem; }
+
+/* Building layout reuses the tech-specs shell, but its spaces are short
+   enough to sit open as plain cards rather than accordions. */
+.spec-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+  padding: 1.25rem 1.4rem 1.35rem;
+  margin: 0 0 1.1rem;
+  scroll-margin-top: 5.4rem;
+}
+.spec-card > h2 {
+  margin: 0 0 .35rem;
+  font-size: 1.35rem;
+}
+.spec-card > :last-child { margin-bottom: 0; }
+.spec-card figure { margin: 0; }
 
 /* anchored headings land clear of the sticky header */
 main [id] { scroll-margin-top: 5.4rem; }

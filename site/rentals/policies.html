@@ -45,9 +45,9 @@
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=ea49488a">
+<link rel="stylesheet" href="/assets/css/site.css?v=f2d1acaa">
 </head>
-<body>
+<body class="policies-page">
 <a class="skip-link" href="#main">Skip to main content</a>
 <!-- chrome:header -->
 <header class="site-header">
@@ -107,11 +107,17 @@
   </nav>
 <!-- /chrome:subnav -->
 
-  <ul class="facts policy-facts">
-    <li><strong>700</strong> guest capacity</li>
-    <li><strong>160</strong> backstage capacity</li>
-    <li><strong>30&ndash;45</strong> min, house opens</li>
-  </ul>
+  <div class="policies-top">
+    <ul class="facts policy-facts">
+      <li><strong>700</strong> guest capacity</li>
+      <li><strong>160</strong> backstage capacity</li>
+      <li><strong>30&ndash;45</strong> min, house opens</li>
+    </ul>
+    <button type="button" class="btn btn-secondary btn-sm print-btn" onclick="window.print()">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3.5h12V9"/><rect x="4" y="9" width="16" height="7" rx="1.5"/><path d="M7 16h10v4.5H7z"/><path d="M16.5 12h.01"/></svg>
+      Print / Save as PDF
+    </button>
+  </div>
 
   <nav class="policy-nav" aria-label="Policy topics">
     <a href="#attendance">Attendance</a>
