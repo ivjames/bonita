@@ -65,7 +65,8 @@
   white-space: nowrap;
 }
 .bar-link:hover { color: #fff; }
-.whoami {
+/* site.css styles .whoami dark for light pages; the dark bar needs it light. */
+.admin-bar .whoami {
   color: var(--rose-soft);
   font-size: .85rem;
   font-weight: 600;
@@ -272,9 +273,8 @@
   border-top: 1px solid var(--line);
 }
 
+/* .grid-2 comes from site.css (responsive two-up); no need to restate it. */
 .accounts-sub { margin-top: 0; }
-.grid-2 { display: grid; gap: 1.4rem; align-items: start; }
-@media (min-width: 48rem) { .grid-2 { grid-template-columns: 1fr 1fr; } }
 
 /* ---- footer ---- */
 .admin-footer {
