@@ -1,0 +1,35 @@
+# systemd unit for the bca-api backend (deploy/api/bca-api.mjs).
+# Installed by deploy/api/setup-api.sh as /etc/systemd/system/bca-api.service.
+#
+# StateDirectory gives the service /var/lib/bca (owned by the dynamic user);
+# events.json lives there — outside the git clone nginx serves — so staff
+# edits never collide with `sudo bonita` (git pull) deploys.
+
+[Unit]
+Description=BCA website backend (events save + form intake)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /opt/bca/bca-api.mjs
+Environment=BCA_DATA=/var/lib/bca
+Environment=BCA_LISTEN=8787
+# Optional overrides (e.g. BCA_MAIL_TO for form email notifications).
+# Staff accounts live in /var/lib/bca/users.json, managed from /admin.
+EnvironmentFile=-/etc/bca-api.env
+Restart=on-failure
+RestartSec=2
+
+# Hardening: no shell user, read-only system, only /var/lib/bca writable.
+DynamicUser=yes
+StateDirectory=bca
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+IPAddressAllow=localhost
+IPAddressDeny=any
+
+[Install]
+WantedBy=multi-user.target
