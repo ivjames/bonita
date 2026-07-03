@@ -60,9 +60,10 @@ The script is self-contained, so it can also run locally or on the DO droplet.
 ## Test harness
 
 `fixtures/` is a small site with **deliberately planted defects** (missing alt,
-a heading skip, an untitled iframe, an unlabeled form control, low-contrast
-text, a missing `lang`). They are test input, not rot — each is annotated in the
-fixture's header comment, so don't "fix" the markup.
+a heading skip, an untitled iframe, an eagerly-loaded Vimeo embed, an unlabeled
+form control, low-contrast text, a missing `lang`). They are test input, not
+rot — each is annotated in the fixture's header comment, so don't "fix" the
+markup.
 
 `test.mjs` is the automated test: it serves the fixtures with `serve.mjs`, runs
 the full audit offline, and asserts `audit.mjs` **detects every planted defect**.

@@ -156,3 +156,23 @@ if (gallery) {
   // Return focus to the thumbnail that opened the viewer.
   dlg.addEventListener('close', () => { if (opener) opener.focus(); });
 }
+
+// Click-to-load Vimeo. We render only a self-hosted poster until the visitor
+// asks to watch; the real player iframe is injected on click. Because nothing
+// hits player.vimeo.com on first paint, Vimeo's CDN never sets its Cloudflare
+// __cf_bm cookie, which is what Lighthouse "Uses third-party cookies" flags
+// (dnt=1 can't stop it — it's an edge cookie, not a Vimeo tracking cookie).
+document.querySelectorAll('.video-facade').forEach((facade) => {
+  facade.addEventListener('click', () => {
+    const iframe = document.createElement('iframe');
+    iframe.className = 'video-embed';
+    // autoplay so the click that dismissed the poster also starts playback;
+    // dnt=1 keeps Vimeo's own tracking off once the player does load.
+    iframe.src = `https://player.vimeo.com/video/${facade.dataset.vimeo}?dnt=1&autoplay=1`;
+    iframe.title = facade.dataset.title || 'Vimeo video';
+    iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+    iframe.setAttribute('allowfullscreen', '');
+    facade.replaceWith(iframe);
+    iframe.focus();
+  });
+});
