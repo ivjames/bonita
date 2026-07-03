@@ -292,11 +292,19 @@
 
 /* ---- responsive: rail becomes a scrollable tab strip ---- */
 @media (max-width: 56rem) {
+  /* Drop the sticky app bar on small screens — vertical space is at a premium,
+     and the section rail collapses into an inline tab strip here anyway. */
+  .admin-bar { position: static; }
   .admin-shell { grid-template-columns: 1fr; gap: 1rem; }
-  .admin-side { position: static; }
+  /* The rail and its work panel now share one grid column. Without min-width:0
+     the column's floor is the tab strip's full nowrap width, which pushes the
+     whole console (panels, cards, rows) wider than the viewport. Let it shrink
+     and scroll the strip internally instead. */
+  .admin-side { position: static; min-width: 0; }
   .admin-nav {
     flex-direction: row;
     overflow-x: auto;
+    min-width: 0;
     padding: .4rem;
     gap: .3rem;
   }
@@ -306,4 +314,7 @@
 @media (max-width: 34rem) {
   .panel { padding: 1.1rem 1rem 1.2rem; border-radius: 12px; }
   .panel-head h2 { font-size: 1.3rem; }
+  /* Keep the dashboard two-up on phones: auto-fit's 11rem minimum can't fit two
+     tiles in the narrow column, and one-up leaves a lot of empty width. */
+  .stat-grid { grid-template-columns: 1fr 1fr; }
 }

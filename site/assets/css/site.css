@@ -1157,6 +1157,9 @@ main [id] { scroll-margin-top: 5.4rem; }
   color: var(--ink);
   transition: border-color .15s ease, box-shadow .15s ease;
 }
+/* iOS Safari centres a filled date value by default — pin it left so it reads
+   like every other field. */
+.event-row input[type="date"] { text-align: left; }
 .event-row textarea { resize: vertical; min-height: 3rem; line-height: 1.45; }
 .event-row input:focus,
 .event-row textarea:focus {
