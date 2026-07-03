@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=b1180a18">
+<link rel="stylesheet" href="/assets/css/site.css?v=b3ec5f64">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -44,17 +44,19 @@
   <div class="admin-cols" id="work-cols">
   <section id="editor" aria-labelledby="editor-h" hidden>
     <div class="editor-head">
-      <h2 id="editor-h">Events</h2>
-      <span id="event-count" class="event-count" aria-live="polite"></span>
+      <div class="editor-title">
+        <h2 id="editor-h">Events</h2>
+        <span id="event-count" class="event-count" aria-live="polite"></span>
+      </div>
+      <div class="editor-tools">
+        <button type="button" class="btn btn-secondary btn-sm" id="sort">Sort by date</button>
+        <button type="button" class="btn btn-primary btn-sm" id="add">+ Add event</button>
+      </div>
     </div>
-    <p class="preview-note">Newest additions can go anywhere in the list — use <strong>Sort by date</strong> to tidy it up. Past dates and entries missing a title or date are flagged; they’re simply left off the public site.</p>
+    <p class="preview-note">Click a row to edit it. Entries with past dates, or missing a title or date, are flagged and left off the public site.</p>
     <form class="admin-editor" autocomplete="off">
       <ul id="rows" class="event-rows"></ul>
-      <p id="rows-empty" class="preview-note" hidden>No events yet — add your first one below.</p>
-      <p class="admin-actions">
-        <button type="button" class="btn btn-primary" id="add">+ Add an event</button>
-        <button type="button" class="btn btn-secondary" id="sort">Sort by date</button>
-      </p>
+      <p id="rows-empty" class="preview-note" hidden>No events yet — add your first one with <strong>+ Add event</strong>.</p>
     </form>
   </section>
 
@@ -160,6 +162,6 @@
   </div>
 </footer>
 <script src="/assets/js/events.js?v=baba454d" defer></script>
-<script src="/assets/js/admin.js?v=3e384da4" defer></script>
+<script src="/assets/js/admin.js?v=49c92cda" defer></script>
 </body>
 </html>

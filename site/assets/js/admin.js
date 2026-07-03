@@ -50,9 +50,9 @@
     sBadge.textContent = '⚠';
     sBadge.hidden = true;
     const sAction = document.createElement('span');
-    sAction.className = 'row-action';
-    sAction.textContent = 'Edit';
-    summary.append(sTitle, sWhen, sBadge, sAction);
+    sAction.className = 'row-chevron';
+    sAction.setAttribute('aria-hidden', 'true');
+    summary.append(sBadge, sTitle, sWhen, sAction);
 
     const body = document.createElement('div');
     body.className = 'row-body';
@@ -88,7 +88,6 @@
     const setOpen = (state) => {
       li.classList.toggle('open', state);
       summary.setAttribute('aria-expanded', state ? 'true' : 'false');
-      sAction.textContent = state ? 'Done' : 'Edit';
     };
     summary.addEventListener('click', () => {
       const nowOpen = !li.classList.contains('open');
