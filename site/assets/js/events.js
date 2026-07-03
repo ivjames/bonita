@@ -211,7 +211,11 @@ window.BCA.eventsJsonLd = (upcoming) => upcoming.map((e) => {
   if (!lists.length && !calendars.length) return;
   let data;
   try {
-    data = await (await fetch('/assets/data/events.json')).json();
+    // Revalidate every load: the event list changes when staff edit it (via
+    // /admin) with no ?v= bump, so a cached copy must not win for a day —
+    // otherwise Safari/iPad keeps showing stale events. no-cache still lets
+    // an unchanged file come back as a cheap 304.
+    data = await (await fetch('/assets/data/events.json', { cache: 'no-cache' })).json();
   } catch {
     return;
   }
