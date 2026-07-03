@@ -781,6 +781,151 @@ form.contact.compact .fields .full { grid-column: 1 / -1; }
   form.contact.compact .fields { grid-template-columns: 1fr; }
 }
 
+/* ---- rental inquiry: a two-panel invitation, not a bare form ---- */
+.inquiry {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  align-items: start;
+  margin-top: 1.3rem;
+}
+@media (min-width: 880px) {
+  .inquiry {
+    grid-template-columns: minmax(0, 1.5fr) minmax(15rem, .85fr);
+    gap: 2rem;
+  }
+}
+
+/* The form itself reads as a gilded card rather than a stack of controls. */
+form.contact.rental {
+  max-width: none;
+  position: relative;
+  overflow: hidden;
+  gap: 1.1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.6rem 1.6rem 1.5rem;
+  box-shadow: var(--shadow-1);
+}
+form.contact.rental::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+}
+form.contact.rental .fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.15rem;
+}
+form.contact.rental .fields .full { grid-column: 1 / -1; }
+form.contact.rental .btn { justify-self: start; }
+@media (max-width: 560px) {
+  form.contact.rental .fields { grid-template-columns: 1fr; }
+}
+
+.inquiry-aside {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+.inquiry-aside .panel {
+  border-radius: var(--radius);
+  padding: 1.25rem 1.35rem;
+}
+.panel-eyebrow {
+  margin: 0 0 .75rem;
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+/* Velvet "what happens next" panel echoes the maroon page head. */
+.panel-velvet {
+  color: #fff;
+  border: 1px solid var(--gold);
+  box-shadow: var(--shadow-1);
+  background:
+    radial-gradient(120% 130% at 85% -10%, rgba(217, 171, 79, .18), transparent 55%),
+    linear-gradient(180deg, var(--maroon-dark) 0%, var(--maroon-deep) 100%);
+}
+.panel-velvet .panel-eyebrow { color: var(--gold-bright); }
+.panel-velvet a { color: #fff; text-decoration-color: var(--gold-bright); }
+.panel-velvet a:hover { color: var(--gold-bright); }
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+  display: grid;
+  gap: .7rem;
+}
+.steps li {
+  position: relative;
+  padding-left: 2.4rem;
+  color: var(--rose-soft);
+  line-height: 1.45;
+}
+.steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0; top: -.05rem;
+  width: 1.7rem; height: 1.7rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--gold-bright);
+  color: #331a04;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: .98rem;
+}
+
+/* Quiet "reach us directly" card on paper. */
+.panel-quiet {
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+}
+.panel-quiet .panel-eyebrow { color: var(--gold-deep); }
+.contact-line { margin: .4rem 0; font-size: 1.02rem; }
+.contact-line span { color: var(--gold-deep); margin-right: .45rem; }
+
+/* Three quick venue facts, each a small numeral tile. */
+.inquiry-aside .facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .6rem;
+  text-align: center;
+}
+.inquiry-aside .facts li {
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: .75rem .4rem;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.inquiry-aside .facts strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.55rem;
+  font-weight: 600;
+  color: var(--maroon);
+  letter-spacing: normal;
+  text-transform: none;
+  margin-bottom: .1rem;
+}
+
 /* ---- partner logos (About) ---- */
 .partners {
   display: flex;
