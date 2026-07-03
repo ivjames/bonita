@@ -176,10 +176,3 @@ document.querySelectorAll('.video-facade').forEach((facade) => {
     iframe.focus();
   });
 });
-
-// Print affordance (rental policies "Print / Save as PDF"). The site CSP is
-// script-src 'self' with no unsafe-inline, so an inline onclick would be
-// blocked — bind the handler here in the external bundle instead.
-document.querySelectorAll('[data-print]').forEach((btn) => {
-  btn.addEventListener('click', () => window.print());
-});
