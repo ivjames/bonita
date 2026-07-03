@@ -1322,6 +1322,9 @@ nav.toc a[aria-current="page"] {
   background: var(--paper-warm);
   font-weight: 700;
 }
+/* Sit the "In this section" bar closer to the page header by trimming the
+   gap the .section top padding + nav.toc top margin would otherwise create. */
+.section-nav { margin-top: -0.9rem; }
 
 /* ---- tech specs: accordions with a sticky side TOC ---- */
 .specs-layout { display: grid; gap: 1.4rem; align-items: start; margin-top: 1.5rem; }
