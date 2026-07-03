@@ -133,11 +133,29 @@ h4 { font-size: 1.05rem; margin: 1.25rem 0 .35rem; }
   font-weight: 600;
 }
 .site-nav a.tickets {
-  background: #fff;
-  color: var(--maroon);
-  font-weight: 700;
+  --notch: 7px;
+  color: #2c1e0f;
+  font-weight: 800;
+  letter-spacing: .01em;
+  padding: .5rem 1.15rem;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #e6c977 0%, #d3ab48 45%, #bd8f31 100%);
+  /* Cut semicircular notches into the left and right edges so the link
+     reads as a ticket stub; the header maroon shows through the holes. */
+  -webkit-mask:
+    radial-gradient(circle at left center, #0000 var(--notch), #000 calc(var(--notch) + .5px)) no-repeat,
+    radial-gradient(circle at right center, #0000 var(--notch), #000 calc(var(--notch) + .5px)) no-repeat;
+          mask:
+    radial-gradient(circle at left center, #0000 var(--notch), #000 calc(var(--notch) + .5px)) no-repeat,
+    radial-gradient(circle at right center, #0000 var(--notch), #000 calc(var(--notch) + .5px)) no-repeat;
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.35));
 }
-.site-nav a.tickets:hover { background: var(--paper-warm); color: var(--maroon-dark); }
+.site-nav a.tickets:hover {
+  background: linear-gradient(180deg, #efd486 0%, #dcb552 45%, #c6982f 100%);
+  color: #2c1e0f;
+}
 
 /* Responsive nav grid: 6 across → 3 → 2 → 1.
    Below the widest breakpoint the nav drops to its own full-width
