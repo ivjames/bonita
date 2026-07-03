@@ -781,6 +781,361 @@ form.contact.compact .fields .full { grid-column: 1 / -1; }
   form.contact.compact .fields { grid-template-columns: 1fr; }
 }
 
+/* ---- rental inquiry: a two-panel invitation, not a bare form ---- */
+.inquiry {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  align-items: start;
+  margin-top: 1.3rem;
+}
+@media (min-width: 880px) {
+  .inquiry {
+    grid-template-columns: minmax(0, 1.5fr) minmax(15rem, .85fr);
+    gap: 2rem;
+  }
+}
+
+/* The form itself reads as a gilded card rather than a stack of controls. */
+form.contact.rental {
+  max-width: none;
+  position: relative;
+  overflow: hidden;
+  gap: 1.1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.6rem 1.6rem 1.5rem;
+  box-shadow: var(--shadow-1);
+}
+form.contact.rental::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+}
+form.contact.rental .fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.15rem;
+}
+form.contact.rental .fields .full { grid-column: 1 / -1; }
+form.contact.rental .btn { justify-self: start; }
+@media (max-width: 560px) {
+  form.contact.rental .fields { grid-template-columns: 1fr; }
+}
+
+.inquiry-aside {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+.inquiry-aside .panel {
+  border-radius: var(--radius);
+  padding: 1.25rem 1.35rem;
+}
+.panel-eyebrow {
+  margin: 0 0 .75rem;
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+/* Velvet "what happens next" panel echoes the maroon page head. */
+.panel-velvet {
+  color: #fff;
+  border: 1px solid var(--gold);
+  box-shadow: var(--shadow-1);
+  background:
+    radial-gradient(120% 130% at 85% -10%, rgba(217, 171, 79, .18), transparent 55%),
+    linear-gradient(180deg, var(--maroon-dark) 0%, var(--maroon-deep) 100%);
+}
+.panel-velvet .panel-eyebrow { color: var(--gold-bright); }
+.panel-velvet a { color: #fff; text-decoration-color: var(--gold-bright); }
+.panel-velvet a:hover { color: var(--gold-bright); }
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+  display: grid;
+  gap: .7rem;
+}
+.steps li {
+  position: relative;
+  padding-left: 2.4rem;
+  color: var(--rose-soft);
+  line-height: 1.45;
+}
+.steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0; top: -.05rem;
+  width: 1.7rem; height: 1.7rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--gold-bright);
+  color: #331a04;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: .98rem;
+}
+
+/* Quiet "reach us directly" card on paper. */
+.panel-quiet {
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+}
+.panel-quiet .panel-eyebrow { color: var(--gold-deep); }
+.contact-line { margin: .4rem 0; font-size: 1.02rem; }
+.contact-line span { color: var(--gold-deep); margin-right: .45rem; }
+
+/* Quick venue facts, each a small numeral tile. Shared by the inquiry aside
+   and the policies "at a glance" strip. */
+.facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .6rem;
+  text-align: center;
+}
+.facts li {
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: .75rem .4rem;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.facts strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.55rem;
+  font-weight: 600;
+  color: var(--maroon);
+  letter-spacing: normal;
+  text-transform: none;
+  margin-bottom: .1rem;
+}
+
+/* ---- rental policies: scannable cards, not a wall of bullets ---- */
+.policy-facts { margin: 1.4rem 0 1.6rem; }
+@media (min-width: 620px) {
+  .policy-facts { max-width: 40rem; }
+}
+
+/* Quick-jump chips to each policy topic. */
+.policy-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0 0 1.8rem;
+  padding: 0;
+  list-style: none;
+}
+.policy-nav a {
+  display: inline-block;
+  padding: .42rem .9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-1);
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: border-color .15s ease, color .15s ease, transform .15s ease;
+}
+.policy-nav a:hover {
+  border-color: var(--gold);
+  color: var(--maroon);
+  transform: translateY(-1px);
+}
+
+/* Each policy section becomes its own card with a gilded icon medallion. */
+.policies {
+  display: grid;
+  gap: 1.4rem;
+}
+.policies > section {
+  scroll-margin-top: 1.2rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.65rem 1.55rem;
+  box-shadow: var(--shadow-1);
+}
+.policies > section > h2 {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin: 0 0 .3rem;
+  font-size: 1.45rem;
+}
+.policy-ico {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #4a2d0a;
+  background: radial-gradient(circle at 32% 26%, var(--gold-bright), var(--gold));
+  box-shadow: inset 0 0 0 1px rgba(124, 92, 19, .35), var(--shadow-1);
+}
+.policy-ico svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Gold diamond markers echo the nav ornament, warmer than a plain disc. */
+.policies ul {
+  list-style: none;
+  padding: 0;
+  margin: .9rem 0 0;
+  display: grid;
+  gap: .6rem;
+}
+.policies li {
+  position: relative;
+  padding-left: 1.5rem;
+  line-height: 1.5;
+}
+.policies li::before {
+  content: "";
+  position: absolute;
+  left: .15rem;
+  top: .62em;
+  width: .48rem;
+  height: .48rem;
+  transform: translateY(-50%) rotate(45deg);
+  background: var(--gold);
+}
+.policies > section > p { margin-top: .6rem; }
+
+/* Header row: quick facts on the left, a print / save affordance on the right. */
+.policies-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .9rem 1.2rem;
+  margin: 1.4rem 0 1.6rem;
+}
+.policies-top .policy-facts { flex: 1 1 22rem; margin: 0; max-width: 40rem; }
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin-left: auto;
+}
+.print-btn svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* The policies content is wrapped in a table so its <thead>/<tfoot> can repeat
+   as a running header/footer on every printed page. On screen the table parts
+   collapse to plain blocks and the running rows are hidden entirely. */
+.print-doc { display: block; width: 100%; }
+.print-doc > tbody,
+.print-doc > tbody > tr,
+.print-doc > tbody > tr > td { display: block; }
+.print-doc > thead,
+.print-doc > tfoot { display: none; }
+
+/* Clean printout of the policies page: drop the site chrome and the maroon
+   band's heavy ink, flatten each policy card, and keep a card whole on a page
+   where it fits. Scoped to the policies page via its body class. */
+@media print {
+  /* Give the exported PDF a proper page margin — without this the flattened
+     content runs to the paper edge, since we zero the on-screen .wrap gutter.
+     The generous top/bottom band also holds the running header and footer. */
+  @page { margin: 16mm 15mm; }
+  body.policies-page { background: #fff; }
+  .policies-page .site-header,
+  .policies-page .site-footer,
+  .policies-page .section-nav,
+  .policies-page .policy-nav,
+  .policies-page .skip-link,
+  .policies-page .print-btn { display: none !important; }
+
+  /* Restore table semantics so <thead>/<tfoot> become repeating page groups —
+     Chromium reprints them at the top and bottom of every page, inside the
+     @page margin, with the body rows flowing between (no overlap). */
+  .policies-page .print-doc { display: table; width: 100%; }
+  .policies-page .print-doc > thead { display: table-header-group; }
+  .policies-page .print-doc > tfoot { display: table-footer-group; }
+  .policies-page .print-doc > tbody { display: table-row-group; }
+  .policies-page .print-doc tr { display: table-row; }
+  .policies-page .print-doc td { display: table-cell; }
+  .policies-page .print-header,
+  .policies-page .print-footer {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 8.5pt;
+    letter-spacing: .01em;
+    color: #333;
+  }
+  .policies-page .print-header {
+    margin-bottom: 5mm;
+    padding-bottom: 2mm;
+    border-bottom: .5pt solid #999;
+    font-weight: 700;
+  }
+  .policies-page .print-header .doc { font-weight: 400; color: #555; }
+  .policies-page .print-footer {
+    margin-top: 5mm;
+    padding-top: 2mm;
+    border-top: .5pt solid #999;
+  }
+  .policies-page .page-head {
+    background: none !important;
+    color: #000;
+    padding: 0;
+    margin-bottom: .3rem;
+  }
+  .policies-page .page-head .eyebrow,
+  .policies-page .page-head h1,
+  .policies-page .page-head .lede { color: #000; }
+  .policies-page .page-head .eyebrow::before { background: #000; }
+  .policies-page .wrap { max-width: none; padding: 0; }
+  .policies-page .facts strong { color: #000; }
+  .policies-page .facts li { background: none; border: 1px solid #999; }
+  .policies-page .policies > section {
+    box-shadow: none;
+    border: 1px solid #bbb;
+    padding: .6rem .85rem;
+    break-inside: avoid;
+    background: transparent;
+  }
+  .policies-page .policy-ico {
+    background: none !important;
+    color: #000;
+    box-shadow: none;
+    border: 1.5px solid #000;
+  }
+  .policies-page .policies li::before { background: #000; }
+}
+
 /* ---- partner logos (About) ---- */
 .partners {
   display: flex;
@@ -1029,6 +1384,24 @@ details.spec-acc[open] > summary::after { content: "\2212"; }
 details.spec-acc > summary:hover h2 { color: var(--maroon); }
 details.spec-acc > .acc-body { padding: 0 1.3rem 1.2rem; }
 details.spec-acc > .acc-body > :first-child { margin-top: .2rem; }
+
+/* Building layout reuses the tech-specs shell, but its spaces are short
+   enough to sit open as plain cards rather than accordions. */
+.spec-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+  padding: 1.25rem 1.4rem 1.35rem;
+  margin: 0 0 1.1rem;
+  scroll-margin-top: 5.4rem;
+}
+.spec-card > h2 {
+  margin: 0 0 .35rem;
+  font-size: 1.35rem;
+}
+.spec-card > :last-child { margin-bottom: 0; }
+.spec-card figure { margin: 0; }
 
 /* anchored headings land clear of the sticky header */
 main [id] { scroll-margin-top: 5.4rem; }

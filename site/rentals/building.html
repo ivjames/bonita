@@ -45,7 +45,7 @@
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=0a8e38b9">
+<link rel="stylesheet" href="/assets/css/site.css?v=cf0048bf">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -107,49 +107,81 @@
   </nav>
 <!-- /chrome:subnav -->
 
-  <div id="building" class="spec">
-    <figure>
-      <img src="/assets/img/building-map.png" alt="Floor plan of the BCA complex showing the auditorium, stage, lobby, plaza, patio, scene shop, scene yard, dressing rooms and company room." width="876" height="1141">
-      <figcaption>BCA building map. <a href="/assets/pdf/bca-building-layout.pdf">Download the full building layout (PDF, 72&nbsp;KB)</a>.</figcaption>
-    </figure>
+  <div class="specs-layout spec">
+    <nav class="toc" aria-label="Spaces">
+      <h2>Spaces</h2>
+      <ul>
+        <li><a href="#map">Building map</a></li>
+        <li><a href="#plaza">Plaza</a></li>
+        <li><a href="#patio">Patio</a></li>
+        <li><a href="#scene-shop">Scene shop</a></li>
+        <li><a href="#scene-yard">Scene yard</a></li>
+        <li><a href="#company-room">Company room</a></li>
+        <li><a href="#dressing-rooms">Dressing rooms</a></li>
+      </ul>
+    </nav>
 
-    <h3>Plaza</h3>
-    <p>The plaza is between the parking lot and the entrance to the lobby. This outdoor area is partially covered and suitable for concessions or merchandise sales.</p>
+    <div class="specs-list">
 
-    <h3>Patio</h3>
-    <p>The patio is a large uncovered outdoor area with greenery surrounding. It is behind a gate. This space is suitable as a holding area.</p>
+    <section class="spec-card" id="map" aria-labelledby="map-h">
+      <h2 id="map-h">Building map</h2>
+      <figure>
+        <img src="/assets/img/building-map.png" alt="Floor plan of the BCA complex showing the auditorium, stage, lobby, plaza, patio, scene shop, scene yard, dressing rooms and company room." width="876" height="1141">
+        <figcaption>BCA building map. <a href="/assets/pdf/bca-building-layout.pdf">Download the full building layout (PDF, 72&nbsp;KB)</a>.</figcaption>
+      </figure>
+    </section>
 
-    <h3>Scene shop</h3>
-    <p>This space can be used to store scenic elements or be used as a green room or holding area for performers. It is a public area and not suitable for dressing.</p>
+    <section class="spec-card" id="plaza" aria-labelledby="plaza-h">
+      <h2 id="plaza-h">Plaza</h2>
+      <p>The plaza is between the parking lot and the entrance to the lobby. This outdoor area is partially covered and suitable for concessions or merchandise sales.</p>
+    </section>
 
-    <h3>Scene yard</h3>
-    <p>The scene yard is a large uncovered space that can be used as a holding area for performers. There are also 3 parking spaces available for crew and clients. The scene yard is the best place to unload large amounts of scenic, props, or costumes.</p>
+    <section class="spec-card" id="patio" aria-labelledby="patio-h">
+      <h2 id="patio-h">Patio</h2>
+      <p>The patio is a large uncovered outdoor area with greenery surrounding. It is behind a gate. This space is suitable as a holding area.</p>
+    </section>
 
-    <h3>Company room</h3>
-    <ul>
-      <li>28'-0" L &times; 34'-0" W &times; 17'-0" H</li>
-      <li>Lower level, adjacent to stage, near the production office</li>
-      <li>Typical table and chair setup for 60</li>
-      <li>44" flat panel video monitor</li>
-      <li>Dry-erase whiteboard</li>
-      <li>A/V panels, isolated ground outlets for audio, intercom</li>
-      <li>60 A, 3-phase company switch</li>
-      <li>20 A isolated power outlets for audio</li>
-      <li>High-speed Wi-Fi, wired internet</li>
-      <li>Can be configured as a dressing room, rehearsal space, black box, dining area, and more</li>
-    </ul>
+    <section class="spec-card" id="scene-shop" aria-labelledby="scene-shop-h">
+      <h2 id="scene-shop-h">Scene shop</h2>
+      <p>This space can be used to store scenic elements or be used as a green room or holding area for performers. It is a public area and not suitable for dressing.</p>
+    </section>
 
-    <h3>Dressing rooms</h3>
-    <ul>
-      <li>2 dressing rooms, identical amenities</li>
-      <li>Each dressing room has 1 toilet, sink, and shower</li>
-      <li>Space for costume racks</li>
-      <li>12 makeup stations per dressing room with power and storage space</li>
-      <li>Mirrored walls with modern lighting</li>
-      <li>Wall-mounted 2-channel intercom</li>
-      <li>Synchronized LED clocks with Stage Manager</li>
-      <li>Program feed audio monitors</li>
-    </ul>
+    <section class="spec-card" id="scene-yard" aria-labelledby="scene-yard-h">
+      <h2 id="scene-yard-h">Scene yard</h2>
+      <p>The scene yard is a large uncovered space that can be used as a holding area for performers. There are also 3 parking spaces available for crew and clients. The scene yard is the best place to unload large amounts of scenic, props, or costumes.</p>
+    </section>
+
+    <section class="spec-card" id="company-room" aria-labelledby="company-room-h">
+      <h2 id="company-room-h">Company room</h2>
+      <ul>
+        <li>28'-0" L &times; 34'-0" W &times; 17'-0" H</li>
+        <li>Lower level, adjacent to stage, near the production office</li>
+        <li>Typical table and chair setup for 60</li>
+        <li>44" flat panel video monitor</li>
+        <li>Dry-erase whiteboard</li>
+        <li>A/V panels, isolated ground outlets for audio, intercom</li>
+        <li>60 A, 3-phase company switch</li>
+        <li>20 A isolated power outlets for audio</li>
+        <li>High-speed Wi-Fi, wired internet</li>
+        <li>Can be configured as a dressing room, rehearsal space, black box, dining area, and more</li>
+      </ul>
+    </section>
+
+    <section class="spec-card" id="dressing-rooms" aria-labelledby="dressing-rooms-h">
+      <h2 id="dressing-rooms-h">Dressing rooms</h2>
+      <ul>
+        <li>2 dressing rooms, identical amenities</li>
+        <li>Each dressing room has 1 toilet, sink, and shower</li>
+        <li>Space for costume racks</li>
+        <li>12 makeup stations per dressing room with power and storage space</li>
+        <li>Mirrored walls with modern lighting</li>
+        <li>Wall-mounted 2-channel intercom</li>
+        <li>Synchronized LED clocks with Stage Manager</li>
+        <li>Program feed audio monitors</li>
+      </ul>
+    </section>
+
+    </div>
   </div>
   </div>
 </main>
