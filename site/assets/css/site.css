@@ -895,8 +895,9 @@ form.contact.rental .btn { justify-self: start; }
 .contact-line { margin: .4rem 0; font-size: 1.02rem; }
 .contact-line span { color: var(--gold-deep); margin-right: .45rem; }
 
-/* Three quick venue facts, each a small numeral tile. */
-.inquiry-aside .facts {
+/* Quick venue facts, each a small numeral tile. Shared by the inquiry aside
+   and the policies "at a glance" strip. */
+.facts {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -905,7 +906,7 @@ form.contact.rental .btn { justify-self: start; }
   gap: .6rem;
   text-align: center;
 }
-.inquiry-aside .facts li {
+.facts li {
   background: var(--paper-warm);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -915,7 +916,7 @@ form.contact.rental .btn { justify-self: start; }
   text-transform: uppercase;
   color: var(--ink-soft);
 }
-.inquiry-aside .facts strong {
+.facts strong {
   display: block;
   font-family: var(--serif);
   font-size: 1.55rem;
@@ -925,6 +926,105 @@ form.contact.rental .btn { justify-self: start; }
   text-transform: none;
   margin-bottom: .1rem;
 }
+
+/* ---- rental policies: scannable cards, not a wall of bullets ---- */
+.policy-facts { margin: 1.4rem 0 1.6rem; }
+@media (min-width: 620px) {
+  .policy-facts { max-width: 40rem; }
+}
+
+/* Quick-jump chips to each policy topic. */
+.policy-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 0 0 1.8rem;
+  padding: 0;
+  list-style: none;
+}
+.policy-nav a {
+  display: inline-block;
+  padding: .42rem .9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-1);
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: border-color .15s ease, color .15s ease, transform .15s ease;
+}
+.policy-nav a:hover {
+  border-color: var(--gold);
+  color: var(--maroon);
+  transform: translateY(-1px);
+}
+
+/* Each policy section becomes its own card with a gilded icon medallion. */
+.policies {
+  display: grid;
+  gap: 1.4rem;
+}
+.policies > section {
+  scroll-margin-top: 1.2rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.65rem 1.55rem;
+  box-shadow: var(--shadow-1);
+}
+.policies > section > h2 {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin: 0 0 .3rem;
+  font-size: 1.45rem;
+}
+.policy-ico {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #4a2d0a;
+  background: radial-gradient(circle at 32% 26%, var(--gold-bright), var(--gold));
+  box-shadow: inset 0 0 0 1px rgba(124, 92, 19, .35), var(--shadow-1);
+}
+.policy-ico svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Gold diamond markers echo the nav ornament, warmer than a plain disc. */
+.policies ul {
+  list-style: none;
+  padding: 0;
+  margin: .9rem 0 0;
+  display: grid;
+  gap: .6rem;
+}
+.policies li {
+  position: relative;
+  padding-left: 1.5rem;
+  line-height: 1.5;
+}
+.policies li::before {
+  content: "";
+  position: absolute;
+  left: .15rem;
+  top: .62em;
+  width: .48rem;
+  height: .48rem;
+  transform: translateY(-50%) rotate(45deg);
+  background: var(--gold);
+}
+.policies > section > p { margin-top: .6rem; }
 
 /* ---- partner logos (About) ---- */
 .partners {
