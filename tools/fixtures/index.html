@@ -3,8 +3,10 @@
   test.mjs asserts audit.mjs detects each one. See tools/README.md "Test harness".
   Planted defects: h3 after h1 (heading skip) · DSC_0421.jpg alt = filename
   (auto-generated alt) · logo.png missing alt · vimeo iframe missing title ·
-  seat-thumb.png alt = filename · email input missing label.
-  (spacer.gif alt="" is a decorative control case — correctly NOT flagged.)
+  seat-thumb.png alt = filename · email input missing label ·
+  vimeo iframe missing dnt=1 (sets third-party cookies).
+  Control cases (correctly NOT flagged): spacer.gif alt="" is decorative;
+  the second vimeo iframe carries ?dnt=1 and a title.
 --><html lang="en"><head><meta charset="utf-8"><title>Fixture Home</title>
 <meta name="description" content="Test home page"></head>
 <body>
@@ -15,6 +17,7 @@
 <img src="/logo.png">
 <img src="/spacer.gif" alt="">
 <iframe src="https://player.vimeo.com/video/12345"></iframe>
+<iframe src="https://player.vimeo.com/video/67890?dnt=1" title="Control clip (Vimeo)" loading="lazy" allowfullscreen></iframe>
 <a href="/about.html">About</a>
 <a href="/seating.pdf"><img src="/seat-thumb.png" alt="seat-thumb.png"></a>
 <a href="https://bonitacenterforthearts.ludus.com">Buy tickets</a>

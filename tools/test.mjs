@@ -78,6 +78,9 @@ try {
     check('detects image with no alt attr', indexPage.images.some((i) => !i.hasAltAttr));
     check('detects filename-as-alt image', indexPage.images.some((i) => i.hasAltAttr && isFilenameAlt(i.alt)));
     check('detects untitled iframe', indexPage.iframes.some((f) => !f.title));
+    check('detects Vimeo embed missing dnt=1 (third-party cookies)', indexPage.iframes.some((f) => f.dntMissing));
+    // control case: a Vimeo embed that already has ?dnt=1 must NOT be flagged
+    check('Vimeo embed with dnt=1 is not flagged', indexPage.iframes.some((f) => /player\.vimeo\.com/.test(f.src) && /[?&]dnt=1\b/.test(f.src) && !f.dntMissing));
     check('detects unlabeled form control', indexPage.forms.some((f) => f.controls.some((c) => !c.labelled)));
     // control case: a genuinely-decorative empty alt must NOT masquerade as a defect
     check('decorative empty alt is not a filename-alt', indexPage.images.some((i) => i.hasAltAttr && i.alt === '' && !isFilenameAlt(i.alt)));
