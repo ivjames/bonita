@@ -42,7 +42,14 @@ cd "$work"
 read -r W H < <(identify -format '%w %h\n' "$src")
 
 # 1. Tone-separation masks (potrace traces black pixels).
-convert "$src" -colorspace Gray -threshold 25% mask_black.pnm   # dark ink only
+#    The dimension annotation — thin lines, text, AND the solid arrowheads — is
+#    drawn in a dark grey (~value 100), NOT black, sitting just below the wall
+#    grey (126). A low black threshold lands right in the middle of that ink, so
+#    it captures only the darkest cores and shreds the rest into salt-and-pepper
+#    (arrowheads and text end up with grey speckle poking through). Threshold at
+#    44% (~112) captures the whole annotation solidly while still excluding the
+#    wall grey, so black shapes render solid black with no holes.
+convert "$src" -colorspace Gray -threshold 44% mask_black.pnm   # dark ink incl. grey annotation
 convert "$src" -colorspace Gray -threshold 78% mask_gray.pnm    # everything not paper
 
 # 2. Isolate the logo so it is excluded from the traced layers.
