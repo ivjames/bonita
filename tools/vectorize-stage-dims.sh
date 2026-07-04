@@ -122,8 +122,10 @@ const L = JSON.parse(readFileSync('labels.json','utf8'));
 const b64 = readFileSync(logo).toString('base64');
 const g = f => readFileSync(f,'utf8').match(/<g [\s\S]*?<\/g>/)[0];
 const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-// stroke the clean gray shapes to draw the wall edges (miter = keep 90° corners sharp)
-const gray = g('layer_gray.svg').replace(/stroke="none"/, 'stroke="#333333" stroke-width="3" stroke-linejoin="miter"');
+// Stroke the clean gray shapes to draw the wall edges — a crisp ~2px black
+// outline standing in for the drawing's poché lines (miter keeps 90° corners
+// sharp). potrace wraps paths in scale(0.1), so stroke-width is 10x: 22 -> 2.2px.
+const gray = g('layer_gray.svg').replace(/stroke="none"/, 'stroke="#1a1a1a" stroke-width="22" stroke-linejoin="miter"');
 const texts = L.map(l => {
   const cx = l.left ? l.x : (l.kx + l.kw/2);
   const anchor = l.left ? '' : ' text-anchor="middle"';
