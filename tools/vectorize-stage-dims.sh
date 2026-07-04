@@ -78,17 +78,6 @@ JSON
 #    threshold the raw grayscale and keep every corner and line exactly as-is.
 convert "$src" -colorspace Gray -threshold 44% mask_black.pnm    # dark ink (annotation + wall outlines)
 convert "$src" -colorspace Gray -threshold 78% mask_gray.pnm     # wall fills (+ everything darker)
-# The grey threshold catches EVERY dark pixel — the mid-grey wall fills but also
-# the darker dimension ink and arrowheads. If that annotation stays in the grey
-# layer it gets the wall-outline stroke at assembly and renders as stroked ghost
-# arrowheads/lines. So isolate the wall fills alone: grey-dark AND NOT black-ink
-# (Darken = min of "any dark" with "not dark ink" leaves only the mid-grey fill).
-convert mask_gray.pnm -negate gray_fg.png                                   # white = any dark
-# Isolating the fill puts the wall boundary at the noisy fill/outline interface,
-# so slanted/curved edges come out spiky ("boogers") when traced polygonally. A
-# median (not a blur) knocks those 1-2px spikes off the edge while leaving the
-# straight runs and the 90° corners crisp — no filleting.
-convert gray_fg.png mask_black.pnm -compose Darken -composite -median 2 -negate mask_wall.pnm  # ink=black on wall fills only
 
 # 2. Isolate the logo footprint (from the original faded badge) to knock the
 #    traced layers out where the replacement logo goes.
@@ -113,76 +102,27 @@ fs.writeFileSync("krects.txt", L.map(l=>`rectangle ${l.kx-pad},${l.ky-pad} ${l.k
 #  removes the scallops without trimming the wall the stems land on.)
 scallop_knock_b="rectangle 1005,1955 2340,2030"
 scallop_knock_g="rectangle 1005,1955 2340,2027"
-convert mask_wall.pnm  badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" -draw "$scallop_knock_g" mask_gray_final.pnm
+convert mask_gray.pnm  badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" -draw "$scallop_knock_g" mask_gray_final.pnm
 convert mask_black.pnm badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" -draw "$scallop_knock_b" mask_black_full.pnm
 
 # 4. The gray wall FILLS trace perfectly clean, but the black WALL OUTLINES are
 #    ragged (JPEG blocking on the slanted edges = "boogers"). So we don't trace
-#    the wall outlines: the clean wall-fill shapes get a crisp vector stroke
-#    (added at assembly). Drop the ragged outline ring from the black layer by
-#    subtracting a 3px dilation of the wall FILLS — that reaches just far enough
-#    out to cover the outline while leaving the dimension leaders (which live in
-#    open space, off the walls) untouched.
-convert mask_gray_final.pnm -negate -morphology Dilate Disk:3 gray_region_dil.png
+#    the wall outlines: instead the clean gray shapes get a crisp vector stroke
+#    (added at assembly). Drop the outlines from the black layer — but ONLY the
+#    thin ones. Dimension arrowheads point at the walls, so a blanket "drop black
+#    near gray" also erased the solid arrowheads (they rendered grey, from the
+#    grey layer). So: near = black within 6px of a wall FILL; the wall outlines
+#    are the THIN part of that (near minus its opening); drop only those, keeping
+#    the solid arrowheads black.
+convert mask_gray_final.pnm -negate -morphology Dilate Disk:5 gray_region_dil.png
 convert mask_black_full.pnm -negate blackfg.png
-convert blackfg.png gray_region_dil.png -compose MinusSrc -composite anno.png    # clean walls, arrowhead tips clipped
+convert blackfg.png gray_region_dil.png -compose MinusSrc -composite anno.png    # clean walls, but arrowheads gone
 # The dimension arrowheads point AT the walls, so the subtraction above erased
-# them (they'd render grey). We do NOT trace them at all: potrace blunts the
-# sharp tip of a triangle (even at -a 0 the pixel tip becomes a short bevel), so
-# instead we DETECT each arrowhead and redraw it as a crisp filled triangle at
-# assembly. An opening of the black mask keeps only the solid arrowhead blobs
-# (every thin line, outline and intersection drops out); connected-components
-# then gives each blob's box, and its centroid vs box-centre gives the direction
-# it points (mass sits toward the base, away from the tip).
+# them (they'd render grey, from the grey layer). Add them back: an opening of
+# the black mask keeps the solid arrowhead blobs and drops every thin line,
+# outline, and intersection — so it restores the arrowheads without the walls.
 convert mask_black_full.pnm -negate -morphology Open Disk:3 arrowblobs.png
-convert arrowblobs.png -define connected-components:verbose=true \
-  -define connected-components:area-threshold=90 \
-  -connected-components 8 null: > arrow_cc.txt
-node - arrow_cc.txt > arrows.json <<'DETECT'
-import { readFileSync } from 'fs';
-const cc = readFileSync(process.argv[2], 'utf8');
-// The two footlight-band arrows are drawn by hand with the scallops; skip them.
-const inBand = (cx, cy) => cx >= 1005 && cx <= 2340 && cy >= 1955 && cy <= 2030;
-const rows = [];
-for (const line of cc.split('\n')) {
-  const m = line.match(/^\s*(\d+):\s+(\d+)x(\d+)\+(\d+)\+(\d+)\s+([\d.]+),([\d.]+)\s+(\d+)\s+gray\((\d+)\)/);
-  if (!m) continue;
-  const W=+m[2],H=+m[3],X=+m[4],Y=+m[5],cx=parseFloat(m[6]),cy=parseFloat(m[7]),A=+m[8],G=+m[9];
-  if (G !== 255 || A < 90 || A > 5000 || inBand(cx, cy)) continue;
-  rows.push({ W, H, X, Y, cx, cy });
-}
-// Emit ONE triangle per arrowhead, used verbatim for both the knockout and the
-// drawn fill so they coincide exactly (no surviving sliver, no gap). The morph
-// open under-measures the sharp tip, so extend the apex past the box (tipN); e
-// pushes the base a touch past the box to meet the leader; m widens the base to
-// cover the true head. cx/cy centre the head on the box.
-const tipN = 3, e = 2, m = 2;
-const arrows = rows.map(r => {
-  const cx = r.X + r.W/2, cy = r.Y + r.H/2, vert = r.H >= r.W;
-  const dir = vert ? (r.cy > cy ? 'up' : 'down') : (r.cx > cx ? 'left' : 'right');
-  const hwM = (vert ? r.W : r.H)/2 + m;
-  let A, B, C;
-  if (dir==='up')   { A=[cx, r.Y-tipN];      B=[cx-hwM, r.Y+r.H+e]; C=[cx+hwM, r.Y+r.H+e]; }
-  if (dir==='down') { A=[cx, r.Y+r.H+tipN];  B=[cx-hwM, r.Y-e];     C=[cx+hwM, r.Y-e]; }
-  if (dir==='left') { A=[r.X-tipN, cy];       B=[r.X+r.W+e, cy-hwM]; C=[r.X+r.W+e, cy+hwM]; }
-  if (dir==='right'){ A=[r.X+r.W+tipN, cy];   B=[r.X-e, cy-hwM];     C=[r.X-e, cy+hwM]; }
-  const rnd = p => [+p[0].toFixed(1), +p[1].toFixed(1)];
-  return { dir, p: [rnd(A), rnd(B), rnd(C)] };
-});
-process.stdout.write(JSON.stringify(arrows));
-DETECT
-# Knock every arrowhead out of BOTH layers. The arrowheads are dark enough to
-# land in the grey mask too, so the grey layer would re-trace them as filled
-# triangles (potrace blunts a traced tip even at -a 0). The grey layer is now
-# wall fills ONLY, so the arrowheads no longer live there — we just knock them
-# out of the black layer with a TRIANGLE just larger than the drawn one. Any
-# black remnant left at the edge is the same colour as the drawn triangle and
-# merges invisibly, so a tight knockout is fine.
-node -e '
-const fs=require("fs");const A=JSON.parse(fs.readFileSync("arrows.json"));
-fs.writeFileSync("arrow_knock.txt", A.map(a=>"polygon "+a.p.map(q=>q[0]+","+q[1]).join(" ")).join(" "));
-'
-convert anno.png -fill black -draw "$(cat arrow_knock.txt)" -negate mask_black_final.pnm
+convert anno.png arrowblobs.png -compose Lighten -composite -negate mask_black_final.pnm
 
 # 5. Trace both layers with -a 0 (polygonal, no corner smoothing). The grey
 #    walls have hard 90° corners; the black layer now holds only straight
@@ -208,12 +148,6 @@ const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;
 // outline standing in for the drawing's poché lines (miter keeps 90° corners
 // sharp). potrace wraps paths in scale(0.1), so stroke-width is 10x: 22 -> 2.2px.
 const gray = g('layer_gray.svg').replace(/stroke="none"/, 'stroke="#1a1a1a" stroke-width="22" stroke-linejoin="miter"');
-// The dimension linework is ~1px in the source, so scaling the whole drawing
-// down to the web PNG / PDF renders it sub-pixel and it washes out to grey. Give
-// the traced black layer a thin stroke of its own (same trick as the walls) so
-// every line keeps solid, dark body at any output size. Arrowheads, festoon and
-// text are separate paths and are unaffected.
-const black = g('layer_black.svg').replace(/stroke="none"/, 'stroke="#1a1a1a" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"');
 const texts = L.map(l => {
   const cx = l.left ? l.x : (l.kx + l.kw/2);
   const anchor = l.left ? '' : ' text-anchor="middle"';
@@ -233,21 +167,13 @@ const arrow = (x,baseY,tipY,hw) =>
   `<path d="M ${x-hw} ${baseY} L ${x+hw} ${baseY} L ${x} ${tipY} Z" fill="#1a1a1a"/>`;
 const festoon = `<path d="${fd}" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>` +
   arrow(1024,1993,2024,11) + arrow(1349,1964,1996,15);
-// Every other dimension arrowhead: redrawn as a crisp filled triangle from the
-// detected geometry (apex at the tip, base extended ~3px past the box so it
-// overlaps the still-traced leader). Sharp point, no potrace bevel.
-const AR = JSON.parse(readFileSync('arrows.json','utf8'));
-const arrowheads = AR.map(a =>
-  `<path d="M ${a.p.map(q => q.join(' ')).join(' L ')} Z" fill="#1a1a1a"/>`
-).join('');
 process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
 <title>Bonita Center for the Arts — stage plan with dimensions</title>
 <rect width="${W}" height="${H}" fill="#ffffff"/>
 ${gray}
-${black}
+${g('layer_black.svg')}
 ${festoon}
-${arrowheads}
 <image x="${x}" y="${y}" width="${w}" height="${h}" image-rendering="optimizeQuality" xlink:href="data:image/png;base64,${b64}"/>
 ${texts}
 </svg>
