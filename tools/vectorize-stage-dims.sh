@@ -92,11 +92,14 @@ node -e '
 const fs=require("fs");const L=require("./labels.json");const pad=4;
 fs.writeFileSync("krects.txt", L.map(l=>`rectangle ${l.kx-pad},${l.ky-pad} ${l.kx+l.kw+pad},${l.ky+l.kh+pad}`).join(" "));
 '
-# The footlight scallops are curves that trace badly from the JPEG, so they are
-# redrawn as a clean festoon (below) — knock the traced curve out of the black
-# mask over its band (the arrowheads sit just above it and are preserved).
-scallop_knock="rectangle 1008,1998 2332,2032"
-convert mask_gray.pnm  badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" mask_gray_final.pnm
+# The footlight scallops (a festoon of arcs on little stems rising from the wall)
+# and the two dimension arrows in their band all trace badly from the JPEG, so
+# the whole band is knocked out of the black mask and everything in it is redrawn
+# cleanly at assembly (festoon arcs + stems + the two down-arrows).
+# (the scallop lines are dark enough to land in BOTH masks, so knock the band
+#  out of both — otherwise the grey layer re-draws the scallops underneath.)
+scallop_knock="rectangle 1005,1974 2340,2030"
+convert mask_gray.pnm  badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" -draw "$scallop_knock" mask_gray_final.pnm
 convert mask_black.pnm badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" -draw "$scallop_knock" mask_black_full.pnm
 
 # 4. The gray wall FILLS trace perfectly clean, but the black WALL OUTLINES are
@@ -141,12 +144,18 @@ const texts = L.map(l => {
   const anchor = l.left ? '' : ' text-anchor="middle"';
   return `<text x="${cx}" y="${l.b}"${anchor} font-family="Liberation Sans, Arial, sans-serif" font-size="43" fill="#1a1a1a">${esc(l.t)}</text>`;
 }).join('\n');
-// Footlight scallops: a clean festoon of elliptical arcs, drawn (not traced).
-const F = {by:2026, x0:1025, xEnd:2318, n:10, ry:25};
-const fp = F.pitch = (F.xEnd - F.x0)/F.n, frx = fp/2;
+// Footlight scallops: drawn clean. Shallow arcs whose cusps sit on short stems
+// rising from the wall top, plus the two dimension down-arrows in the band.
+const F = {cusp:2014, x0:1025, xEnd:2318, n:10, ry:18, wall:2027};
+const fp = (F.xEnd - F.x0)/F.n, frx = fp/2;
 let fd = '';
-for (let i=0;i<F.n;i++){ const a=F.x0+i*fp, b=a+fp; fd += `M ${a.toFixed(1)} ${F.by} A ${frx.toFixed(1)} ${F.ry} 0 0 1 ${b.toFixed(1)} ${F.by} `; }
-const festoon = `<path d="${fd}" fill="none" stroke="#1a1a1a" stroke-width="4"/>`;
+for (let i=0;i<F.n;i++){ const a=F.x0+i*fp, b=a+fp; fd += `M ${a.toFixed(1)} ${F.cusp} A ${frx.toFixed(1)} ${F.ry} 0 0 1 ${b.toFixed(1)} ${F.cusp} `; }
+for (let i=0;i<=F.n;i++){ const x=(F.x0+i*fp).toFixed(1); fd += `M ${x} ${F.cusp} L ${x} ${F.wall} `; }
+const arrow = (x,baseY,tipY,hw=8) =>
+  `<line x1="${x}" y1="1974" x2="${x}" y2="${baseY}" stroke="#1a1a1a" stroke-width="3"/>` +
+  `<path d="M ${x-hw} ${baseY} L ${x+hw} ${baseY} L ${x} ${tipY} Z" fill="#1a1a1a"/>`;
+const festoon = `<path d="${fd}" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>` +
+  arrow(1023,1997,2022) + arrow(1342,1975,1996);
 process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
 <title>Bonita Center for the Arts — stage plan with dimensions</title>
