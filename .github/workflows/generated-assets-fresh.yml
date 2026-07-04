@@ -1,0 +1,29 @@
+name: generated assets fresh
+
+# Committed generated output must match its sources before it can merge, so a
+# deploy (a plain `git pull` on the droplet) never serves stale bytes.
+#
+#   - stamp-assets: the ?v= cache-busting token on every CSS/JS URL must be the
+#     current hash of the file, or browsers keep serving cached old assets.
+#   - chrome: the generated header/footer/subnav between the chrome markers must
+#     match the nav tree.
+#
+# If this fails: run the command it names, commit the result, and push.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Cache-busting stamps current
+        run: node tools/stamp-assets.mjs --check
+      - name: Generated page chrome current
+        run: node tools/chrome.mjs --check
