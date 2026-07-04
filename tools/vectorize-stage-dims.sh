@@ -124,15 +124,12 @@ convert blackfg.png gray_region_dil.png -compose MinusSrc -composite anno.png   
 convert mask_black_full.pnm -negate -morphology Open Disk:3 arrowblobs.png
 convert anno.png arrowblobs.png -compose Lighten -composite -negate mask_black_final.pnm
 
-# 5. Trace the layers. The grey walls have hard 90° corners, so trace them with
-#    -a 0 (polygonal, no smoothing) to keep those corners crisp. The black
-#    annotation is dimension lines, arrowheads, and the curved footlight
-#    scallops; trace it at max alphamax (4 clamps to potrace's 1.33) so JPEG
-#    jaggies on the CURVES smooth out — sharp corners like arrowhead tips have
-#    steep enough angles that they survive the smoothing, and straight lines
-#    have no mid-run corners to round.
+# 5. Trace both layers with -a 0 (polygonal, no corner smoothing). The grey
+#    walls have hard 90° corners; the black layer now holds only straight
+#    dimension lines and triangular arrowheads (the curved scallops and the text
+#    are drawn, not traced), so smoothing would only wavify those straight edges.
 potrace -b svg -a 0 -C '#7e7e7e' -t 4 -o layer_gray.svg  mask_gray_final.pnm
-potrace -b svg -a 4 -C '#000000' -t 4 -o layer_black.svg mask_black_final.pnm
+potrace -b svg -a 0 -C '#000000' -t 4 -o layer_black.svg mask_black_final.pnm
 
 # 6. Replacement logo: clean canonical badge recoloured to the drawing's faded
 #    dusty-rose (brightness up, saturation down) so it matches but stays crisp.
