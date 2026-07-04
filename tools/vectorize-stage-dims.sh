@@ -118,11 +118,48 @@ convert mask_gray_final.pnm -negate -morphology Dilate Disk:5 gray_region_dil.pn
 convert mask_black_full.pnm -negate blackfg.png
 convert blackfg.png gray_region_dil.png -compose MinusSrc -composite anno.png    # clean walls, but arrowheads gone
 # The dimension arrowheads point AT the walls, so the subtraction above erased
-# them (they'd render grey, from the grey layer). Add them back: an opening of
-# the black mask keeps the solid arrowhead blobs and drops every thin line,
-# outline, and intersection — so it restores the arrowheads without the walls.
+# them (they'd render grey). We do NOT trace them at all: potrace blunts the
+# sharp tip of a triangle (even at -a 0 the pixel tip becomes a short bevel), so
+# instead we DETECT each arrowhead and redraw it as a crisp filled triangle at
+# assembly. An opening of the black mask keeps only the solid arrowhead blobs
+# (every thin line, outline and intersection drops out); connected-components
+# then gives each blob's box, and its centroid vs box-centre gives the direction
+# it points (mass sits toward the base, away from the tip).
 convert mask_black_full.pnm -negate -morphology Open Disk:3 arrowblobs.png
-convert anno.png arrowblobs.png -compose Lighten -composite -negate mask_black_final.pnm
+convert arrowblobs.png -define connected-components:verbose=true \
+  -define connected-components:area-threshold=90 \
+  -connected-components 8 null: > arrow_cc.txt
+node - arrow_cc.txt > arrows.json <<'DETECT'
+import { readFileSync } from 'fs';
+const cc = readFileSync(process.argv[2], 'utf8');
+// The two footlight-band arrows are drawn by hand with the scallops; skip them.
+const inBand = (cx, cy) => cx >= 1005 && cx <= 2340 && cy >= 1955 && cy <= 2030;
+const rows = [];
+for (const line of cc.split('\n')) {
+  const m = line.match(/^\s*(\d+):\s+(\d+)x(\d+)\+(\d+)\+(\d+)\s+([\d.]+),([\d.]+)\s+(\d+)\s+gray\((\d+)\)/);
+  if (!m) continue;
+  const W=+m[2],H=+m[3],X=+m[4],Y=+m[5],cx=parseFloat(m[6]),cy=parseFloat(m[7]),A=+m[8],G=+m[9];
+  if (G !== 255 || A < 90 || A > 5000 || inBand(cx, cy)) continue;
+  rows.push({ W, H, X, Y, cx, cy });
+}
+const arrows = rows.map(r => {
+  const bcx = r.X + r.W/2, bcy = r.Y + r.H/2;
+  let dir, tx, ty;
+  if (r.H >= r.W) { dir = r.cy > bcy ? 'up' : 'down'; tx = bcx; ty = dir==='up' ? r.Y-2 : r.Y+r.H+2; }
+  else            { dir = r.cx > bcx ? 'left' : 'right'; ty = bcy; tx = dir==='left' ? r.X-2 : r.X+r.W+2; }
+  const span = (dir==='up'||dir==='down') ? r.W : r.H;
+  return { dir, tx:+tx.toFixed(1), ty:+ty.toFixed(1), hw:+(span/2+1).toFixed(1),
+           bx:r.X, by:r.Y, bw:r.W, bh:r.H };
+});
+process.stdout.write(JSON.stringify(arrows));
+DETECT
+# Knock every arrowhead footprint out of the black layer (a tight box; the
+# leaders stay and are still traced). Then negate to the potrace-ready mask.
+node -e '
+const fs=require("fs");const A=JSON.parse(fs.readFileSync("arrows.json"));const p=1;
+fs.writeFileSync("arrow_krects.txt", A.map(a=>`rectangle ${a.bx-p},${a.by-p} ${a.bx+a.bw+p},${a.by+a.bh+p}`).join(" "));
+'
+convert anno.png -fill black -draw "$(cat arrow_krects.txt)" -negate mask_black_final.pnm
 
 # 5. Trace both layers with -a 0 (polygonal, no corner smoothing). The grey
 #    walls have hard 90° corners; the black layer now holds only straight
@@ -167,6 +204,20 @@ const arrow = (x,baseY,tipY,hw) =>
   `<path d="M ${x-hw} ${baseY} L ${x+hw} ${baseY} L ${x} ${tipY} Z" fill="#1a1a1a"/>`;
 const festoon = `<path d="${fd}" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>` +
   arrow(1024,1993,2024,11) + arrow(1349,1964,1996,15);
+// Every other dimension arrowhead: redrawn as a crisp filled triangle from the
+// detected geometry (apex at the tip, base extended ~3px past the box so it
+// overlaps the still-traced leader). Sharp point, no potrace bevel.
+const AR = JSON.parse(readFileSync('arrows.json','utf8'));
+const e = 3;
+const arrowheads = AR.map(a => {
+  const {dir,tx,ty,hw,bx,by,bw,bh} = a;
+  let p;
+  if      (dir==='up')    p = `${tx} ${ty} L ${tx-hw} ${by+bh+e} L ${tx+hw} ${by+bh+e}`;
+  else if (dir==='down')  p = `${tx} ${ty} L ${tx-hw} ${by-e} L ${tx+hw} ${by-e}`;
+  else if (dir==='left')  p = `${tx} ${ty} L ${bx+bw+e} ${ty-hw} L ${bx+bw+e} ${ty+hw}`;
+  else                    p = `${tx} ${ty} L ${bx-e} ${ty-hw} L ${bx-e} ${ty+hw}`;
+  return `<path d="M ${p} Z" fill="#1a1a1a"/>`;
+}).join('');
 process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
 <title>Bonita Center for the Arts — stage plan with dimensions</title>
@@ -174,6 +225,7 @@ process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 ${gray}
 ${g('layer_black.svg')}
 ${festoon}
+${arrowheads}
 <image x="${x}" y="${y}" width="${w}" height="${h}" image-rendering="optimizeQuality" xlink:href="data:image/png;base64,${b64}"/>
 ${texts}
 </svg>
