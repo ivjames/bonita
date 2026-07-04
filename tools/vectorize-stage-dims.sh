@@ -153,13 +153,26 @@ const arrows = rows.map(r => {
 });
 process.stdout.write(JSON.stringify(arrows));
 DETECT
-# Knock every arrowhead footprint out of the black layer (a tight box; the
-# leaders stay and are still traced). Then negate to the potrace-ready mask.
+# Knock every arrowhead out of BOTH layers. The arrowheads are dark enough to
+# land in the grey mask too, so the grey layer would re-trace them as filled
+# triangles WITH the wall-outline stroke — a ghost second arrowhead around the
+# drawn one. Knock them from both, using a TRIANGLE just larger than the drawn
+# arrowhead (a rectangle would punch a hole in any wall the tip abuts). The tip
+# margin/side margin (M) clears the grey stroke; the base sits on the drawn
+# base line so the still-traced leader meets it with no gap.
 node -e '
-const fs=require("fs");const A=JSON.parse(fs.readFileSync("arrows.json"));const p=1;
-fs.writeFileSync("arrow_krects.txt", A.map(a=>`rectangle ${a.bx-p},${a.by-p} ${a.bx+a.bw+p},${a.by+a.bh+p}`).join(" "));
+const fs=require("fs");const A=JSON.parse(fs.readFileSync("arrows.json"));const e=3,M=3;
+const poly=a=>{const{dir,tx,ty,hw,bx,by,bw,bh}=a;let P;
+ if(dir==="up")        P=[[tx,ty-M],[tx-hw-M,by+bh+e],[tx+hw+M,by+bh+e]];
+ else if(dir==="down") P=[[tx,ty+M],[tx-hw-M,by-e],[tx+hw+M,by-e]];
+ else if(dir==="left") P=[[tx-M,ty],[bx+bw+e,ty-hw-M],[bx+bw+e,ty+hw+M]];
+ else                  P=[[tx+M,ty],[bx-e,ty-hw-M],[bx-e,ty+hw+M]];
+ return "polygon "+P.map(p=>p[0]+","+p[1]).join(" ");};
+fs.writeFileSync("arrow_knock.txt", A.map(poly).join(" "));
 '
-convert anno.png -fill black -draw "$(cat arrow_krects.txt)" -negate mask_black_final.pnm
+convert mask_gray_final.pnm -fill white -draw "$(cat arrow_knock.txt)" mask_gray_knocked.pnm
+mv mask_gray_knocked.pnm mask_gray_final.pnm
+convert anno.png -fill black -draw "$(cat arrow_knock.txt)" -negate mask_black_final.pnm
 
 # 5. Trace both layers with -a 0 (polygonal, no corner smoothing). The grey
 #    walls have hard 90° corners; the black layer now holds only straight
