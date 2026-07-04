@@ -88,8 +88,13 @@ misuses ~40 H5s (16 of them empty) for body text.
 - [x] Calendar solution to replace the Wix bookings widget — link out to Ludus
       (single source of truth), plus a hand-maintained upcoming-events list
       (`site/assets/data/events.json`, rendered by `assets/js/events.js` on
-      Home and Calendar; past dates drop off automatically; empty list = pages
-      fall back to the plain Ludus link). The old Wix "calendar widget" was a
+      Home and Calendar; past dates leave the upcoming list for a collapsible
+      "Past events" archive on the Calendar page, which the month grid also
+      pages back through; empty list = pages fall back to the plain Ludus
+      link). Historic events are backfilled from the live public Google
+      Calendar with `tools/import-calendar.mjs`, run from the droplet (the
+      web/dev sandbox can't reach `calendar.google.com`). The old Wix
+      "calendar widget" was a
       third-party eventscalendar.co iframe that was also fed by hand.
       Staff edit the list at **/admin** (site/admin.html — "Backstage: Events
       manager"): browser-only form UI with validation, past-date flags, and a
