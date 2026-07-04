@@ -84,7 +84,11 @@ convert "$src" -colorspace Gray -threshold 78% mask_gray.pnm     # wall fills (+
 # arrowheads/lines. So isolate the wall fills alone: grey-dark AND NOT black-ink
 # (Darken = min of "any dark" with "not dark ink" leaves only the mid-grey fill).
 convert mask_gray.pnm -negate gray_fg.png                                   # white = any dark
-convert gray_fg.png mask_black.pnm -compose Darken -composite -negate mask_wall.pnm  # ink=black on wall fills only
+# Isolating the fill puts the wall boundary at the noisy fill/outline interface,
+# so slanted/curved edges come out spiky ("boogers") when traced polygonally. A
+# median (not a blur) knocks those 1-2px spikes off the edge while leaving the
+# straight runs and the 90° corners crisp — no filleting.
+convert gray_fg.png mask_black.pnm -compose Darken -composite -median 2 -negate mask_wall.pnm  # ink=black on wall fills only
 
 # 2. Isolate the logo footprint (from the original faded badge) to knock the
 #    traced layers out where the replacement logo goes.
