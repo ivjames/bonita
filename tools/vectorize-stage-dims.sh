@@ -104,9 +104,16 @@ convert lineart.png +dither -remap pal3.ppm lineart_q.png
 # composite the logo, then cap the total palette (3 line tones + a few maroons)
 convert lineart_q.png logo.png -compose over -composite +dither -colors 16 -depth 8 PNG8:"$out_png"
 
-# 7. Downloadable vector PDF, fit to US Letter landscape with margins.
-rsvg-convert -f pdf --page-width 11in --page-height 8.5in --keep-aspect-ratio \
-  "$out_svg" -o "$out_pdf"
+# 7. Downloadable vector PDF: scale the drawing to fit a US Letter landscape
+#    page (10x7.5in printable box) and centre it. Both --width/--height (to
+#    actually scale the art down) and the page size are required — page size
+#    alone renders the SVG at its full 3294px natural size and it overflows the
+#    page, showing only a clipped corner. The drawing's 1.53 aspect fills the
+#    10in width at ~6.52in tall, so ~0.99in top/bottom margins centre it.
+rsvg-convert -f pdf "$out_svg" -o "$out_pdf" \
+  --page-width 11in --page-height 8.5in \
+  --width 10in --height 7.5in --keep-aspect-ratio \
+  --left 0.5in --top 0.99in
 
 # 8. Overlay-compliance report: render the SVG and compare to the source raster.
 rsvg-convert -w "$W" -h "$H" "$out_svg" -o render.png
