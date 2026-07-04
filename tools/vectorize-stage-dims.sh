@@ -73,10 +73,11 @@ cat > labels.json <<'JSON'
 ]
 JSON
 
-# 1. Pre-blur (kills JPEG ringing/boogers), then the two tone masks.
-convert "$src" -colorspace Gray -blur 0x0.8 sgb.png
-convert sgb.png -threshold 44% mask_black.pnm                    # dark ink incl. grey annotation
-convert sgb.png -threshold 78% -morphology Open Disk:4 mask_gray.pnm  # solid wall fills only
+# 1. Tone masks — NO blur/median/open. Any smoothing filter rounds the hard 90°
+#    corners of the walls (filleting) and erodes the thin dimension lines, so we
+#    threshold the raw grayscale and keep every corner and line exactly as-is.
+convert "$src" -colorspace Gray -threshold 44% mask_black.pnm    # dark ink (annotation + wall outlines)
+convert "$src" -colorspace Gray -threshold 78% mask_gray.pnm     # wall fills (+ everything darker)
 
 # 2. Isolate the logo footprint (from the original faded badge) to knock the
 #    traced layers out where the replacement logo goes.
@@ -86,21 +87,34 @@ convert r.png g.png -compose MinusSrc -composite -threshold 10% maroon_white.png
 convert maroon_white.png -morphology Close Disk:12 -morphology Dilate Disk:5 badge_solid.png
 read -r bw bh bx by < <(convert maroon_white.png -format '%@\n' info: | sed 's/[x+]/ /g')
 
-# 3. Knock the logo footprint AND every text box out of both masks, then trace.
+# 3. Knock the logo footprint AND every text box out of both masks.
 node -e '
 const fs=require("fs");const L=require("./labels.json");const pad=4;
 fs.writeFileSync("krects.txt", L.map(l=>`rectangle ${l.kx-pad},${l.ky-pad} ${l.kx+l.kw+pad},${l.ky+l.kh+pad}`).join(" "));
 '
 convert mask_gray.pnm  badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" mask_gray_final.pnm
-convert mask_black.pnm badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" mask_black_final.pnm
-potrace -b svg -C '#7e7e7e' -t 6 -o layer_gray.svg  mask_gray_final.pnm
-potrace -b svg -C '#000000' -t 6 -o layer_black.svg mask_black_final.pnm
+convert mask_black.pnm badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" mask_black_full.pnm
 
-# 4. Replacement logo: clean canonical badge recoloured to the drawing's faded
+# 4. The gray wall FILLS trace perfectly clean, but the black WALL OUTLINES are
+#    ragged (JPEG blocking on the slanted edges = "boogers"). So we don't trace
+#    the wall outlines at all: instead the clean gray shapes get a crisp vector
+#    stroke (added at assembly), and the black layer keeps only the annotation
+#    that lives on white paper — dimension lines and arrowheads. Drop any black
+#    ink within 5px of a gray fill (that's the wall outline); keep the rest.
+convert mask_gray_final.pnm -negate -morphology Dilate Disk:5 gray_region_dil.png
+convert mask_black_full.pnm -negate blackfg.png
+convert blackfg.png gray_region_dil.png -compose MinusSrc -composite -negate mask_black_final.pnm
+
+# 5. Trace both layers with SHARP corners (-a 0 = polygonal, no corner smoothing).
+potrace -b svg -a 0 -C '#7e7e7e' -t 4 -o layer_gray.svg  mask_gray_final.pnm
+potrace -b svg -a 0 -C '#000000' -t 4 -o layer_black.svg mask_black_final.pnm
+
+# 6. Replacement logo: clean canonical badge recoloured to the drawing's faded
 #    dusty-rose (brightness up, saturation down) so it matches but stays crisp.
 convert "$logo_src" -modulate 200,48,100 logo_toned.png
 
-# 5. Assemble the master SVG: grey fills, black linework, logo, real text.
+# 7. Assemble the master SVG: grey wall fills (with a crisp stroke standing in
+#    for the wall outlines), black annotation, logo, and real text.
 node - "$W" "$H" "$bx" "$by" "$bw" "$bh" logo_toned.png > "$out_svg" <<'NODE'
 import { readFileSync } from 'fs';
 const [W,H,x,y,w,h,logo] = process.argv.slice(2);
@@ -108,6 +122,8 @@ const L = JSON.parse(readFileSync('labels.json','utf8'));
 const b64 = readFileSync(logo).toString('base64');
 const g = f => readFileSync(f,'utf8').match(/<g [\s\S]*?<\/g>/)[0];
 const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// stroke the clean gray shapes to draw the wall edges (miter = keep 90° corners sharp)
+const gray = g('layer_gray.svg').replace(/stroke="none"/, 'stroke="#333333" stroke-width="3" stroke-linejoin="miter"');
 const texts = L.map(l => {
   const cx = l.left ? l.x : (l.kx + l.kw/2);
   const anchor = l.left ? '' : ' text-anchor="middle"';
@@ -117,7 +133,7 @@ process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
 <title>Bonita Center for the Arts — stage plan with dimensions</title>
 <rect width="${W}" height="${H}" fill="#ffffff"/>
-${g('layer_gray.svg')}
+${gray}
 ${g('layer_black.svg')}
 <image x="${x}" y="${y}" width="${w}" height="${h}" image-rendering="optimizeQuality" xlink:href="data:image/png;base64,${b64}"/>
 ${texts}
