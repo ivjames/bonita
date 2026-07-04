@@ -124,10 +124,60 @@ convert blackfg.png gray_region_dil.png -compose MinusSrc -composite anno.png   
 convert mask_black_full.pnm -negate -morphology Open Disk:3 arrowblobs.png
 convert anno.png arrowblobs.png -compose Lighten -composite -negate mask_black_final.pnm
 
+# 4b. Sharpen the dimension arrowheads. potrace blunts the sharp tip of a traced
+#     triangle (even at -a 0 the pixel tip becomes a short bevel = "round point").
+#     So DETECT each solid arrowhead (the open above already isolated them as
+#     blobs), knock the SAME triangle out of BOTH traced layers, and redraw it as
+#     a crisp filled triangle at assembly. Knocking the grey layer too matters:
+#     the head is dark enough to trace there as well, and the grey stroke would
+#     otherwise ring the drawn head — but since that stroke is #1a1a1a, the same
+#     colour as the drawn head, whatever remains blends in instead of ghosting.
+#     This changes ONLY the arrowheads; the wall trace is untouched.
+convert arrowblobs.png -define connected-components:verbose=true \
+  -define connected-components:area-threshold=90 \
+  -connected-components 8 null: > arrow_cc.txt
+node - arrow_cc.txt > arrows.json <<'DETECT'
+import { readFileSync } from 'fs';
+const cc = readFileSync(process.argv[2], 'utf8');
+// The two footlight-band arrows are drawn by hand with the scallops; skip them.
+const inBand = (cx, cy) => cx >= 1005 && cx <= 2340 && cy >= 1955 && cy <= 2030;
+const rows = [];
+for (const line of cc.split('\n')) {
+  const m = line.match(/^\s*(\d+):\s+(\d+)x(\d+)\+(\d+)\+(\d+)\s+([\d.]+),([\d.]+)\s+(\d+)\s+gray\((\d+)\)/);
+  if (!m) continue;
+  const W=+m[2],H=+m[3],X=+m[4],Y=+m[5],cx=parseFloat(m[6]),cy=parseFloat(m[7]),A=+m[8],G=+m[9];
+  if (G !== 255 || A < 90 || A > 5000 || inBand(cx, cy)) continue;
+  rows.push({ W, H, X, Y, cx, cy });
+}
+// One triangle per head, used verbatim for both knockout and drawn fill so they
+// coincide. tipN extends the apex past the (under-measured) blob tip; e nudges
+// the base out to meet the leader; m widens the base to cover the true head.
+const tipN = 5, e = 3, m = 3;
+const arrows = rows.map(r => {
+  const cx = r.X + r.W/2, cy = r.Y + r.H/2, vert = r.H >= r.W;
+  const dir = vert ? (r.cy > cy ? 'up' : 'down') : (r.cx > cx ? 'left' : 'right');
+  const hwM = (vert ? r.W : r.H)/2 + m;
+  let A, B, C;
+  if (dir==='up')   { A=[cx, r.Y-tipN];      B=[cx-hwM, r.Y+r.H+e]; C=[cx+hwM, r.Y+r.H+e]; }
+  if (dir==='down') { A=[cx, r.Y+r.H+tipN];  B=[cx-hwM, r.Y-e];     C=[cx+hwM, r.Y-e]; }
+  if (dir==='left') { A=[r.X-tipN, cy];       B=[r.X+r.W+e, cy-hwM]; C=[r.X+r.W+e, cy+hwM]; }
+  if (dir==='right'){ A=[r.X+r.W+tipN, cy];   B=[r.X-e, cy-hwM];     C=[r.X-e, cy+hwM]; }
+  const rnd = p => [+p[0].toFixed(1), +p[1].toFixed(1)];
+  return { p: [rnd(A), rnd(B), rnd(C)] };
+});
+process.stdout.write(JSON.stringify(arrows));
+DETECT
+node -e '
+const fs=require("fs");const A=JSON.parse(fs.readFileSync("arrows.json"));
+fs.writeFileSync("arrow_knock.txt", A.map(a=>"polygon "+a.p.map(q=>q[0]+","+q[1]).join(" ")).join(" "));
+'
+convert mask_gray_final.pnm  -fill white -draw "$(cat arrow_knock.txt)" mask_gray_k.pnm  && mv mask_gray_k.pnm  mask_gray_final.pnm
+convert mask_black_final.pnm -fill white -draw "$(cat arrow_knock.txt)" mask_black_k.pnm && mv mask_black_k.pnm mask_black_final.pnm
+
 # 5. Trace both layers with -a 0 (polygonal, no corner smoothing). The grey
 #    walls have hard 90° corners; the black layer now holds only straight
-#    dimension lines and triangular arrowheads (the curved scallops and the text
-#    are drawn, not traced), so smoothing would only wavify those straight edges.
+#    dimension lines (the curved scallops, the text and the arrowheads are drawn,
+#    not traced), so smoothing would only wavify those straight edges.
 potrace -b svg -a 0 -C '#7e7e7e' -t 4 -o layer_gray.svg  mask_gray_final.pnm
 potrace -b svg -a 0 -C '#000000' -t 4 -o layer_black.svg mask_black_final.pnm
 
@@ -167,6 +217,12 @@ const arrow = (x,baseY,tipY,hw) =>
   `<path d="M ${x-hw} ${baseY} L ${x+hw} ${baseY} L ${x} ${tipY} Z" fill="#1a1a1a"/>`;
 const festoon = `<path d="${fd}" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>` +
   arrow(1024,1993,2024,11) + arrow(1349,1964,1996,15);
+// Every other dimension arrowhead: redrawn as a crisp filled triangle from the
+// detected geometry — the same triangle that was knocked out of both layers.
+const AR = JSON.parse(readFileSync('arrows.json','utf8'));
+const arrowheads = AR.map(a =>
+  `<path d="M ${a.p.map(q => q.join(' ')).join(' L ')} Z" fill="#1a1a1a"/>`
+).join('');
 process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
 <title>Bonita Center for the Arts — stage plan with dimensions</title>
@@ -174,6 +230,7 @@ process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 ${gray}
 ${g('layer_black.svg')}
 ${festoon}
+${arrowheads}
 <image x="${x}" y="${y}" width="${w}" height="${h}" image-rendering="optimizeQuality" xlink:href="data:image/png;base64,${b64}"/>
 ${texts}
 </svg>
