@@ -107,13 +107,22 @@ convert mask_black.pnm badge_solid.png -compose Lighten -composite -fill white -
 
 # 4. The gray wall FILLS trace perfectly clean, but the black WALL OUTLINES are
 #    ragged (JPEG blocking on the slanted edges = "boogers"). So we don't trace
-#    the wall outlines at all: instead the clean gray shapes get a crisp vector
-#    stroke (added at assembly), and the black layer keeps only the annotation
-#    that lives on white paper — dimension lines and arrowheads. Drop any black
-#    ink within 5px of a gray fill (that's the wall outline); keep the rest.
+#    the wall outlines: instead the clean gray shapes get a crisp vector stroke
+#    (added at assembly). Drop the outlines from the black layer — but ONLY the
+#    thin ones. Dimension arrowheads point at the walls, so a blanket "drop black
+#    near gray" also erased the solid arrowheads (they rendered grey, from the
+#    grey layer). So: near = black within 6px of a wall FILL; the wall outlines
+#    are the THIN part of that (near minus its opening); drop only those, keeping
+#    the solid arrowheads black.
 convert mask_gray_final.pnm -negate -morphology Dilate Disk:5 gray_region_dil.png
 convert mask_black_full.pnm -negate blackfg.png
-convert blackfg.png gray_region_dil.png -compose MinusSrc -composite -negate mask_black_final.pnm
+convert blackfg.png gray_region_dil.png -compose MinusSrc -composite anno.png    # clean walls, but arrowheads gone
+# The dimension arrowheads point AT the walls, so the subtraction above erased
+# them (they'd render grey, from the grey layer). Add them back: an opening of
+# the black mask keeps the solid arrowhead blobs and drops every thin line,
+# outline, and intersection — so it restores the arrowheads without the walls.
+convert mask_black_full.pnm -negate -morphology Open Disk:3 arrowblobs.png
+convert anno.png arrowblobs.png -compose Lighten -composite -negate mask_black_final.pnm
 
 # 5. Trace the layers. The grey walls have hard 90° corners, so trace them with
 #    -a 0 (polygonal, no smoothing) to keep those corners crisp. The black
