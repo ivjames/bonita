@@ -92,8 +92,12 @@ node -e '
 const fs=require("fs");const L=require("./labels.json");const pad=4;
 fs.writeFileSync("krects.txt", L.map(l=>`rectangle ${l.kx-pad},${l.ky-pad} ${l.kx+l.kw+pad},${l.ky+l.kh+pad}`).join(" "));
 '
+# The footlight scallops are curves that trace badly from the JPEG, so they are
+# redrawn as a clean festoon (below) — knock the traced curve out of the black
+# mask over its band (the arrowheads sit just above it and are preserved).
+scallop_knock="rectangle 1008,1998 2332,2032"
 convert mask_gray.pnm  badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" mask_gray_final.pnm
-convert mask_black.pnm badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" mask_black_full.pnm
+convert mask_black.pnm badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" -draw "$scallop_knock" mask_black_full.pnm
 
 # 4. The gray wall FILLS trace perfectly clean, but the black WALL OUTLINES are
 #    ragged (JPEG blocking on the slanted edges = "boogers"). So we don't trace
@@ -137,12 +141,19 @@ const texts = L.map(l => {
   const anchor = l.left ? '' : ' text-anchor="middle"';
   return `<text x="${cx}" y="${l.b}"${anchor} font-family="Liberation Sans, Arial, sans-serif" font-size="43" fill="#1a1a1a">${esc(l.t)}</text>`;
 }).join('\n');
+// Footlight scallops: a clean festoon of elliptical arcs, drawn (not traced).
+const F = {by:2026, x0:1025, xEnd:2318, n:10, ry:25};
+const fp = F.pitch = (F.xEnd - F.x0)/F.n, frx = fp/2;
+let fd = '';
+for (let i=0;i<F.n;i++){ const a=F.x0+i*fp, b=a+fp; fd += `M ${a.toFixed(1)} ${F.by} A ${frx.toFixed(1)} ${F.ry} 0 0 1 ${b.toFixed(1)} ${F.by} `; }
+const festoon = `<path d="${fd}" fill="none" stroke="#1a1a1a" stroke-width="4"/>`;
 process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
 <title>Bonita Center for the Arts — stage plan with dimensions</title>
 <rect width="${W}" height="${H}" fill="#ffffff"/>
 ${gray}
 ${g('layer_black.svg')}
+${festoon}
 <image x="${x}" y="${y}" width="${w}" height="${h}" image-rendering="optimizeQuality" xlink:href="data:image/png;base64,${b64}"/>
 ${texts}
 </svg>
