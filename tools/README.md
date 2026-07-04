@@ -92,6 +92,42 @@ page content outside the markers) and re-run it. `node chrome.mjs --check`
 exits non-zero if any page is stale. `admin.html` is skipped on purpose (its
 reduced nav is hand-maintained).
 
+## Import historic events from the live calendar (`import-calendar.mjs`)
+
+Backfills `site/assets/data/events.json` from the venue's live **public Google
+Calendar** (`bonitacenter@gmail.com` — the one that feeds the eventscalendar.co
+widget on the Wix site, whose months you can page back through for years of
+history). The rebuilt Calendar page renders those past dates as a "Past events"
+archive and lets the month grid arrow back into them.
+
+**Run it from the droplet** (or any host with open outbound HTTPS). The managed
+web/dev sandbox blocks `calendar.google.com` at the egress proxy, so the site
+can't fetch the feed itself — hence a standalone script you run where the
+network is open. Stdlib-only Node, no `npm install`.
+
+```bash
+node tools/import-calendar.mjs                 # dry run: proposed JSON to stdout, summary to stderr
+node tools/import-calendar.mjs --write         # merge into events.json in place
+node tools/import-calendar.mjs --past-only     # only events before today (pure history backfill)
+node tools/import-calendar.mjs --src=cal.ics   # read a local .ics instead of the live feed
+```
+
+It parses every VEVENT into the events.json schema — times land in
+`America/Los_Angeles`, multi-day runs expand to one row per day with a shared
+`dateLabel`, simple recurring events (`RRULE` DAILY/WEEKLY/MONTHLY/YEARLY, with
+`INTERVAL`/`COUNT`/`UNTIL`, weekly `BYDAY`, and `EXDATE`) expand across the
+window, and HTML blurbs convert to the Markdown subset `events.js` renders. The
+merge keys on `(title, date)` and **never overwrites an existing entry**, so the
+hand-curated upcoming shows (Ludus links, tuned blurbs) set on `/admin` survive
+— only genuinely new dates are added, then the list is re-sorted.
+
+Defaults: source is the public ICS for `bonitacenter@gmail.com`; window is
+`2014-01-01` (the venue opened in 2014) through ~18 months out. Override with
+`--since=YYYY-MM-DD` / `--until=YYYY-MM-DD`. If the feed 403s, the calendar
+isn't shared publicly — enable "Make available to public" (or use its secret
+iCal address / an export) per the message the script prints. Always review the
+dry-run diff before `--write`.
+
 ## Asset cache-busting (`stamp-assets.mjs`)
 
 Every local CSS/JS reference in `site/**/*.html` carries a `?v=…` query for

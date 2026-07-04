@@ -45,7 +45,7 @@
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=e6fd7c57">
+<link rel="stylesheet" href="/assets/css/site.css?v=c1d26486">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
@@ -100,6 +100,15 @@
   <div class="event-calendar" data-events-calendar hidden></div>
   <ul class="event-list" data-events data-max="12" hidden></ul>
   <p><a class="btn btn-primary" href="https://bonitacenterforthearts.ludus.com/index.php">View the events calendar &amp; buy tickets</a></p>
+
+  <!-- Past events: the archive of shows that have already happened. Rendered
+       by events.js from the same events.json (entries with a past date), most
+       recent first; the whole block stays hidden until there's history to
+       show. The month grid above also pages back through these. -->
+  <details class="past-events" data-past-wrap hidden>
+    <summary>Past events</summary>
+    <ul class="event-list is-past" data-events-past data-max="60" hidden></ul>
+  </details>
 
   <!-- Ludus embed widget: plumbed and inert, pending Ludus account access.
        The widget lets patrons browse events and buy seats without leaving
@@ -161,6 +170,6 @@
   </div>
 </footer>
 <!-- /chrome:footer -->
-<script src="/assets/js/events.js?v=305b9dfe" defer></script>
+<script src="/assets/js/events.js?v=d4eba7ce" defer></script>
 </body>
 </html>

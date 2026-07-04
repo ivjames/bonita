@@ -568,6 +568,39 @@ main { display: block; }
   .event-cta { display: none; }
 }
 
+/* ---- past-events archive (collapsible, rendered by events.js) ---- */
+.past-events {
+  max-width: 46rem;
+  margin: 1.8rem 0;
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+.past-events > summary {
+  cursor: pointer;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink);
+  list-style: none;
+}
+.past-events > summary::-webkit-details-marker { display: none; }
+.past-events > summary::before {
+  content: "\25B8";   /* ▸ — rotates to ▾ when open */
+  display: inline-block;
+  margin-right: .5rem;
+  color: var(--gold-deep);
+  transition: transform .18s ease;
+}
+.past-events[open] > summary::before { transform: rotate(90deg); }
+.past-events > summary:hover { color: var(--maroon); }
+/* Past shows are history, not on sale — mute them so the upcoming list reads
+   as the live one. */
+.event-list.is-past { margin-top: 1rem; }
+.event-list.is-past .event-card { box-shadow: none; opacity: .82; }
+.event-list.is-past .event-date .d { color: var(--ink-soft); }
+.event-list.is-past .event-date .m { color: var(--ink-soft); }
+.event-list.is-past .event a.event-card:hover { opacity: 1; }
+
 /* ---- event details page (/event, rendered by events.js) ---- */
 .event-detail { max-width: 46rem; }
 .event-detail-title { margin: .2rem 0 .6rem; }

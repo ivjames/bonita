@@ -28,6 +28,20 @@ window.BCA.upcomingEvents = (events) => {
     .sort((a, b) => a.day - b.day);
 };
 
+// Every valid event, soonest first — past and future together. Feeds the
+// month-grid calendar, whose back-arrow browses into the venue's history.
+window.BCA.allEvents = (events) => (events || [])
+  .map((e) => ({ ...e, day: window.BCA.parseEventDay(e.date) }))
+  .filter((e) => e.title && e.day)
+  .sort((a, b) => a.day - b.day);
+
+// Valid events already in the past, most recent first — the archive list.
+window.BCA.pastEvents = (events) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return window.BCA.allEvents(events).filter((e) => e.day < today).reverse();
+};
+
 window.BCA.escapeHtml = (s) => String(s).replace(/[&<>"']/g,
   (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -117,22 +131,25 @@ window.BCA.renderEvents = (list, upcoming, max) => {
 };
 
 // Fill a [data-events-calendar] container with a month-grid calendar of the
-// upcoming events. Opens on the soonest event's month; the arrows browse
-// from the current month through the last month with an event. `upcoming`
-// must come from upcomingEvents().
-window.BCA.renderCalendar = (root, upcoming) => {
+// events. Opens on the current month; the arrows browse back through the
+// earliest event's month and forward through the latest — so patrons can
+// step into the venue's history as well as ahead to what's on. `events`
+// must come from allEvents() (or upcomingEvents() for a future-only grid).
+window.BCA.renderCalendar = (root, events) => {
   const esc = window.BCA.escapeHtml;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const byDay = new Map();
-  upcoming.forEach((e) => {
+  events.forEach((e) => {
     if (!byDay.has(e.date)) byDay.set(e.date, []);
     byDay.get(e.date).push(e);
   });
   const monthOf = (d) => d.getFullYear() * 12 + d.getMonth();
-  const min = Math.min(monthOf(today), monthOf(upcoming[0].day));
-  const max = monthOf(upcoming[upcoming.length - 1].day);
-  let shown = monthOf(upcoming[0].day);
+  // Always keep the current month reachable, even if every event is on one
+  // side of today.
+  const min = Math.min(monthOf(today), monthOf(events[0].day));
+  const max = Math.max(monthOf(today), monthOf(events[events.length - 1].day));
+  let shown = monthOf(today);
 
   const monthName = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
   const full = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -259,9 +276,10 @@ window.BCA.renderEventDetail = (root, events) => {
 
 (async () => {
   const lists = document.querySelectorAll('ul[data-events]');
+  const pastLists = document.querySelectorAll('ul[data-events-past]');
   const calendars = document.querySelectorAll('[data-events-calendar]');
   const detail = document.querySelector('[data-event-detail]');
-  if (!lists.length && !calendars.length && !detail) return;
+  if (!lists.length && !pastLists.length && !calendars.length && !detail) return;
   let data;
   try {
     // Revalidate every load: the event list changes when staff edit it (via
@@ -286,14 +304,32 @@ window.BCA.renderEventDetail = (root, events) => {
     }
   }
   const upcoming = window.BCA.upcomingEvents(data.events);
-  if (!upcoming.length) return;
-  lists.forEach((list) => {
-    window.BCA.renderEvents(list, upcoming, parseInt(list.dataset.max, 10) || 0);
-    list.hidden = false;
-  });
-  calendars.forEach((cal) => {
-    window.BCA.renderCalendar(cal, upcoming);
-    cal.hidden = false;
-  });
-  addJsonLd(window.BCA.eventsJsonLd(upcoming));
+  const past = window.BCA.pastEvents(data.events);
+  const all = window.BCA.allEvents(data.events);
+  // Upcoming list(s) — the "what's on" cards. Only these become structured
+  // data (a past show marked up as an Event would read as still on sale).
+  if (upcoming.length) {
+    lists.forEach((list) => {
+      window.BCA.renderEvents(list, upcoming, parseInt(list.dataset.max, 10) || 0);
+      list.hidden = false;
+    });
+    addJsonLd(window.BCA.eventsJsonLd(upcoming));
+  }
+  // Past list(s) — the archive, most recent first, in a collapsible wrapper.
+  if (past.length) {
+    pastLists.forEach((list) => {
+      window.BCA.renderEvents(list, past, parseInt(list.dataset.max, 10) || 0);
+      list.hidden = false;
+      const wrap = list.closest('[data-past-wrap]');
+      if (wrap) wrap.hidden = false;
+    });
+  }
+  // The month grid spans the whole history — its back-arrow steps into the
+  // past, the forward-arrow ahead to what's on.
+  if (all.length) {
+    calendars.forEach((cal) => {
+      window.BCA.renderCalendar(cal, all);
+      cal.hidden = false;
+    });
+  }
 })();
