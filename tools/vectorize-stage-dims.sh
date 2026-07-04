@@ -97,10 +97,13 @@ fs.writeFileSync("krects.txt", L.map(l=>`rectangle ${l.kx-pad},${l.ky-pad} ${l.k
 # the whole band is knocked out of the black mask and everything in it is redrawn
 # cleanly at assembly (festoon arcs + stems + the two down-arrows).
 # (the scallop lines are dark enough to land in BOTH masks, so knock the band
-#  out of both — otherwise the grey layer re-draws the scallops underneath.)
-scallop_knock="rectangle 1005,1974 2340,2030"
-convert mask_gray.pnm  badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" -draw "$scallop_knock" mask_gray_final.pnm
-convert mask_black.pnm badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" -draw "$scallop_knock" mask_black_full.pnm
+#  out of both — otherwise the grey layer re-draws the scallops underneath. The
+#  grey knockout stops at y2027, just above the wall-fill top (y2028), so it
+#  removes the scallops without trimming the wall the stems land on.)
+scallop_knock_b="rectangle 1005,1974 2340,2030"
+scallop_knock_g="rectangle 1005,1974 2340,2027"
+convert mask_gray.pnm  badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" -draw "$scallop_knock_g" mask_gray_final.pnm
+convert mask_black.pnm badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" -draw "$scallop_knock_b" mask_black_full.pnm
 
 # 4. The gray wall FILLS trace perfectly clean, but the black WALL OUTLINES are
 #    ragged (JPEG blocking on the slanted edges = "boogers"). So we don't trace
@@ -146,7 +149,7 @@ const texts = L.map(l => {
 }).join('\n');
 // Footlight scallops: drawn clean. Shallow arcs whose cusps sit on short stems
 // rising from the wall top, plus the two dimension down-arrows in the band.
-const F = {cusp:2014, x0:1025, xEnd:2318, n:10, ry:18, wall:2027};
+const F = {cusp:2014, x0:1025, xEnd:2318, n:10, ry:18, wall:2029};
 const fp = (F.xEnd - F.x0)/F.n, frx = fp/2;
 let fd = '';
 for (let i=0;i<F.n;i++){ const a=F.x0+i*fp, b=a+fp; fd += `M ${a.toFixed(1)} ${F.cusp} A ${frx.toFixed(1)} ${F.ry} 0 0 1 ${b.toFixed(1)} ${F.cusp} `; }
