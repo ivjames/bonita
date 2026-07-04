@@ -154,11 +154,13 @@ const fp = (F.xEnd - F.x0)/F.n, frx = fp/2;
 let fd = '';
 for (let i=0;i<F.n;i++){ const a=F.x0+i*fp, b=a+fp; fd += `M ${a.toFixed(1)} ${F.cusp} A ${frx.toFixed(1)} ${F.ry} 0 0 1 ${b.toFixed(1)} ${F.cusp} `; }
 for (let i=0;i<=F.n;i++){ const x=(F.x0+i*fp).toFixed(1); fd += `M ${x} ${F.cusp} L ${x} ${F.wall} `; }
+// leader starts at y1945 — above the knockout band (y1955) — so it overlaps the
+// still-traced leader above and there is no gap where the two meet.
 const arrow = (x,baseY,tipY,hw) =>
-  `<line x1="${x}" y1="1955" x2="${x}" y2="${baseY}" stroke="#1a1a1a" stroke-width="3"/>` +
+  `<line x1="${x}" y1="1945" x2="${x}" y2="${baseY}" stroke="#1a1a1a" stroke-width="2.5"/>` +
   `<path d="M ${x-hw} ${baseY} L ${x+hw} ${baseY} L ${x} ${tipY} Z" fill="#1a1a1a"/>`;
 const festoon = `<path d="${fd}" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>` +
-  arrow(1025,1993,2024,11) + arrow(1348,1964,1996,15);
+  arrow(1024,1993,2024,11) + arrow(1349,1964,1996,15);
 process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
 <title>Bonita Center for the Arts — stage plan with dimensions</title>
