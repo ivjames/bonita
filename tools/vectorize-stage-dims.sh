@@ -126,13 +126,13 @@ convert anno.png arrowblobs.png -compose Lighten -composite -negate mask_black_f
 
 # 4b. Sharpen the dimension arrowheads. potrace blunts the sharp tip of a traced
 #     triangle (even at -a 0 the pixel tip becomes a short bevel = "round point").
-#     So DETECT each solid arrowhead (the open above already isolated them as
-#     blobs), knock the SAME triangle out of BOTH traced layers, and redraw it as
-#     a crisp filled triangle at assembly. Knocking the grey layer too matters:
-#     the head is dark enough to trace there as well, and the grey stroke would
-#     otherwise ring the drawn head — but since that stroke is #1a1a1a, the same
-#     colour as the drawn head, whatever remains blends in instead of ghosting.
-#     This changes ONLY the arrowheads; the wall trace is untouched.
+#     So DETECT each solid arrowhead (the open above already isolated them), erase
+#     the blunt traced head from BOTH layers, and redraw it as a crisp filled
+#     triangle at assembly. Two triangles per head: a tight KNOCKOUT that removes
+#     the traced head, and a slightly larger DRAW that is painted on top. The draw
+#     being larger than the knockout is what keeps arrowheads that point at a wall
+#     clean: the knockout nicks the wall fill (and its outline stroke) right at the
+#     tip, and the larger drawn head sits over that nick so it never shows.
 convert arrowblobs.png -define connected-components:verbose=true \
   -define connected-components:area-threshold=90 \
   -connected-components 8 null: > arrow_cc.txt
@@ -149,11 +149,11 @@ for (const line of cc.split('\n')) {
   if (G !== 255 || A < 90 || A > 5000 || inBand(cx, cy)) continue;
   rows.push({ W, H, X, Y, cx, cy });
 }
-// One triangle per head, used verbatim for both knockout and drawn fill so they
-// coincide. tipN extends the apex past the (under-measured) blob tip; e nudges
-// the base out to meet the leader; m widens the base to cover the true head.
-const tipN = 5, e = 3, m = 3;
-const arrows = rows.map(r => {
+// tri(): a triangle for the head at the given margins. tipN extends the apex past
+// the (open-eroded, under-measured) blob tip; e nudges the base past the box to
+// meet the leader; m widens the base. The KNOCKOUT is tight; the DRAW is ~2px
+// larger all round so it fully covers the knockout (and any wall nick/stroke).
+function tri(r, tipN, e, m) {
   const cx = r.X + r.W/2, cy = r.Y + r.H/2, vert = r.H >= r.W;
   const dir = vert ? (r.cy > cy ? 'up' : 'down') : (r.cx > cx ? 'left' : 'right');
   const hwM = (vert ? r.W : r.H)/2 + m;
@@ -163,13 +163,14 @@ const arrows = rows.map(r => {
   if (dir==='left') { A=[r.X-tipN, cy];       B=[r.X+r.W+e, cy-hwM]; C=[r.X+r.W+e, cy+hwM]; }
   if (dir==='right'){ A=[r.X+r.W+tipN, cy];   B=[r.X-e, cy-hwM];     C=[r.X-e, cy+hwM]; }
   const rnd = p => [+p[0].toFixed(1), +p[1].toFixed(1)];
-  return { p: [rnd(A), rnd(B), rnd(C)] };
-});
+  return [rnd(A), rnd(B), rnd(C)];
+}
+const arrows = rows.map(r => ({ k: tri(r, 3, 2, 2), d: tri(r, 5, 4, 4) }));
 process.stdout.write(JSON.stringify(arrows));
 DETECT
 node -e '
 const fs=require("fs");const A=JSON.parse(fs.readFileSync("arrows.json"));
-fs.writeFileSync("arrow_knock.txt", A.map(a=>"polygon "+a.p.map(q=>q[0]+","+q[1]).join(" ")).join(" "));
+fs.writeFileSync("arrow_knock.txt", A.map(a=>"polygon "+a.k.map(q=>q[0]+","+q[1]).join(" ")).join(" "));
 '
 convert mask_gray_final.pnm  -fill white -draw "$(cat arrow_knock.txt)" mask_gray_k.pnm  && mv mask_gray_k.pnm  mask_gray_final.pnm
 convert mask_black_final.pnm -fill white -draw "$(cat arrow_knock.txt)" mask_black_k.pnm && mv mask_black_k.pnm mask_black_final.pnm
@@ -221,7 +222,7 @@ const festoon = `<path d="${fd}" fill="none" stroke="#1a1a1a" stroke-width="2.5"
 // detected geometry — the same triangle that was knocked out of both layers.
 const AR = JSON.parse(readFileSync('arrows.json','utf8'));
 const arrowheads = AR.map(a =>
-  `<path d="M ${a.p.map(q => q.join(' ')).join(' L ')} Z" fill="#1a1a1a"/>`
+  `<path d="M ${a.d.map(q => q.join(' ')).join(' L ')} Z" fill="#1a1a1a"/>`
 ).join('');
 process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
