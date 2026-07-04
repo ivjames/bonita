@@ -4,33 +4,43 @@
 # the committed source raster, and report overlay-compliance against the source.
 #
 # Outputs (all committed):
-#   site/assets/img/stage-dims.svg        vector master (traced line art + logo)
-#   site/assets/img/stage-dims.png        crisp ~2x raster for the web page
+#   site/assets/img/stage-dims.svg        vector master (traced line art + text + logo)
+#   site/assets/img/stage-dims.png        crisp ~3x raster for the web page
 #   site/assets/pdf/bca-stage-dimensions.pdf   downloadable vector PDF (US Letter)
 #
-# Source (committed):
+# Inputs (committed):
 #   tools/fixtures/stage-dims-source.jpg  pristine 3294x2147 original, extracted
 #                                         from the drawing the architect supplied.
+#   site/assets/img/bca-logo.png          clean canonical brand badge.
 #
 # This is a MANUAL / OFFLINE tool. It is NOT wired into the deploy pipeline or
 # CI (it needs external binaries the droplet/CI don't carry). Run it by hand
 # when the source drawing changes, then commit the regenerated assets.
 #
-# Requires: potrace, ImageMagick (convert/compare), librsvg (rsvg-convert).
-#   apt-get install -y potrace imagemagick librsvg2-bin
+# Requires: potrace, ImageMagick (convert/compare), librsvg (rsvg-convert),
+#           and the "Liberation Sans" font (fonts-liberation).
 #
-# Method: the drawing is three-tone (white paper, ~#7e7e7e wall fills, black
-# linework/text) plus a colored logo. potrace is monochrome, so we separate by
-# threshold and trace each tone as its own layer, then stack them:
-#   - gray fills   (everything darker than paper)  -> fill #7e7e7e
-#   - black lines  (only the dark ink)             -> fill #000000
-# The logo is a colored brand mark, not line art, so it is NOT traced (potrace
-# flattens it to a muddy silhouette). Instead its exact original pixels are
-# embedded as a transparent PNG so it stays pixel-identical to the source.
+# Method — the drawing has, by pixel value: white paper (255), grey wall fills
+# (~126), a dark-grey dimension annotation (~100: thin lines, text, arrowheads)
+# and pure-black section lines. potrace is monochrome, so we threshold into two
+# traced layers and stack them (grey fills under black linework). Two subtleties
+# the thresholds have to respect:
+#   - The annotation ink (~100) sits just BELOW the wall grey (126). A low black
+#     threshold splits that ink down the middle and shreds it into speckle, so we
+#     threshold black at 44% (~112) to catch the whole annotation solidly while
+#     still excluding the walls.
+#   - JPEG ringing along the high-contrast wall edges throws dark specks just
+#     below that threshold ("boogers"). A slight pre-blur removes the ringing.
+# Two things are NOT traced, because tracing a lossy JPEG of them looks rough:
+#   - The dimension TEXT is re-set as real <text> (Liberation Sans) at measured
+#     positions, and its pixels are knocked out of both traced layers.
+#   - The LOGO uses the clean canonical badge (recoloured to the drawing's faded
+#     rose) rather than the JPEG-artifacted copy baked into the drawing.
 set -euo pipefail
 
 here="$(cd "$(dirname "$0")/.." && pwd)"
 src="$here/tools/fixtures/stage-dims-source.jpg"
+logo_src="$here/site/assets/img/bca-logo.png"
 out_svg="$here/site/assets/img/stage-dims.svg"
 out_png="$here/site/assets/img/stage-dims.png"
 out_pdf="$here/site/assets/pdf/bca-stage-dimensions.pdf"
@@ -41,46 +51,68 @@ cd "$work"
 
 read -r W H < <(identify -format '%w %h\n' "$src")
 
-# 1. Tone-separation masks (potrace traces black pixels).
-#    The dimension annotation — thin lines, text, AND the solid arrowheads — is
-#    drawn in a dark grey (~value 100), NOT black, sitting just below the wall
-#    grey (126). A low black threshold lands right in the middle of that ink, so
-#    it captures only the darkest cores and shreds the rest into salt-and-pepper
-#    (arrowheads and text end up with grey speckle poking through). Threshold at
-#    44% (~112) captures the whole annotation solidly while still excluding the
-#    wall grey, so black shapes render solid black with no holes.
-convert "$src" -colorspace Gray -threshold 44% mask_black.pnm   # dark ink incl. grey annotation
-convert "$src" -colorspace Gray -threshold 78% mask_gray.pnm    # everything not paper
+# Dimension labels: text, anchor x, baseline y, and the knockout rectangle
+# (kx,ky,kw,kh) covering the original traced glyphs. Positions measured (OCR)
+# from the source. Numeric labels are centred on their knockout box so they sit
+# in the gap the dimension line leaves for them; the SCALE note is left-aligned.
+cat > labels.json <<'JSON'
+[
+ {"t":"11' 10 3/16\"","b":310,"kx":1558,"ky":272,"kw":232,"kh":52},
+ {"t":"53' 7 1/2\"","b":556,"kx":1578,"ky":518,"kw":188,"kh":52},
+ {"t":"SCALE: 1\" = 10' - 0\"","x":79,"b":598,"kx":72,"ky":560,"kw":382,"kh":52,"left":true},
+ {"t":"49' 1 1/2\"","b":721,"kx":1565,"ky":683,"kw":190,"kh":52},
+ {"t":"82' 1\"","b":919,"kx":1598,"ky":881,"kw":118,"kh":50},
+ {"t":"75' 6\"","b":1099,"kx":1705,"ky":1061,"kw":118,"kh":50},
+ {"t":"43' 2 3/4\"","b":1352,"kx":929,"ky":1314,"kw":190,"kh":52},
+ {"t":"42' 4\"","b":1337,"kx":1291,"ky":1299,"kw":118,"kh":50},
+ {"t":"40' 5 3/4\"","b":1396,"kx":2452,"ky":1358,"kw":190,"kh":52},
+ {"t":"16' 4 1/2\"","b":1656,"kx":2611,"ky":1618,"kw":190,"kh":54},
+ {"t":"5'","b":580,"kx":1126,"ky":543,"kw":48,"kh":48},
+ {"t":"10'","b":1655,"kx":688,"ky":1617,"kw":82,"kh":48},
+ {"t":"11' 11\"","b":2093,"kx":2566,"ky":2055,"kw":206,"kh":50}
+]
+JSON
 
-# 2. Isolate the logo so it is excluded from the traced layers.
-#    maroon = red channel notably greater than green.
+# 1. Pre-blur (kills JPEG ringing/boogers), then the two tone masks.
+convert "$src" -colorspace Gray -blur 0x0.8 sgb.png
+convert sgb.png -threshold 44% mask_black.pnm                    # dark ink incl. grey annotation
+convert sgb.png -threshold 78% -morphology Open Disk:4 mask_gray.pnm  # solid wall fills only
+
+# 2. Isolate the logo footprint (from the original faded badge) to knock the
+#    traced layers out where the replacement logo goes.
 convert "$src" -channel R -separate r.png
 convert "$src" -channel G -separate g.png
 convert r.png g.png -compose MinusSrc -composite -threshold 10% maroon_white.png
-#    solid badge region (fill letter holes, small grow for anti-aliased edge)
 convert maroon_white.png -morphology Close Disk:12 -morphology Dilate Disk:5 badge_solid.png
-#    whiten the badge area out of both traced layers
-convert mask_gray.pnm  badge_solid.png -compose Lighten -composite mask_gray_final.pnm
-convert mask_black.pnm badge_solid.png -compose Lighten -composite mask_black_final.pnm
-
-# 3. Trace the two line-art layers.
-potrace -b svg -C '#7e7e7e' -t 4 -o layer_gray.svg  mask_gray_final.pnm
-potrace -b svg -C '#000000' -t 4 -o layer_black.svg mask_black_final.pnm
-
-# 4. Crop the logo's real pixels with a transparent background (not traced).
 read -r bw bh bx by < <(convert maroon_white.png -format '%@\n' info: | sed 's/[x+]/ /g')
-CX=$((bx-20)); CY=$((by-20)); CW=$((bw+40)); CH=$((bh+40))
-convert "$src" -crop ${CW}x${CH}+${CX}+${CY} +repage badge_orig.png
-convert badge_orig.png \
-  \( +clone -colorspace Gray -threshold 92% -negate \) \
-  -alpha off -compose CopyOpacity -composite -strip badge_rgba.png
 
-# 5. Assemble the layers into one SVG (gray, black, embedded logo on top).
-node - "$W" "$H" "$CX" "$CY" "$CW" "$CH" badge_rgba.png > "$out_svg" <<'NODE'
+# 3. Knock the logo footprint AND every text box out of both masks, then trace.
+node -e '
+const fs=require("fs");const L=require("./labels.json");const pad=4;
+fs.writeFileSync("krects.txt", L.map(l=>`rectangle ${l.kx-pad},${l.ky-pad} ${l.kx+l.kw+pad},${l.ky+l.kh+pad}`).join(" "));
+'
+convert mask_gray.pnm  badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" mask_gray_final.pnm
+convert mask_black.pnm badge_solid.png -compose Lighten -composite -fill white -draw "$(cat krects.txt)" mask_black_final.pnm
+potrace -b svg -C '#7e7e7e' -t 6 -o layer_gray.svg  mask_gray_final.pnm
+potrace -b svg -C '#000000' -t 6 -o layer_black.svg mask_black_final.pnm
+
+# 4. Replacement logo: clean canonical badge recoloured to the drawing's faded
+#    dusty-rose (brightness up, saturation down) so it matches but stays crisp.
+convert "$logo_src" -modulate 200,48,100 logo_toned.png
+
+# 5. Assemble the master SVG: grey fills, black linework, logo, real text.
+node - "$W" "$H" "$bx" "$by" "$bw" "$bh" logo_toned.png > "$out_svg" <<'NODE'
 import { readFileSync } from 'fs';
-const [W,H,x,y,w,h,badge] = process.argv.slice(2);
-const b64 = readFileSync(badge).toString('base64');
+const [W,H,x,y,w,h,logo] = process.argv.slice(2);
+const L = JSON.parse(readFileSync('labels.json','utf8'));
+const b64 = readFileSync(logo).toString('base64');
 const g = f => readFileSync(f,'utf8').match(/<g [\s\S]*?<\/g>/)[0];
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const texts = L.map(l => {
+  const cx = l.left ? l.x : (l.kx + l.kw/2);
+  const anchor = l.left ? '' : ' text-anchor="middle"';
+  return `<text x="${cx}" y="${l.b}"${anchor} font-family="Liberation Sans, Arial, sans-serif" font-size="43" fill="#1a1a1a">${esc(l.t)}</text>`;
+}).join('\n');
 process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
 <title>Bonita Center for the Arts — stage plan with dimensions</title>
@@ -88,19 +120,15 @@ process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 ${g('layer_gray.svg')}
 ${g('layer_black.svg')}
 <image x="${x}" y="${y}" width="${w}" height="${h}" image-rendering="optimizeQuality" xlink:href="data:image/png;base64,${b64}"/>
+${texts}
 </svg>
 `);
 NODE
 
-# 6. Web PNG. Quantize the line art and the logo separately so neither muddies
-#    the other:
-#    - The line art holds exactly three tones (paper, one grey, black). Snapping
-#      it to a 3-colour palette (no dither) keeps the fills perfectly flat and
-#      the edges crisp — no light-grey haloes from anti-alias banding. The
-#      browser re-creates smooth edges when it scales the ~3x image down.
-#    - The logo is a colour photo-ish mark; it keeps its own shades and is
-#      composited back on top.
-#    Strip the embedded logo <image> to get line-art-only, and keep it alone.
+# 6. Web PNG. The line art + text hold three tones (paper, one grey, black);
+#    snap them to a flat 3-colour palette (no dither) so fills stay clean and
+#    edges crisp — the browser re-creates smooth edges scaling the ~3x image
+#    down. The logo keeps its own shades and is composited back on top.
 grep -v '<image ' "$out_svg" > lineart.svg
 printf '%s' "$(grep '<image ' "$out_svg")" \
   | sed "s#<image#<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"$W\" height=\"$H\" viewBox=\"0 0 $W $H\"><image#; s#/>\$#/></svg>#" > logo.svg
@@ -108,29 +136,19 @@ rsvg-convert -w "$PNG_W" lineart.svg -o lineart.png
 rsvg-convert -w "$PNG_W" logo.svg    -o logo.png
 printf 'P3\n3 1\n255\n255 255 255\n126 126 126\n0 0 0\n' > pal3.ppm
 convert lineart.png +dither -remap pal3.ppm lineart_q.png
-# composite the logo, then cap the total palette (3 line tones + a few maroons)
 convert lineart_q.png logo.png -compose over -composite +dither -colors 16 -depth 8 PNG8:"$out_png"
 
 # 7. Downloadable vector PDF: scale the drawing to fit a US Letter landscape
 #    page (10x7.5in printable box) and centre it. Both --width/--height (to
 #    actually scale the art down) and the page size are required — page size
-#    alone renders the SVG at its full 3294px natural size and it overflows the
-#    page, showing only a clipped corner. The drawing's 1.53 aspect fills the
-#    10in width at ~6.52in tall, so ~0.99in top/bottom margins centre it.
+#    alone renders the SVG at its full natural size and it overflows the page,
+#    showing only a clipped corner.
 rsvg-convert -f pdf "$out_svg" -o "$out_pdf" \
   --page-width 11in --page-height 8.5in \
   --width 10in --height 7.5in --keep-aspect-ratio \
   --left 0.5in --top 0.99in
 
-# 8. Overlay-compliance report: render the SVG and compare to the source raster.
-rsvg-convert -w "$W" -h "$H" "$out_svg" -o render.png
-tot=$(convert "$src" -format '%[fx:w*h]' info:)
-diff=$(compare -metric AE -fuzz 10% "$src" render.png null: 2>&1 || true)
 echo "wrote:"
 echo "  $out_svg  ($(stat -c%s "$out_svg") B)"
 echo "  $out_png  ($(stat -c%s "$out_png") B)"
 echo "  $out_pdf  ($(stat -c%s "$out_pdf") B)"
-echo "compliance vs source raster:"
-echo "  RMSE (normalized) : $(compare -metric RMSE "$src" render.png null: 2>&1 | sed -E 's/.*\(([0-9.]+)\).*/\1/')"
-echo "  MAE  (normalized) : $(compare -metric MAE  "$src" render.png null: 2>&1 | sed -E 's/.*\(([0-9.]+)\).*/\1/')"
-awk "BEGIN{printf \"  pixels differing >10%% : %d of %d (%.3f%%) — confined to anti-aliased edges\n\", $diff, $tot, 100*$diff/$tot}"
