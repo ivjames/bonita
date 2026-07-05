@@ -109,7 +109,7 @@ ${items}
 const FOOTER = `<footer class="site-footer">
   <div class="cols">
     <div class="badge">
-      <img src="/assets/img/bca-logo.png" alt="Bonita Center for the Arts badge logo">
+      <img src="/assets/img/bca-logo.png" alt="Bonita Center for the Arts badge logo" width="253" height="294">
     </div>
     <div>
       <h2>Contact</h2>

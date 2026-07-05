@@ -21,6 +21,7 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'site
 const types = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'application/javascript',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml',
+  '.webp': 'image/webp', '.avif': 'image/avif',
   '.pdf': 'application/pdf', '.txt': 'text/plain',
 };
 
