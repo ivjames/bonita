@@ -1,0 +1,35 @@
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="/">
+      <img src="/assets/img/bca-logo.png" alt="" width="44" height="52">
+      <span class="name">Bonita Center for the Arts<small>A Bonita Unified School District venue</small></span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <ul>
+        <li><a href="/"<!--# if expr="$page = home" --> aria-current="page"<!--# endif -->>Home</a></li>
+        <li class="has-sub<!--# if expr="$section = about" --> current-section<!--# endif -->">
+          <a href="/about"<!--# if expr="$page = about" --> aria-current="page"<!--# endif -->>About</a>
+          <ul class="sub">
+            <li><a href="/about"<!--# if expr="$page = about" --> aria-current="page"<!--# endif -->>Our story</a></li>
+            <li><a href="/about/visit"<!--# if expr="$page = about-visit" --> aria-current="page"<!--# endif -->>Plan your visit</a></li>
+            <li><a href="/about/gallery"<!--# if expr="$page = about-gallery" --> aria-current="page"<!--# endif -->>Gallery</a></li>
+            <li><a href="/about/contact"<!--# if expr="$page = about-contact" --> aria-current="page"<!--# endif -->>Contact us</a></li>
+            <li><a href="/about/policies"<!--# if expr="$page = about-policies" --> aria-current="page"<!--# endif -->>House policies</a></li>
+          </ul>
+        </li>
+        <li><a href="/booking-calendar"<!--# if expr="$page = booking-calendar" --> aria-current="page"<!--# endif -->>Calendar</a></li>
+        <li><a href="/get-involved"<!--# if expr="$page = get-involved" --> aria-current="page"<!--# endif -->>Get Involved</a></li>
+        <li class="has-sub<!--# if expr="$section = rentals" --> current-section<!--# endif -->">
+          <a href="/rentals"<!--# if expr="$page = rentals" --> aria-current="page"<!--# endif -->>Rentals</a>
+          <ul class="sub">
+            <li><a href="/rentals"<!--# if expr="$page = rentals" --> aria-current="page"<!--# endif -->>Rental inquiry</a></li>
+            <li><a href="/rentals/policies"<!--# if expr="$page = rentals-policies" --> aria-current="page"<!--# endif -->>Rental policies</a></li>
+            <li><a href="/rentals/building"<!--# if expr="$page = rentals-building" --> aria-current="page"<!--# endif -->>Building layout</a></li>
+            <li><a href="/rentals/tech-specs"<!--# if expr="$page = rentals-tech-specs" --> aria-current="page"<!--# endif -->>Technical specs</a></li>
+          </ul>
+        </li>
+        <li><a class="tickets" href="https://bonitacenterforthearts.ludus.com/index.php">Tickets</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>

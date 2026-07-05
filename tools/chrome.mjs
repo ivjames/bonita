@@ -1,21 +1,33 @@
-// Stamps the shared page chrome (header nav, footer, venue JSON-LD, and
-// per-section subnav) into every page in site/, between marker comments:
+// Generates the shared page chrome — header nav, footer, venue JSON-LD, and
+// per-section "In this section" subnav — as *partials* under site/partials/,
+// which each page pulls in at request time via nginx SSI (`ssi on`). Pages
+// carry only tiny include directives between the marker comments:
 //
-//   <!-- chrome:header --> ... <!-- /chrome:header -->
+//   <!-- chrome:header -->
+//   <!--# set var="page" value="about-visit" -->
+//   <!--# set var="section" value="about" -->
+//   <!--# include virtual="/partials/header.html" -->
+//   <!-- /chrome:header -->
 //
-// Blocks: header, footer, jsonld, subnav. A page only gets the blocks whose
-// markers it carries (404.html has no jsonld; admin.html is skipped entirely —
-// its reduced nav is hand-maintained). Output is committed, so nginx/deploy
-// stay a plain `git pull`. Don't edit inside the markers by hand: re-running
-// `node tools/chrome.mjs` overwrites it. `--check` exits 1 if any file is
-// stale (run it before committing chrome edits).
+// The shared markup lives once in the partial instead of being copied into
+// every page, so an edit to the nav/footer touches one small file and pages
+// stop carrying ~100 lines of duplicated boilerplate each. Per-page state
+// (aria-current, current-section) is kept server-side with SSI if/set keyed on
+// the `page`/`section` vars each page sets — no JS, so pages that ship no
+// script (e.g. about/visit.html) still highlight correctly.
+//
+// Output is committed, so nginx/deploy stay a plain `git pull` (nginx just
+// assembles the includes at request time). Don't edit inside the markers or
+// the partials by hand: re-running `node tools/chrome.mjs` overwrites both.
+// `--check` exits 1 if any partial or page region is stale.
 //
 // The nav tree below is the single source of truth for the site structure.
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SITE = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'site');
+const PARTIALS = path.join(SITE, 'partials');
 const TICKETS = 'https://bonitacenterforthearts.ludus.com/index.php';
 
 // href: page path (clean URL). home: label of the section landing page as it
@@ -37,26 +49,35 @@ const NAV = [
   ] },
 ];
 
-const current = (href, page) => (href === page ? ' aria-current="page"' : '');
+// Stable per-page token used by the SSI conditionals: '/' -> home,
+// '/about/visit' -> about-visit. Matches the `page`/`section` vars each page
+// sets before including the header.
+const token = (href) => (href === '/' ? 'home' : href.replace(/^\//, '').replace(/\/$/, '').replace(/\//g, '-'));
 const inSection = (item, page) => page === item.href || page.startsWith(item.href + '/');
+const sectionOf = (page) => {
+  const s = NAV.find((item) => item.sub && inSection(item, page));
+  return s ? token(s.href) : '';
+};
 
-function header(page) {
+// ` aria-current="page"` when the current page's token matches — emitted by
+// nginx (or preview.mjs) at request time, so one partial serves every page.
+const currentIf = (href) => `<!--# if expr="$page = ${token(href)}" --> aria-current="page"<!--# endif -->`;
+
+function headerPartial() {
   const items = NAV.map((item) => {
-    if (!item.sub) return `        <li><a href="${item.href}"${current(item.href, page)}>${item.label}</a></li>`;
-    const cls = inSection(item, page) ? 'has-sub current-section' : 'has-sub';
+    if (!item.sub) return `        <li><a href="${item.href}"${currentIf(item.href)}>${item.label}</a></li>`;
     // Lead the dropdown with the section landing page (e.g. "Our story"),
     // matching the "In this section" subnav so it's reachable from the menu.
     const entries = [{ label: item.home, href: item.href }, ...item.sub];
-    const sub = entries.map((s) => `            <li><a href="${s.href}"${current(s.href, page)}>${s.label}</a></li>`).join('\n');
-    return `        <li class="${cls}">
-          <a href="${item.href}"${current(item.href, page)}>${item.label}</a>
+    const sub = entries.map((s) => `            <li><a href="${s.href}"${currentIf(s.href)}>${s.label}</a></li>`).join('\n');
+    return `        <li class="has-sub<!--# if expr="$section = ${token(item.href)}" --> current-section<!--# endif -->">
+          <a href="${item.href}"${currentIf(item.href)}>${item.label}</a>
           <ul class="sub">
 ${sub}
           </ul>
         </li>`;
   }).join('\n');
-  return `
-<header class="site-header">
+  return `<header class="site-header">
   <div class="bar">
     <a class="brand" href="/">
       <img src="/assets/img/bca-logo.png" alt="" width="44" height="52">
@@ -73,13 +94,10 @@ ${items}
 `;
 }
 
-function subnav(page) {
-  const section = NAV.find((item) => item.sub && inSection(item, page));
-  if (!section) throw new Error(`subnav marker on ${page}, which is not inside a nav section`);
+function subnavPartial(section) {
   const entries = [{ label: section.home, href: section.href }, ...section.sub];
-  const items = entries.map((s) => `      <li><a href="${s.href}"${current(s.href, page)}>${s.label}</a></li>`).join('\n');
-  return `
-  <nav class="toc section-nav" aria-label="In this section">
+  const items = entries.map((s) => `      <li><a href="${s.href}"${currentIf(s.href)}>${s.label}</a></li>`).join('\n');
+  return `  <nav class="toc section-nav" aria-label="In this section">
     <h2>In this section</h2>
     <ul>
 ${items}
@@ -88,8 +106,7 @@ ${items}
 `;
 }
 
-const FOOTER = `
-<footer class="site-footer">
+const FOOTER = `<footer class="site-footer">
   <div class="cols">
     <div class="badge">
       <img src="/assets/img/bca-logo.png" alt="Bonita Center for the Arts badge logo">
@@ -123,8 +140,7 @@ const FOOTER = `
 
 // Kept identical on every public page. At cutover, point the URLs at the
 // production domain, same as the canonicals.
-const JSONLD = `
-<script type="application/ld+json">
+const JSONLD = `<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "PerformingArtsTheater",
@@ -160,11 +176,36 @@ const JSONLD = `
 </script>
 `;
 
+// The committed partial files, keyed by the virtual path pages include.
+function buildPartials() {
+  const out = {
+    'header.html': headerPartial(),
+    'footer.html': FOOTER,
+    'jsonld.html': JSONLD,
+  };
+  for (const item of NAV) if (item.sub) out[`subnav-${token(item.href)}.html`] = subnavPartial(item);
+  return out;
+}
+
+// The body written between a page's <!-- chrome:NAME --> markers: the SSI
+// include (plus, for the header, the per-page `set` vars the conditionals read).
+function regionBody(name, page) {
+  if (name === 'header') {
+    return `\n<!--# set var="page" value="${token(page)}" -->\n<!--# set var="section" value="${sectionOf(page)}" -->\n<!--# include virtual="/partials/header.html" -->\n`;
+  }
+  if (name === 'subnav') {
+    const section = sectionOf(page);
+    if (!section) throw new Error(`subnav marker on ${page}, which is not inside a nav section`);
+    return `\n<!--# include virtual="/partials/subnav-${section}.html" -->\n`;
+  }
+  return `\n<!--# include virtual="/partials/${name}.html" -->\n`;
+}
+
 async function pages(dir) {
   const out = [];
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory() && entry.name !== 'assets') out.push(...await pages(full));
+    if (entry.isDirectory() && entry.name !== 'assets' && entry.name !== 'partials') out.push(...await pages(full));
     else if (entry.name.endsWith('.html') && entry.name !== 'admin.html') out.push(full);
   }
   return out;
@@ -172,21 +213,32 @@ async function pages(dir) {
 
 const check = process.argv.includes('--check');
 let stale = 0;
+
+// 1) Partials.
+const partials = buildPartials();
+if (!check) await mkdir(PARTIALS, { recursive: true });
+for (const [name, body] of Object.entries(partials)) {
+  const file = path.join(PARTIALS, name);
+  const cur = await readFile(file, 'utf8').catch(() => null);
+  if (cur === body) continue;
+  stale++;
+  if (check) console.error(`stale partial: partials/${name}`);
+  else { await writeFile(file, body); console.log(`wrote partials/${name}`); }
+}
+
+// 2) Page chrome regions (markers now wrap SSI directives).
 for (const file of await pages(SITE)) {
   const page = '/' + path.relative(SITE, file).replace(/\.html$/, '').replace(/^index$/, '').replace(/\\/g, '/');
-  const blocks = { header: header(page), footer: FOOTER, jsonld: JSONLD, subnav: subnav };
   const src = await readFile(file, 'utf8');
   const out = src.replace(
     /(<!-- chrome:(header|footer|jsonld|subnav) -->)[\s\S]*?(<!-- \/chrome:\2 -->)/g,
-    (_, open, name, close) => {
-      const body = blocks[name];
-      return open + (typeof body === 'function' ? body(page) : body) + close;
-    },
+    (_, open, name, close) => open + regionBody(name, page) + close,
   );
   if (out === src) continue;
   stale++;
   if (check) console.error(`stale chrome: ${path.relative(SITE, file)}`);
   else { await writeFile(file, out); console.log(`stamped ${path.relative(SITE, file)}`); }
 }
+
 if (check && stale) process.exit(1);
 console.log(check ? 'chrome up to date' : `done (${stale} file(s) updated)`);
