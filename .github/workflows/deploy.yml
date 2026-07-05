@@ -21,6 +21,13 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Lifted to job scope so the "should we deploy?" gate below can read
+    # DEPLOY_HOST in an `if:` (the secrets context isn't allowed there, env is).
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,22 +36,23 @@ jobs:
 
       # Guard: never deploy stale generated output. On PR-gated main this is
       # already green, but a direct push could skip the freshness workflow — so
-      # re-check here before touching the live site.
+      # re-check here before touching the live site. This still fails red if
+      # output is stale, secrets or not.
       - name: Generated output is fresh
         run: node tools/chrome.mjs --check && node tools/stamp-assets.mjs --check
 
+      # Until the droplet SSH secrets are set up (deploy/DEPLOY-GITHUB.md), a
+      # merge to main can't auto-deploy. Skip cleanly with a notice instead of
+      # failing the run red — the change is still live-deployable by hand with
+      # `sudo bonita` on the droplet. The step below runs once secrets exist.
+      - name: Deploy skipped (secrets not configured)
+        if: ${{ env.DEPLOY_HOST == '' }}
+        run: echo "::notice::Deploy secrets not configured — skipping auto-deploy. Run 'sudo bonita' on the droplet, or set DEPLOY_* secrets per deploy/DEPLOY-GITHUB.md to enable this."
+
       - name: Deploy over SSH
-        env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        if: ${{ env.DEPLOY_HOST != '' }}
         run: |
           set -euo pipefail
-          if [ -z "${DEPLOY_HOST:-}" ]; then
-            echo "Deploy secrets not configured — see deploy/DEPLOY-GITHUB.md" >&2
-            exit 1
-          fi
           mkdir -p ~/.ssh
           printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
