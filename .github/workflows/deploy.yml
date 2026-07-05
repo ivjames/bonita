@@ -21,13 +21,12 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Lifted to job scope so the "should we deploy?" gate below can read
-    # DEPLOY_HOST in an `if:` (the secrets context isn't allowed there, env is).
+    # Only the non-sensitive host is lifted to job scope, so the "should we
+    # deploy?" gate below can read it in an `if:` (the secrets context isn't
+    # allowed there, env is). The private key and friends stay scoped to the
+    # deploy step alone — no need to expose them to checkout/setup-node/checks.
     env:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -51,6 +50,10 @@ jobs:
 
       - name: Deploy over SSH
         if: ${{ env.DEPLOY_HOST != '' }}
+        env:
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh
