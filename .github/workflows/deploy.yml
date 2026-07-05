@@ -1,0 +1,54 @@
+name: deploy
+
+# Deploy on merge to main: SSH to the droplet and run `sudo bonita`
+# (deploy/update.sh) — git pull + optional bca-api refresh + nginx reload. That
+# replaces the manual "someone SSHes in and runs sudo bonita" step.
+#
+# Setup (one time) is documented in deploy/DEPLOY-GITHUB.md — it needs four repo
+# secrets (DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS) and a
+# NOPASSWD sudoers line for `bonita` on the droplet.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}   # allow a manual re-deploy from the Actions tab
+
+# Never let two deploys race the ff-only pull; queue them instead.
+concurrency:
+  group: deploy-droplet
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Guard: never deploy stale generated output. On PR-gated main this is
+      # already green, but a direct push could skip the freshness workflow — so
+      # re-check here before touching the live site.
+      - name: Generated output is fresh
+        run: node tools/chrome.mjs --check && node tools/stamp-assets.mjs --check
+
+      - name: Deploy over SSH
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          if [ -z "${DEPLOY_HOST:-}" ]; then
+            echo "Deploy secrets not configured — see deploy/DEPLOY-GITHUB.md" >&2
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              "$DEPLOY_USER@$DEPLOY_HOST" 'sudo /usr/local/bin/bonita'

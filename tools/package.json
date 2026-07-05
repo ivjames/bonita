@@ -6,7 +6,11 @@
   "scripts": {
     "test": "node test.mjs",
     "stamp": "node stamp-assets.mjs",
-    "stamp:check": "node stamp-assets.mjs --check"
+    "stamp:check": "node stamp-assets.mjs --check",
+    "chrome": "node chrome.mjs",
+    "chrome:check": "node chrome.mjs --check",
+    "gen": "node chrome.mjs && node stamp-assets.mjs",
+    "check": "node chrome.mjs --check && node stamp-assets.mjs --check"
   },
   "dependencies": {
     "axe-core": "^4.12.1",

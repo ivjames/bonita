@@ -83,14 +83,38 @@ node audit.mjs http://127.0.0.1:8199/ --no-proxy --max 10 --wait 300
 ## Page chrome (`chrome.mjs`)
 
 The shared header nav, footer, venue JSON-LD, and per-section "In this
-section" subnav are generated, not hand-copied. Each page in `site/` carries
-marker comments (`<!-- chrome:header -->…<!-- /chrome:header -->`);
-`node chrome.mjs` regenerates everything between them from the nav tree at
-the top of the script. Output is committed, so nginx/deploy stay a plain
-`git pull`. Don't edit inside the markers by hand — change the script (or the
-page content outside the markers) and re-run it. `node chrome.mjs --check`
-exits non-zero if any page is stale. `admin.html` is skipped on purpose (its
-reduced nav is hand-maintained).
+section" subnav are generated, not hand-copied. `node chrome.mjs` writes them
+as **partials** under `site/partials/` (`header.html`, `footer.html`,
+`jsonld.html`, `subnav-<section>.html`) from the nav tree at the top of the
+script, and each page in `site/` pulls them in at request time via nginx
+server-side includes (`ssi on`, see `deploy/nginx/bonita-common.conf`). A page
+carries only the directives between its markers:
+
+```html
+<!-- chrome:header -->
+<!--# set var="page" value="about-visit" -->
+<!--# set var="section" value="about" -->
+<!--# include virtual="/partials/header.html" -->
+<!-- /chrome:header -->
+```
+
+Per-page state (`aria-current`, `current-section`) stays **server-side**: the
+partials contain `<!--# if expr="$page = …" -->` conditionals that nginx
+evaluates against the `page`/`section` vars each page sets — so pages that ship
+no JavaScript still highlight the current item. This dropped each page from
+~half boilerplate to a few include lines; the shared markup lives once in the
+partials.
+
+Output is committed, so nginx/deploy stay a plain `git pull` — nginx just
+assembles the includes when serving. Don't edit the partials or inside the
+markers by hand — change the script (`NAV` / `FOOTER` / `JSONLD`) and re-run
+it. `node chrome.mjs --check` exits non-zero if any partial or page region is
+stale. `admin.html` is skipped on purpose (its reduced nav is hand-maintained).
+
+`tools/preview.mjs` mimics `ssi on`, so `npm run …` previews and the
+policies-PDF render assemble the chrome exactly as the droplet will. npm
+shortcuts: `npm run chrome` / `npm run chrome:check`, and `npm run gen` /
+`npm run check` to run chrome **and** stamp-assets together (what CI checks).
 
 ## Import historic events from the live calendar (`import-calendar.mjs`)
 
