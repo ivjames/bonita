@@ -292,6 +292,11 @@ h4 { font-size: 1.08rem; margin: 1.25rem 0 .35rem; }
   color: #fff;
   background: var(--maroon-deep);
 }
+/* The <picture> wrapping the bg image must not generate a box of its own,
+   or it'd leave an inline line box above .scrim (an un-scrimmed strip).
+   display:contents lets the absolutely-positioned img.bg below stay
+   authoritative in every engine. */
+.hero picture { display: contents; }
 .hero img.bg {
   position: absolute;
   inset: 0;
