@@ -1,0 +1,19 @@
+#!/bin/sh
+# Auto-regenerate committed generated output and stage it, so a commit is never
+# stale and CI (.github/workflows/generated-assets-fresh.yml) never bounces a PR
+# for a forgotten re-run. Regenerates the chrome partials + page includes and
+# the ?v= asset stamps, then stages what changed.
+#
+# Enable once per clone:  git config core.hooksPath .githooks
+#
+# Note: this stages modifications to already-tracked files under site/ (the
+# generated output), which may include page edits you hadn't `git add`ed yet.
+# That's the intended trade-off for "you can't forget to regenerate"; it never
+# adds untracked files outside site/partials/.
+set -e
+
+node tools/chrome.mjs >/dev/null
+node tools/stamp-assets.mjs >/dev/null
+
+git add site/partials          # new/changed partials (may be untracked)
+git add -u site                # re-stamped pages + footer/nav changes
