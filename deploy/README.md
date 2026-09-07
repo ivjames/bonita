@@ -42,7 +42,18 @@ running nginx, with TLS from Let's Encrypt (certbot).
 
 ## Updating the site
 
-Merge to `main`, then on the droplet, from any directory:
+**A merge to `main` deploys on its own.** `.github/workflows/deploy.yml` SSHes
+to the droplet on every push to `main` and runs `sudo bonita` for you; setup is
+in [`DEPLOY-GITHUB.md`](DEPLOY-GITHUB.md). This section used to read as though
+the droplet step were manual, and on this box it is not — bonita is one of the
+few lab980 sites where merging *is* deploying, against the platform default
+that it is not.
+
+Verified 2026-09-07: the most recent `deploy.yml` run is `2026-09-04` on
+`f371fe64`, `success` — which is the current tip of `main`.
+
+To deploy by hand anyway (a droplet without the workflow set up, or a run that
+failed), on the droplet, from any directory:
 
 ```bash
 sudo bonita
@@ -160,3 +171,30 @@ account, and installs the nginx location blocks from
 `snippets/bonita.d/api.conf` + reloads nginx. That's the last time the
 droplet is involved in account management. If everyone is ever locked out:
 delete `/var/lib/bca/users.json`, re-run the script.
+
+## Verifying what is live
+
+`nginx` assembles these pages with **SSI** (`ebb0843` moved the shared chrome
+and the JSON-LD into includes under `site/`), so the served HTML is *not* a
+byte-for-byte copy of `site/index.html` and the blob-hash check used on the
+other lab980 static sites does not apply here:
+
+```bash
+# This will report DIFFER even on a perfectly current deploy — SSI expands it.
+curl -s https://bonita.lab980.com/ | git hash-object --stdin
+git rev-parse origin/main:site/index.html
+```
+
+Check the deploy instead, from the two ends that are real:
+
+```bash
+# 1. did the workflow run for the commit you expect?
+#    GitHub -> Actions -> "deploy" -> newest run's commit
+# 2. on the droplet:
+git -C /var/www/bonita rev-parse HEAD
+git -C /var/www/bonita rev-parse origin/main   # after a fetch
+```
+
+`deploy/update.sh` uses `git merge --ff-only origin/main`, so a diverged
+checkout fails loudly rather than merging — the one lab980 site where a
+tracked hand-edit is not silently destroyed, but aborts the deploy instead.
